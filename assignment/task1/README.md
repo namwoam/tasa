@@ -37,4 +37,7 @@ use flag: no-sram yield:
 ```
 4. Try to load the linux image with tsim emulator, have successful result, but the eval version only have 32bit simulation timestamp, thus is not useable. Check `./emulate.sh` for more information.
 
+5. Discover linux 5.10 is not supported by the UT699 ref: https://www.gaisler.com/index.php/products/sw-overview.
+
+
 

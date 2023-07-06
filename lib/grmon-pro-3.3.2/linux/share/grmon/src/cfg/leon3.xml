@@ -1,0 +1,49 @@
+<?xml version="1.0" standalone="yes"?>
+<grxml version="1.0">
+  <grlib device="0x0" build="4109">
+    <bus type="AHB" ffactor="1.000000">
+      <!-- LEON3 SPARC V8 Processor -->
+      <master vendor="0x1" device="0x3">
+      </master>
+      <!-- JTAG Debug Link -->
+      <master vendor="0x1" device="0x1c" version="1">
+      </master>
+      <!-- LEON2 Memory Controller -->
+      <slave vendor="0x4" device="0xf">
+        <bar address="0x00000000" length="0x20000000"/>
+        <bar address="0x20000000" length="0x20000000"/>
+        <bar address="0x40000000" length="0x40000000"/>
+      </slave>
+      <!-- AHB/APB Bridge -->
+      <slave vendor="0x1" device="0x6">
+        <bar address="0x80000000" length="0x100000"/>
+        <bus type="APB" ffactor="1.000000">
+          <!-- LEON2 Memory Controller -->
+          <slave vendor="0x4" device="0xf">
+            <bar address="0x80000000" length="0x100"/>
+          </slave>
+          <!-- Generic UART -->
+          <slave vendor="0x1" device="0xc" irq="2" version="1">
+            <bar address="0x80000100" length="0x100"/>
+          </slave>
+          <!-- Multi-processor Interrupt Ctrl. -->
+          <slave vendor="0x1" device="0xd" version="3">
+            <bar address="0x80000200" length="0x100"/>
+          </slave>
+          <!-- Modular Timer Unit -->
+          <slave vendor="0x1" device="0x11" irq="8">
+            <bar address="0x80000300" length="0x100"/>
+          </slave>
+          <!-- General Purpose I/O port -->
+          <slave vendor="0x1" device="0x1a" version="1">
+            <bar address="0x80000500" length="0x100"/>
+          </slave>
+        </bus>
+      </slave>
+      <!-- LEON3 Debug Support Unit -->
+      <slave vendor="0x1" device="0x4" version="1">
+        <bar address="0x90000000" length="0x10000000"/>
+      </slave>
+    </bus>
+  </grlib>
+</grxml>
