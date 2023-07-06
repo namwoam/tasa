@@ -35,6 +35,6 @@ use flag: no-sram yield:
   Error mode  (tt = 0x09, data access exception)
   0x00000000: 0  
 ```
-4. Try to load the linux image with tsim emulator, have successful result, but the eval version only have 32bit simulation timestamp, thus is not useable. Check ./emulate.sh for more information.
+4. Try to load the linux image with tsim emulator, have successful result, but the eval version only have 32bit simulation timestamp, thus is not useable. Check `./emulate.sh` for more information.
 
 
