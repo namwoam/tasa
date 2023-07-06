@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-US" xml:lang="en-US" class="_Skins_SIDE_NAV" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-has-content-body="True" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic;Default" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="msapplication-config" content="../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Sentinel LDK Run-time Environment Installer for Windows: Readme</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Skins/Fluid/Stylesheets/foundation.6.2.3.css" rel="stylesheet" />
+        <link href="../Skins/Fluid/Stylesheets/Styles.css" rel="stylesheet" />
+        <link href="../Skins/Fluid/Stylesheets/Tablet.css" rel="stylesheet" />
+        <link href="../Skins/Fluid/Stylesheets/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Gemalto_Template.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.filler-button
+{
+	-pie-background: linear-gradient(#555555, #555555);
+}
+
+.button.print-button
+{
+	-pie-background: url('../Skins/Default/Stylesheets/Images/printer_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+}
+
+.button.remove-highlight-button
+{
+	-pie-background: url('../Skins/Default/Stylesheets/Images/highlight_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../Skins/Default/Stylesheets/Images/navigate-previous_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../Skins/Default/Stylesheets/Images/navigate-next_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+}
+
+.needs-pie
+{
+	behavior: url('../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <link href="../Resources/TableStyles/Page.css" rel="stylesheet" />
+        <link href="Resources/TableStyles/Page.css" rel="stylesheet" />
+        <link href="../TableStyles/Page.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js" defer="defer">
+        </script>
+        <script src="../Resources/Scripts/require.config.js" defer="defer">
+        </script>
+        <script src="../Resources/Scripts/foundation.6.2.3_custom.js" defer="defer">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js" defer="defer">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js" defer="defer">
+        </script>
+    </head>
+    <body>
+        <div class="foundation-wrap off-canvas-wrapper">
+            <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper="">
+                <aside class="off-canvas position-right" role="navigation" id="offCanvas" data-off-canvas="" data-position="right" data-mc-ignore="true">
+                    <ul class="off-canvas-accordion vertical menu off-canvas-list" data-accordion-menu="" data-mc-back-link="Back" data-mc-css-tree-node-expanded="is-accordion-submenu-parent" data-mc-css-tree-node-collapsed="is-accordion-submenu-parent" data-mc-css-sub-menu="vertical menu is-accordion-submenu nested" data-mc-include-indicator="False" data-mc-include-icon="False" data-mc-include-parent-link="True" data-mc-include-back="False" data-mc-defer-expand-event="True" data-mc-expand-event="click.zf.accordionMenu" data-mc-toc="True">
+                    </ul>
+                </aside>
+                <div class="off-canvas-content inner-wrap" data-off-canvas-content="">
+                    <div data-sticky-container="" class="title-bar-container">
+                        <nav class="title-bar tab-bar sticky" data-sticky="" data-options="marginTop:0" style="width:100%" data-sticky-on="only screen and (max-width: 750px)" data-mc-ignore="true"><a class="skip-to-content fluid-skip showOnFocus" href="#">Skip To Main Content</a>
+                            <div class="middle title-bar-section outer-row clearfix">
+                                <div class="menu-icon-container relative clearfix">
+                                    <button class="menu-icon" aria-label="Show Navigation Panel" data-toggle="offCanvas"><span></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="title-bar-layout outer-row">
+                                <div class="logo-wrapper"><a class="logo" href="Overview-Linux.html" alt="Logo"></a>
+                                </div>
+                                <div class="navigation-wrapper nocontent">
+                                    <ul class="navigation clearfix" data-mc-css-tree-node-has-children="has-children" data-mc-css-sub-menu="sub-menu" data-mc-expand-event="mouseenter" data-mc-top-nav-menu="True" data-mc-max-depth="3" data-mc-include-icon="False" data-mc-include-indicator="False" data-mc-include-children="True" data-mc-include-siblings="True" data-mc-include-parent="True" data-mc-toc="True">
+                                        <li class="placeholder" style="visibility:hidden"><a>placeholder</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="nav-search-wrapper">
+                                    <div class="nav-search row">
+                                        <form class="search" action="#">
+                                            <div class="search-bar search-bar-container needs-pie">
+                                                <input class="search-field needs-pie" type="search" aria-label="Search Field" placeholder="Search" />
+                                                <div class="search-filter-wrapper"><span class="invisible-label" id="search-filters-label">Filter: </span>
+                                                    <div class="search-filter" aria-haspopup="true" aria-controls="sf-content" aria-expanded="false" aria-label="Search Filter" title="All Files" role="button" tabindex="0">
+                                                    </div>
+                                                    <div class="search-filter-content" id="sf-content">
+                                                        <ul>
+                                                            <li>
+                                                                <button class="mc-dropdown-item" aria-labelledby="search-filters-label filterSelectorLabel-00001"><span id="filterSelectorLabel-00001">All Files</span>
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="search-submit-wrapper" dir="ltr">
+                                                    <div class="search-submit" title="Search" role="button" tabindex="0"><span class="invisible-label">Submit Search</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="main-section">
+                        <div class="row outer-row sidenav-layout">
+                            <nav class="sidenav-wrapper">
+                                <div class="sidenav-container">
+                                    <ul class="off-canvas-accordion vertical menu sidenav" data-accordion-menu="" data-mc-css-tree-node-expanded="is-accordion-submenu-parent" data-mc-css-tree-node-collapsed="is-accordion-submenu-parent" data-mc-css-sub-menu="vertical menu accordion-menu is-accordion-submenu nested" data-mc-include-indicator="False" data-mc-include-icon="False" data-mc-include-parent-link="False" data-mc-include-back="False" data-mc-defer-expand-event="True" data-mc-expand-event="click.zf.accordionMenu" data-mc-toc="True" data-mc-side-nav-menu="True">
+                                    </ul>
+                                </div>
+                            </nav>
+                            <div class="body-container">
+                                <div data-mc-content-body="True">
+                                    <!-- Uncomment the following line to enable syntax highlighting -->
+                                    <!-- <script type="text/javascript" src="../PlugIns/SyntaxHilite/Prism/prism.js"></script> --><a name="topPage"></a><a href="#topPage" data-balloon-pos="top" class="backToTop" title="Back to Top" alt="Back to Top"><img src="../Resources/Images/Skins/arrow.png" /></a>
+                                    <script type="text/javascript" src="../Resources/Scripts/backtotop.js">
+                                    </script>
+                                    <div class="content">
+                                        <div id="contentBody">
+                                            <div class="ContentRowSideNav" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                <div>
+                                                    <div class="nocontent" xmlns="">
+                                                        <div class="MCBreadcrumbsBox_0 breadcrumbs" role="navigation" aria-label="Breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix"> </span>
+                                                        </div>
+                                                    </div>
+                                                    <div role="main" id="mc-main-content" xmlns="">
+                                                        <h1 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Revision History<a name="history"></a></h1>
+                                                        <p xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">This section describes enhancements implemented and issues resolved in the last three major releases of Sentinel Run-time Environment.</p>
+                                                        <p xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">The revision history for earlier versions of Sentinel Run-time Environment is available at: <a href="https://docs.sentinel.thalesgroup.com/ldk/LDKdocs/RTE_History/Default.htm">https://docs.sentinel.thalesgroup.com/ldk/LDKdocs/RTE_History/Default.htm</a></p>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 8.13</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-50563</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">Enhancements to clone protection scheme <b>VMType3</b> are now supported by the Admin License Manager. This scheme now supports the Amazon EC2 cloud computing service in addition to Microsoft Azure. This provides enhanced clone protection for protected applications that execute on these platforms.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-66926</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">You can now generate a C2V file for a Master key or Developer key using the Sentinel Keys page in Admin Control Center.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-70231</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">Disk serial number is now included in the fingerprint of the end user's machine, regardless of third party driver versions (for example: Intel RAID).</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-80982</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">Sentinel Run-time Environment now supports the cloud licensing functionality that was added to Sentinel Admin API. Using this new functionality, you can now use Admin API to automate the management of identity clients instead of performing manual operations in Sentinel Admin Control Center.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-81994</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">The field "Issued to Client" on the configuration page for client identities has been renamed "Issued to".</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 8.13</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-80253</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">Certain security vulnerabilities have been resolved.  Thales would like to acknowledge Positive Technologies for responsible disclosure of these vulnerabilities.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-80941</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>Given the following circumstances:</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>RTE version 8.11 is installed on a license server machine.</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>A license with multiple products (SL or HL) is installed.</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>User restrictions are defined. For example:<br /><code>deny=USER_A@all,product:1<br />allow=USER_A@all,product:2</code></p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>USER_A attempts to consume a license from Product 1. The request is denied.</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span> Using the same login scope, USER_A then attempts to consume a license from Product 2.</p>
+                                                                        <p>The second attempt would also fail, even though the user is authorized to consume a license from Product 2.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-81033</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>The following issues were resolved:</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>When performing an offline license detach, the expiration date field in the H2R file did not contain a value for the year. For example: &lt;tr&gt;&lt;td&gt;expiration&lt;/td&gt;&lt;td&gt;&lt;b&gt;Sun Jul 12, 15:59:30 UTC&lt;/b&gt;&lt;/td&gt;&lt;/tr&gt;</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>When using Admin API for .NET: If you call the API “AdminApi.Get” (any scope, element :ExpirationDate) the expiration date information did not contain a value for the year.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-81658</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>Given the following circumstances:</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>RTE version 8.11 is installed on a license server machine.</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>User restrictions on the license server are set to: <code>deny=all@all</code></p>
+                                                                        <p>A client attempting to consume a license from the server would get the return status code 40/HASP_REMOTE_COMM_ERR instead of the expected status code 53/USER_ACCESS_DENIED.</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 8.11</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">
+                                                                        <p>SM-7201</p>
+                                                                    </td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>This release of Sentinel LDK&#160;Run-time Environment introduces cloud licensing to serve network license seats to remote machines over the Internet. A remote machine with the required identity information will be able to consume a network seat or detach a license from the license server machine. The license server machine can be hosted on a cloud server either by the software vendor (for all customers) or by the individual customers for users in their organizations.</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 8.11</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-63276</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1"> Allocation of network seats from a remote License Manager with duplicate Features has been optimized.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-71776</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                        When an update to a 6.x Firmware key contains a large number of Features, a timeout would occur.
+                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-73072<br />SM-73074</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">"Denial of Service" vulnerabilities were resolved.</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 7.103</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">
+                                                                        <p>SM-51158</p>
+                                                                    </td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>Admin API now supports the use of HTTPS for communication with a remote Admin License Manager. </p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-12702</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>A local or remote user&#160;can now use the "Sentinel Keys Available" page of Admin Control Center (instead of the RUS utility) to generate a fingerprint.</p>
+                                                                        <p><b>Note:</b>&#160;For Linux or Mac (where Admin Control Center is available), only SL AdminMode fingerprints can be generated.</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 7.103</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">
+                                                                        <p>SM-66308</p>
+                                                                    </td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>Certain important security issues were resolved. For more information, see the reference to article KB0020564 in the Gemalto Security Updates page: <a href="https://sentinel.gemalto.com/technical-support/security-updates-sm/">https://sentinel.gemalto.com/technical-support/security-updates-sm/</a></p>
+                                                                        <p>Gemalto acknowledges and thanks Vladimir Dashchenko from Kaspersky Lab ICS CERT for responsible disclosure of these vulnerabilities.</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 7.102</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">
+                                                                        <p>SM-26322</p>
+                                                                    </td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>Certain important security issues were resolved. For more information, see the reference to article KB0020199 in the Gemalto Security Updates page: <a href="https://sentinel.gemalto.com/technical-support/security-updates-sm/">https://sentinel.gemalto.com/technical-support/security-updates-sm/</a></p>
+                                                                        <p>Gemalto acknowledges and thanks  Artem Zinenko from Kaspersky Lab ICS CERT for responsible disclosure of these vulnerabilities.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-62256</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">Under certain circumstances, it was possible to misuse detached licenses.</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 7.101</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-61960</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>The Run-time Environment now supports controlling the generation of the License Manager ID files. This is done using the <b>Enable Detaching of Licenses</b> configuration check box in Admin Control Center. When selected, the License Manager generates ID files. When cleared, the License Manager stops generating any new ID files. However, the existing ID files are retained.</p>
+                                                                        <p>By default, the <b>Enable Detaching of Licenses</b> check box  is cleared.</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 7.100</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-47546</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">The Run-time Environment now supports the ability of the Licensing API&#160;to check remaining idle time before a protection key login session is terminated. Checking the remaining idle time does not reset the session.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu,Default.Linux_126_all,Default.Win_117_sample,Default.Win_118_gui,Default.Win_131_msi,Default.Win_129_cmd">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-7269 SM-54601</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">The Run-time Environment now supports protecting applications that run in a Docker container. The scheme VMType4 is supported for clone protection.</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 7.100</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');margin-left: 0;margin-right: auto;" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-56397</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>Given the following circumstances:</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>A license for a Product is detached from a customer's license server and applied on a different machine</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>In Sentinel EMS, the original entitlement for the Product is copied and used to create an update to the Product. The update is applied to the license server machine.</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>The detached license is canceled and returned to the license server.</p>
+                                                                        <p>The number of available seats of the Product on the license server would not reflect that the license had been returned.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-57376</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">In certain situations, an SL license would disappear after system reboot.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="Default.Linux_126_all,Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu,Default.Mac_119_gui,Default.Mac-237_EMS">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-57569</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">Under certain circumstances, the License Manager clock would freeze during hibernation or in stand-by mode.</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 7.92</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-50889 SM-50902 SM-50900</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p> Certain important security issues were resolved. For more information, see the reference to article KB0018794 in the Gemalto Security Updates page: <a href="https://sentinel.gemalto.com/technical-support/security-updates-sm/">https://sentinel.gemalto.com/technical-support/security-updates-sm/</a></p>
+                                                                        <p>Gemalto acknowledges and thanks Artem Zinenko from Kaspersky Lab ICS CERT for responsible disclosure of these vulnerabilities.</p>
+                                                                        <p>As part of the resolution for these issues, Admin Control Center no longer supports importing external language packs (either online or offline). Translated user interface files are included in the RTE installer. The end user now selects the desired language for the interface by clicking the name of the language instead of clicking a country flag image.
+ </p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 7.90</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-17431</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">The License Manager now supports the use of custom clone protection schemes.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-34308</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>In Admin Control Center, the configuration parameter <b>Allow Remote Access to ACC and Admin API</b> has been split into two independent parameters:</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span><b>Allow Remote Access to ACC</b>
+                                                                        </p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span><b>Allow Remote Access to Admin API</b>
+                                                                        </p>
+                                                                        <p>This provide more granular control of access from a remote machine. You can now allow or deny access separately for Admin Control Center and for Admin API. (A corresponding split for configuration parameters was implemented in Sentinel Admin API.)</p>
+                                                                        <p>When the License Manager is upgraded to version 7.90, each new parameter is assigned the value that was assigned to the original parameter. As a result, after the upgrade, there is no change in access granted.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="Default.Linux_126_all,Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-40306</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">The License Manager and the Licensing API now honor a CPU mask that was set by the user.</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 7.81</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-27901</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">The revision history of all enhancements implemented and issues resolved for earlier versions of the RTE is now available online at: <a href="https://docs.sentinel.thalesgroup.com/ldk/LDKdocs/RTE_History/Default.htm">https://docs.sentinel.thalesgroup.com/ldk/LDKdocs/RTE_History/Default.htm</a></td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-30222<br />SM-30886<br /></td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>Several security improvements have been implemented.</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 7.81</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" data-mc-conditions="" />
+                                                            <col class="TableStyle-Page-Column-Column1" data-mc-conditions="" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-28148</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>The hasp_login function would fail to log in to a HASP4 parallel port key (the function would not fail with HASP4 UBS keys). The login would fail with the error code HASP_HASP_NOT_FOUND = 7. This issue would occur with RTE version 7.52 and later.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="Default.Linux_126_all,Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-31614</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">The License Manager would construct the main board fingerprint incorrectly under certain circumstances. This would result in false reports of clone detection.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="Default.Linux_126_all,Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-33235</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">Under certain circumstances, the method used to access Secure Storage would result in corruption of SL licenses.</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 7.80</h3>
+                                                        <table style="width: 100%;mc-table-style: url('Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-15321</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>The Run-time Environment for Linux Intel now provides native support for both 32-bit and 64-bit architectures. You are no longer required to provide 32-bit support libraries (x86 compatibility packages) for the 64-bit architecture.</p>
+                                                                        <p>Be sure to provide both 32-bit and 64-bit customized Vendor libraries with the Run-time Environment installer.</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 7.80</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-12155</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">If a customer applies a V2C update from a remote machine that has the Vendor library but no license from the same vendor, the error returned was HASP_UPDATE_TOO_NEW, which was confusing. Now the error returned is HASP_KEYID_NOT_FOUND.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-14373</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">When installing the Run-time Environment in a CentOS 7.x Docker, the message "Unsupported Linux distribution" was generated.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-18502</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">Defining an excessive number of User Restrictions in Admin Control Center would cause the License Manager Service to fail.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-19981</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">hasp_update would return an internal error for an HL Key when the license definition contains empty content in the default memory section.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-26543</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">Under certain circumstances, Sentinel License Manager would crash on the REST interface with long packets.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-6477</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>Given the following circumstances:</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>A customer uses SSH to connect to a remote Linux machine.</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>On the remote machine, the customer uses multiple tmux sessions to run a protected application.</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>hasp_login was called in each session.</p>
+                                                                        <p>A license was consumed for each session.</p>
+                                                                        <p>(If the Feature is defined to count workstations and not sessions, only one license should have been consumed for a single SSH session from the same workstation.)</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Components_TOOLBAR mc-component nocontent" style="margin-top: 0px; mc-topic-toolbar-items: ;text-align: right;" xmlns="">
+                                                        <div class="button-group-container-left">
+                                                            <button class="button needs-pie print-button" title="Print">
+                                                                <img alt="Print" src="../Skins/Default/Stylesheets/Images/transparent.gif" class="invisible-label" />
+                                                            </button>
+                                                            <button class="button needs-pie remove-highlight-button" title="Remove Highlights">
+                                                                <img src="../Skins/Default/Stylesheets/Images/transparent.gif" class="invisible-label" />
+                                                            </button>
+                                                            <button class="button needs-pie previous-topic-button" title="Navigate previous">
+                                                                <img alt="Navigate previous" src="../Skins/Default/Stylesheets/Images/transparent.gif" class="invisible-label" />
+                                                            </button>
+                                                            <button class="button needs-pie next-topic-button" title="Navigate next">
+                                                                <img alt="Navigate next" src="../Skins/Default/Stylesheets/Images/transparent.gif" class="invisible-label" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="footer" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd"><span class="DefaultProduct" xmlns="">Sentinel LDK</span>&#160;&#160;<span class="DefaultProjectTitle" xmlns="">Run-time Environment Installer</span> <span class="DefaultRelease" xmlns="">8.15</span> for <span class="DefaultPlatform" xmlns=""> Linux</span> <br xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd" /><span class="DefaultDateLong" xmlns="">27 December 2020</span>&#160;&#160;Copyright&#160;<span class="DefaultCopyright" xmlns="">2020</span>&#160;<span class="DefaultCompanyNameLong" xmlns="">Thales Group</span>.&#160;All rights reserved. (<MadCap:conditionalText data-mc-conditions="Default.Linux_126_all,Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu"><span class="DefaultRevision_Linux" xmlns="">2012-3</span></MadCap:conditionalText>: <span class="VariablesDocID" xmlns="">154</span>)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div><a data-close="true"></a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

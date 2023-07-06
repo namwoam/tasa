@@ -1,0 +1,1 @@
+define({'his term':{d:'This is the definition of his term',l:''},'My Term':{d:'This is the definition of my  term',l:''},'Your term':{d:'This is the definition of your term',l:''}});

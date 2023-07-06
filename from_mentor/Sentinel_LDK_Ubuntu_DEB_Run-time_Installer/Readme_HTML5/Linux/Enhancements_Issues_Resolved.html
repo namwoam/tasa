@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-US" xml:lang="en-US" class="_Skins_SIDE_NAV" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../" data-mc-has-content-body="True" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic;Default" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print" data-mc-toc-path="">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="msapplication-config" content="../Skins/Favicons/browserconfig.xml" />
+        <link rel="icon" sizes="16x16" href="../Skins/Favicons/favicon-16x16.png" />
+        <meta charset="utf-8" />
+        <meta name="description" content="" />
+        <meta name="author" content="" /><title>Sentinel LDK Run-time Environment Installer for Linux:Readme</title>
+        <link href="../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" />
+        <link href="../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" />
+        <link href="../Skins/Fluid/Stylesheets/foundation.6.2.3.css" rel="stylesheet" />
+        <link href="../Skins/Fluid/Stylesheets/Styles.css" rel="stylesheet" />
+        <link href="../Skins/Fluid/Stylesheets/Tablet.css" rel="stylesheet" />
+        <link href="../Skins/Fluid/Stylesheets/Mobile.css" rel="stylesheet" />
+        <link href="../Resources/Stylesheets/Gemalto_Template.css" rel="stylesheet" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.filler-button
+{
+	-pie-background: linear-gradient(#555555, #555555);
+}
+
+.button.print-button
+{
+	-pie-background: url('../Skins/Default/Stylesheets/Images/printer_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+}
+
+.button.remove-highlight-button
+{
+	-pie-background: url('../Skins/Default/Stylesheets/Images/highlight_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+}
+
+.button.previous-topic-button
+{
+	-pie-background: url('../Skins/Default/Stylesheets/Images/navigate-previous_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+}
+
+.button.next-topic-button
+{
+	-pie-background: url('../Skins/Default/Stylesheets/Images/navigate-next_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+}
+
+.needs-pie
+{
+	behavior: url('../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <link href="../Resources/TableStyles/Page.css" rel="stylesheet" />
+        <script src="../Resources/Scripts/jquery.min.js">
+        </script>
+        <script src="../Resources/Scripts/require.min.js" defer="defer">
+        </script>
+        <script src="../Resources/Scripts/require.config.js" defer="defer">
+        </script>
+        <script src="../Resources/Scripts/foundation.6.2.3_custom.js" defer="defer">
+        </script>
+        <script src="../Resources/Scripts/plugins.min.js" defer="defer">
+        </script>
+        <script src="../Resources/Scripts/MadCapAll.js" defer="defer">
+        </script>
+    </head>
+    <body>
+        <div class="foundation-wrap off-canvas-wrapper">
+            <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper="">
+                <aside class="off-canvas position-right" role="navigation" id="offCanvas" data-off-canvas="" data-position="right" data-mc-ignore="true">
+                    <ul class="off-canvas-accordion vertical menu off-canvas-list" data-accordion-menu="" data-mc-back-link="Back" data-mc-css-tree-node-expanded="is-accordion-submenu-parent" data-mc-css-tree-node-collapsed="is-accordion-submenu-parent" data-mc-css-sub-menu="vertical menu is-accordion-submenu nested" data-mc-include-indicator="False" data-mc-include-icon="False" data-mc-include-parent-link="True" data-mc-include-back="False" data-mc-defer-expand-event="True" data-mc-expand-event="click.zf.accordionMenu" data-mc-toc="True">
+                    </ul>
+                </aside>
+                <div class="off-canvas-content inner-wrap" data-off-canvas-content="">
+                    <div data-sticky-container="" class="title-bar-container">
+                        <nav class="title-bar tab-bar sticky" data-sticky="" data-options="marginTop:0" style="width:100%" data-sticky-on="only screen and (max-width: 750px)" data-mc-ignore="true"><a class="skip-to-content fluid-skip showOnFocus" href="#">Skip To Main Content</a>
+                            <div class="middle title-bar-section outer-row clearfix">
+                                <div class="menu-icon-container relative clearfix">
+                                    <button class="menu-icon" aria-label="Show Navigation Panel" data-toggle="offCanvas"><span></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="title-bar-layout outer-row">
+                                <div class="logo-wrapper"><a class="logo" href="Overview-Linux.html" alt="Logo"></a>
+                                </div>
+                                <div class="navigation-wrapper nocontent">
+                                    <ul class="navigation clearfix" data-mc-css-tree-node-has-children="has-children" data-mc-css-sub-menu="sub-menu" data-mc-expand-event="mouseenter" data-mc-top-nav-menu="True" data-mc-max-depth="3" data-mc-include-icon="False" data-mc-include-indicator="False" data-mc-include-children="True" data-mc-include-siblings="True" data-mc-include-parent="True" data-mc-toc="True">
+                                        <li class="placeholder" style="visibility:hidden"><a>placeholder</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="nav-search-wrapper">
+                                    <div class="nav-search row">
+                                        <form class="search" action="#">
+                                            <div class="search-bar search-bar-container needs-pie">
+                                                <input class="search-field needs-pie" type="search" aria-label="Search Field" placeholder="Search" />
+                                                <div class="search-filter-wrapper"><span class="invisible-label" id="search-filters-label">Filter: </span>
+                                                    <div class="search-filter" aria-haspopup="true" aria-controls="sf-content" aria-expanded="false" aria-label="Search Filter" title="All Files" role="button" tabindex="0">
+                                                    </div>
+                                                    <div class="search-filter-content" id="sf-content">
+                                                        <ul>
+                                                            <li>
+                                                                <button class="mc-dropdown-item" aria-labelledby="search-filters-label filterSelectorLabel-00001"><span id="filterSelectorLabel-00001">All Files</span>
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="search-submit-wrapper" dir="ltr">
+                                                    <div class="search-submit" title="Search" role="button" tabindex="0"><span class="invisible-label">Submit Search</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="main-section">
+                        <div class="row outer-row sidenav-layout">
+                            <nav class="sidenav-wrapper">
+                                <div class="sidenav-container">
+                                    <ul class="off-canvas-accordion vertical menu sidenav" data-accordion-menu="" data-mc-css-tree-node-expanded="is-accordion-submenu-parent" data-mc-css-tree-node-collapsed="is-accordion-submenu-parent" data-mc-css-sub-menu="vertical menu accordion-menu is-accordion-submenu nested" data-mc-include-indicator="False" data-mc-include-icon="False" data-mc-include-parent-link="False" data-mc-include-back="False" data-mc-defer-expand-event="True" data-mc-expand-event="click.zf.accordionMenu" data-mc-toc="True" data-mc-side-nav-menu="True">
+                                    </ul>
+                                </div>
+                            </nav>
+                            <div class="body-container">
+                                <div data-mc-content-body="True">
+                                    <!-- Uncomment the following line to enable syntax highlighting -->
+                                    <!-- <script type="text/javascript" src="../PlugIns/SyntaxHilite/Prism/prism.js"></script> --><a name="topPage"></a><a href="#topPage" data-balloon-pos="top" class="backToTop" title="Back to Top" alt="Back to Top"><img src="../Resources/Images/Skins/arrow.png" /></a>
+                                    <script type="text/javascript" src="../Resources/Scripts/backtotop.js">
+                                    </script>
+                                    <div class="content">
+                                        <div id="contentBody">
+                                            <div class="ContentRowSideNav" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                <div>
+                                                    <div class="nocontent" xmlns="">
+                                                        <div class="MCBreadcrumbsBox_0 breadcrumbs" role="navigation" aria-label="Breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix"> </span>
+                                                        </div>
+                                                    </div>
+                                                    <div role="main" id="mc-main-content" xmlns="">
+                                                        <h1 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements and Issues Resolved in This Release<a name="fixes"></a></h1>
+                                                        <p xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">This section describes enhancements introduced and issues resolved in this release of the Sentinel LDK Run-time Environment.</p>
+                                                        <p class="note" data-mc-autonum="&lt;span style=&quot;color: #b90b67;&quot; class=&quot;mcFormatColor&quot;&gt; &lt;b&gt;NOTE&lt;/b&gt; &#160;&#160;&lt;/span&gt;" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd"><span class="autonumber"><span><span style="color: #b90b67;" class="mcFormatColor"> <b>NOTE</b> &#160;&#160;</span></span></span>This release enhances the security of the Run-time Environment. Thales highly recommends that you install this release to ensure maximum security for your applications.</p>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Enhancements in Version 8.15</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" data-mc-autosort="False" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" data-mc-autosort-direction="descending" data-mc-autosort-priority="0" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">&#160;</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p class="KWN">The documentation for the Sentinel Run-time Environment (RTE) is now provided in HTML5 format. As a result, the documentation is modular and easier to navigate.</p>
+                                                                        <p class="KWN">Because of this change, the path for accessing the documents online has changed. If you created shortcuts to access RTE documentation from the Thales web site, you must modify your shortcuts accordingly.</p>
+                                                                        <p>The paths for accessing the online RTE&#160;Readme files can be taken from: <a href="https://docs.sentinel.thalesgroup.com/ldk/rte.htm">https://docs.sentinel.thalesgroup.com/ldk/rte.htm</a></p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-13165</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>Admin Control Center enables a customer to specify which users can access a license on a license server machine.</p>
+                                                                        <p>You can now include domain names as part of the restrictions that they specify for this purpose. For example, you can now specify:</p><pre>allow=username@hostname.domainname,...<br />allow=khsingh@noi-2n39623.thaesgroup.com</pre>
+                                                                        <p>For more information, see the description of the <b>User Restrictions</b> parameter on the <b>Configuration &gt; Users</b> page of Admin Control Center.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-82156</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>Network licenses will be accessible even if port 1947 is not open in the firewall. To enable this enhancement, you must select the option <b>Listen for clients also on port 80</b> in the Admin Control Center configuration.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-83530</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>When setting or changing the password for making changes in the Admin License Manager (using Admin Control Center or Sentinel Admin API), you must now specify a strong password. The password must satisfy the following requirements:</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>At least eight characters long</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>At least one uppercase letter (A-Z) and one lowercase letter (a-z)</p>
+                                                                        <p class="ul1" data-mc-autonum="&lt;b&gt;&amp;gt;&lt;/b&gt;"><span class="autonumber"><span class="ul1Bullet"><b>&gt;</b></span></span>At least one number (0-9) OR one special character (for example: <b>! @ # $ % ^ &amp; * " ( ) . , - +</b>)</p>
+                                                                        <p>These requirements are enforced when a password is added or changed. There is no warning or action required if the existing password does not satisfy these requirements.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-83532</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">When you enable remote access to Admin Control Center, you must enable password protection for accessing the configuration pages for Admin Control Center. You have the option of requiring a password to access any part of Admin Control Center.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-85983</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">Sentinel LDK Run-time Environment now supports the ability for Sentinel EMS to push produced entitlements directly to a license server machine without need to exchange C2V and V2C files. This simplifies the process for software vendors to maintain cloud licenses on their license server machine.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-86109</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>Sentinel LDK Run-time Environment now supports a new method for detaching licenses: Automatic Detach.</p>
+                                                                        <p> This method  is especially useful when working with cloud licenses.</p>
+                                                                        <p>When Automatic Detach is enabled, a protected application automatically detaches a network seat from an SL key (that supports concurrency) when the application requires a license. As a result, the application can continue to operate even if the connection to the SL key is interrupted. The application retains the license for a predefined number of hours.</p>
+                                                                        <p>For more information, see the description of detaching licenses in the Admin Control Center help system.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-88183</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">
+                                                                        <p>When creating a client identity for cloud licensing and specifying the Limit to Key ID parameter, you can now specify multiple key IDs for a given client identity.</p>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3 xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">Issues Resolved in Version 8.15</h3>
+                                                        <table style="width: 100%;mc-table-style: url('../Resources/TableStyles/Page.css');" class="TableStyle-Page" cellspacing="0" data-mc-autosort="False" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd">
+                                                            <col class="TableStyle-Page-Column-Column1" data-mc-autosort-direction="descending" data-mc-autosort-priority="0" />
+                                                            <col class="TableStyle-Page-Column-Column1" />
+                                                            <thead>
+                                                                <tr class="TableStyle-Page-Head-Header1">
+                                                                    <th class="TableStyle-Page-HeadE-Column1-Header1" scope="col" width="86">Reference</th>
+                                                                    <th class="TableStyle-Page-HeadD-Column1-Header1">Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-85071</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">An internal API error would occur when applying a v2c in a machine where haspvlib 8.13 and Runtime 8.11 were installed.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="Default.Linux_126_all,Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-85074</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">The Run-time Environment was not able to support multiple monitors in Ubuntu for Terminal Server detection </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-86348</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">
+                                                                        <p>Under rare circumstances, the following error was logged:</p>
+                                                                        <p>log_error("Failed udp accept() call " SYS_ERROR_FORMAT "\n", SYS_ERROR_ARGS). </p>
+                                                                        <p>
+This was caused by a read_UDP with a wait. This issue has been resolved.</p>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="Default.Linux_126_all,Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu">
+                                                                    <td class="TableStyle-Page-BodyE-Column1-Body1">SM-89156</td>
+                                                                    <td class="TableStyle-Page-BodyD-Column1-Body1">When generating a C2V file with a fingerprint, the Run-time Environment or Licensing API would not detect that the customer's machine is an Amazon EC2 platform.</td>
+                                                                </tr>
+                                                                <tr class="TableStyle-Page-Body-Body1" data-mc-conditions="">
+                                                                    <td class="TableStyle-Page-BodyB-Column1-Body1">SM-89355 SM-89307</td>
+                                                                    <td class="TableStyle-Page-BodyA-Column1-Body1">A security issue regarding certain protection keys has been resolved.</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="buttons popup-container clearfix topicToolbarProxy _Skins_Components_TOOLBAR mc-component nocontent" style="margin-top: 0px; mc-topic-toolbar-items: ;text-align: right;" xmlns="">
+                                                        <div class="button-group-container-left">
+                                                            <button class="button needs-pie print-button" title="Print">
+                                                                <img alt="Print" src="../Skins/Default/Stylesheets/Images/transparent.gif" class="invisible-label" />
+                                                            </button>
+                                                            <button class="button needs-pie remove-highlight-button" title="Remove Highlights">
+                                                                <img src="../Skins/Default/Stylesheets/Images/transparent.gif" class="invisible-label" />
+                                                            </button>
+                                                            <button class="button needs-pie previous-topic-button" title="Navigate previous">
+                                                                <img alt="Navigate previous" src="../Skins/Default/Stylesheets/Images/transparent.gif" class="invisible-label" />
+                                                            </button>
+                                                            <button class="button needs-pie next-topic-button" title="Navigate next">
+                                                                <img alt="Navigate next" src="../Skins/Default/Stylesheets/Images/transparent.gif" class="invisible-label" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="footer" xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd"><span class="DefaultProduct" xmlns="">Sentinel LDK</span>&#160;&#160;<span class="DefaultProjectTitle" xmlns="">Run-time Environment Installer</span> <span class="DefaultRelease" xmlns="">8.15</span> for <span class="DefaultPlatform" xmlns=""> Linux</span> <br xmlns="http://www.madcapsoftware.com/Schemas/MadCap.xsd" /><span class="DefaultDateLong" xmlns="">27 December 2020</span>&#160;&#160;Copyright&#160;<span class="DefaultCopyright" xmlns="">2020</span>&#160;<span class="DefaultCompanyNameLong" xmlns="">Thales Group</span>.&#160;All rights reserved. (<MadCap:conditionalText data-mc-conditions="Default.Linux_126_all,Default.Linux_153_RH_SUSE,Default.Linux_154_Ubuntu"><span class="DefaultRevision_Linux" xmlns="">2012-3</span></MadCap:conditionalText>: <span class="VariablesDocID" xmlns="">154</span>)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div><a data-close="true"></a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

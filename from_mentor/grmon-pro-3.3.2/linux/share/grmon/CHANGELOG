@@ -1,0 +1,706 @@
+---------------- v3.3.2 -------------------------------------------
+
+Support December 2022 NOEL-V example bitstreams
+
+Support ncurses 5 or 6
+
+GUI requires Java 11 64-bit runtime
+
+---------------- v3.3.1 -------------------------------------------
+
+Remove surplus newlines in the log
+
+Fixed a a deadlock when GDB service is started and "go" command is called
+
+Fixed a deadlock when using DTB
+
+Fix a bug related to the GRLIB-TN-0020 errate workaround implementation
+
+Added "::grmon::settings::nb" variable.
+
+Added "::grmon::settings::nswb" variable.
+
+Added command "gdb interrupt" to signal TCL scripts running in the GDB shell
+
+---------------- v3.3.0 -------------------------------------------
+
+Breakpoints on lines in source files
+
+Editor in GUI to show source files
+
+Source stepping in GUI with step into, step over and step out
+
+Variable lookup in GUI with variables view, expressions view
+and hovering over symbol
+
+Outline view and expressions view in GUI
+
+Support commandline option -u in GUI
+
+Support commandline option -c/-e in GUI
+
+---------------- v3.2.18 -------------------------------------------
+
+Fixed a crash on Windows during shutdown when using FlashPro debug link
+
+Removed GR712RC hybrid mode detection. Added command line option to
+enable this mode instead.
+
+Improved load hook, added data
+
+Add support for SPI 3DFS256M04VS2801 memories
+
+Improved Noel-V support
+
+Fixed bug related to command "forward start" and Ctrl-C
+
+MCTRL/SDCTRL always write CAS to memory when updating register value
+
+Support for errata described in GRLIB-TN-0020
+
+Fixed commandline option -ucli  / command forward start not responding to
+Ctrl-C properly.
+
+---------------- v3.2.17 -------------------------------------------
+
+Command symbols clear removes symbols from all cpus by defualt
+
+Fixed crash when connecting to GR740
+
+---------------- v3.2.16 -------------------------------------------
+
+Fixed an issue with command float for Risc-V
+
+Support GRLIB 2022.2 example bitstreams
+
+Support GRSPFI core
+
+GUI: Fixed CPU register view update
+
+Fixed watchpoint masks on Risc-V
+
+Support run/go/cont instruction count argument on Risc-V
+
+Support new NOEL-V L1 cache CSR registers
+
+Command pci: Fixed bug when system is PCI host
+
+Fixed breakpoints on virtual addresses on Risc-V in Windows
+
+Command mem/wmem/verify:  Added -delay <ms> option
+
+Fixed bugs related to hooks and -ucli flag. Broken since v3.2.15
+
+---------------- v3.2.15 -------------------------------------------
+
+Added support for GRWATCHDOG core
+
+Added support for L2Cache Lite (L2CL) core
+
+Fixed thread support for VxWorks 7
+
+Improved support for GR716B
+
+Support February 2022 examole bitreams in evaluation version
+
+Fixed bug related to grclkgate that could cause a crash
+
+Command bp prints 64-bit address for Noel-V
+
+Disable EDCL duplex detection while doing MDIO accesses
+
+GUI: CPU view updates after reset
+
+GUI: Connection dialog remembers settings properly
+
+Support for AHBSTAT core version 1
+
+Support multiple -c/-e startup options
+
+Detect if GDB has disconnected properly
+
+Support for Lattice Crosslink-NX FPGA
+
+Support execution hooks in local shell as well, improved
+compatibility with GRMON2 scripts.
+
+---------------- v3.2.14 -------------------------------------------
+
+Thread Support added for RTEMS-4.8 edisoft version
+(FPU enabled kernel)
+
+Support command "forward start" in detached mode.
+
+L2 Cache split response is now enabled by default
+
+Fix crash with suspended tasks in GUI
+
+Improved support for themes in GUI
+
+Fixed a bug related to LEON5 FPU
+
+Fixed a bug related to the size of DTB.
+
+Support Microchip PolarFire A3P600L FPGA
+
+GRMON should now detect if GDB socket is closed unexpectedly
+
+Fixed a bug related to using different commands, with the
+same options, in scripts.
+For ex. "load -binary ...; verify -binary ..."
+
+Support for SPI flash S25FL512S
+
+Fixed a bug with duplicatied tasks in GUI
+
+SUpport error injection in GR716 IU registers
+
+Added option -binary to  commands "spi flash dump" and
+"spim flash dump"
+
+Automatically reconnect EDCL when changing IP-address using the
+edcl command
+
+Optimizations NOEL-V support
+
+Fixed a crash in commands spi, spim, l3stat, l4stat and i2c
+
+---------------- v3.2.13 -------------------------------------------
+
+Fixed a bug in flash status command
+
+The option -edac now enables the EDAC in GR716.
+
+Added support for LEON5 instruction trace filters
+
+Added return valeus to i/dcache set commands
+
+Added support for more MicroSemi PolarFire devices
+
+Fixed bug related to spi/spim flash select command
+
+Improved RISC-V H extension support
+
+---------------- v3.2.12 -------------------------------------------
+
+Fixed LEON2 support, broken since 3.2.9
+
+Added GR740 temperature sensor registers
+
+Fixed a connection drop when flushing the L2 cache.
+
+Increased JTAG retry timeout to 3 seconds
+
+Fixed a bug that was limiting GRMON to max 4 CPUs
+
+Improved 64-bit support in the GUI disassembly view
+
+GUI will now update I/O regs when a core is enabled in the clockgate core.
+
+Added -guiport to select port number for GUI
+
+Improved error messages of the TCL API
+
+Fixed a bug in the GDB server when connecting to systems without
+any cpus.
+
+Fixed a bug related to TPS support
+
+Fixed support for RISC-V H extension registers
+
+Improved support to suppress information that is added to the log.
+
+---------------- v3.2.11 -------------------------------------------
+
+Fixed a bug introduced in 3.2.10 related to writing to ASI.
+
+Commands attach/detach now supports NOEL-V.
+
+---------------- v3.2.10 -------------------------------------------
+
+Fixed bug in GRMON when accessing cachetags or MMU registers
+
+Now command, "info status" to show parsed device information
+
+Fixed issue for NOEL-V without F/D extension
+
+Fixed GDB automatic thread switch, broken in 3.2.9
+
+Improved support for RISC-V systems without S-MODE
+
+---------------- v3.2.9 -------------------------------------------
+
+Support latest LEON5 changes.
+
+Support latest NOEL-V RV64 changes.
+
+Support NOEL-V RV32
+
+Fix missing LEON registers in registers view
+
+Command "info reg" print floating point values with scientific notation
+
+GUI stability improvements
+
+Add DTB to GUI Launch conf
+
+Added -p to disasembly command to force physical addresses
+
+Added cache configuration register descriptions
+
+Fix copying from CPU view
+
+Added -dsuforce to unlock DSU5
+
+LEON2 support improved
+
+Fix warnings in GUI log
+
+---------------- v3.2.8 -------------------------------------------
+
+Support NOEL-V in the pro version
+
+Restore RISC-V general purpose registers used by the debug module
+
+Updated NOEL-V reset procedure
+
+Support RISC-V floating point registers
+
+RISC-V RV32I support fixes
+
+Updated PLIC register descriptions
+
+Fixed multiple issues with connection parameters in the GUI
+
+Fixed an issue with Ctrl-C when runnig scripts in
+the execution shell.
+
+Added support to automatically load DTB for RISC-V
+
+Updated GR740 rev1 boostrap descriptions
+
+---------------- v3.2.7 -------------------------------------------
+
+Additional GDB fixes, broken since 3.2.0
+
+Fixed an issue related to CPU registers view in GUI
+
+Improved RTEMS 5 thread support (RCC toolchain)
+
+---------------- v3.2.6 -------------------------------------------
+
+Improved performance of TCL scripts.
+
+Improved detection of which watchpoint that has been triggered,
+when watching the second word of store double instruction.
+
+Fixed issue where GRMON could not continue after a watchpoint had
+been triggerd. Broken since 3.2.0
+
+Fixed multiple GDB issues that has been broken since 3.2.0
+
+Fixed so bare-metal threads are available even without any symbols
+loaded. Broken since 3.0.0
+
+Fixed bug in symbols commnad so you don't need to add cpu0 to
+list all symbols.
+
+Fixed positions of interrupt bits in the GRPCI2 status register
+
+Added support for Xilinx Ultrascle+
+xcvu5p,xcvu7p,xcvu9p,xcvu11p,xcvu13p,
+
+---------------- v3.2.5 -------------------------------------------
+
+Fixed endianess issue of I/O registers displayed in the GUI
+
+Improved robustness of parsing SREC files and error messages
+
+Fixed crash when using GDB and extended-remote target
+
+Add support for GRDMAC and GRDMAC2 in the evaluation version
+
+Added command to be able to map virtual addresses
+before MMU table has been setup for soft breakpoints
+
+Added MDIO commands to show state and registers
+
+---------------- v3.2.4 -------------------------------------------
+
+Fixed -jtagcfg, broken since 3.2.0
+
+Improved LEON5 support and bug fixes
+
+Fixed a bug in the command "ahb status" where break
+displayed the wrong value.
+
+Improved NOEL-V multicore support
+
+GUI: Added optimized view of NOEL-V registers
+
+Added flag to load command to load data sections only
+
+Fixed a bug in the MIG driver where GRMON detecte twice the memory
+
+Added support for NOEL-V hardware breakpoints and watchpoints
+
+---------------- v3.2.3 -------------------------------------------
+
+Fixed GUI backtraces of threads. Broken since version 3.2.0.
+
+GUI: Added breakpoint support
+
+If it failes to detect RTEMS version, Fallback to bare-metall
+threads instead of RTEMS version 4.6
+
+Support SSH to Windows if remote support is enabled in the license
+
+Fixed LEON5 instruction trace
+
+Various LEON5 support improvements
+
+Added support for NOEL-V in the d/icache commands
+
+---------------- v3.2.2 -------------------------------------------
+
+Fixed an issue with wash command when the stack pointer is
+greater or equal to 0x80000000
+
+Fixed GUI memory view. Broken since version 3.2.0.
+
+Updated GR740 memory parameters to cover 50-100MHz MEMCLK.
+Use -sdfreq to improve performance.
+
+TCL 8.6.10
+
+Fixed segmentation fault caused the Xiling MIG driver.
+
+Added support for -nswb for RISC-V
+
+Fixed loading data to 8-bit flash using JTAG. Broken since
+version 3.0.11.
+
+Added MMU support for RISC-V
+
+Merge multicycle entries into into one entry of the TCL
+return values.
+
+Added support to reset L2 Cache
+
+Added support for the -cas in the FTSDCTRL/SDCTRL driver
+
+Addad support for -edac in the FTSDCTRL driver
+
+Added -sdfreq flag
+
+---------------- v3.2.1 -------------------------------------------
+
+Fixed -r option of the disassemble command
+
+IRQAMP register description improvements for GR740 Rev 1
+
+Removed command mem option -x/-hex. Added option -dec
+
+Fixed issues with 64/32-bit signed/unsigned values
+			in the TCL result of many commands
+
+Various NOEL-V improvements
+
+Fixed and EDCL issue where connection could be lost
+
+TCL result from commands inst and hist now concatenates
+			multi-cylce entries into one.
+
+Added TPS service for Windriver Workbench
+
+---------------- v3.2.0 -------------------------------------------
+
+Added support for NOEL-V
+
+Added support for LEON5
+
+---------------- v3.1.3 -------------------------------------------
+
+Added support for GRDMAC2
+
+Fixed crash related to Xilinx MIG
+
+Imporved RTEMS 5 thread support
+
+Fixed crashed in I2C command
+
+Fixed some issues when shutting down GRMON
+
+Fixed bug for L3STAT/L4STAT related to events 0x40-0x80
+
+---------------- v3.1.2 -------------------------------------------
+
+Added commands gdb reset/postload for Eclipse integration
+
+Added support for N25Q128A SPI flash memory
+
+Added register descriptions for SVGACTRL
+
+Added register descriptions for LOGAN
+
+Added register descriptions for I2C2AHB
+
+Support to be able to load binary files without loosing
+previously loaded symbols
+
+Command profile is working properly again
+
+Added support communicate to I2C devices via a FTDI device
+
+Fixed so command go does not initialize TBR register
+
+Added register descriptions for I2CMST
+
+Added register descriptions for L3STAT
+
+Added register descriptions for L4STAT
+
+Added register descriptions for GR1553B
+
+Support more then 2 banks in the SDCTRL driver
+
+Increased performance when using the UART debuglink via an
+FTDI usb-to-serial adapter on windows
+
+---------------- v3.1.1 -------------------------------------------
+
+Added timestamps to log
+
+GUI now supports Java 11 and Java 12
+
+Increased performance when using the UART debuglink via an FTDI usb-to-serial adapter
+
+Fxed a bug in the GUI connection dialog where all options didn't show up
+
+Added register descriptions for GRPWM
+
+Added support for SPI flash Cypress S25FL128L
+
+Fixed default FTDI backend for the GUI
+
+FlashPro can now be selected from the GUI (Win32 only)
+
+Display the time-tag register of the DSU
+
+Allow Xilinx SGMII in the evaluation version
+
+Fixed a bug in the EDCL where the communication could cause a deadlock
+
+---------------- v3.1.0 -------------------------------------------
+
+Updated to TCL 8.6
+
+Added support for GDB 8.2
+
+---------------- v3.0.17 -------------------------------------------
+
+Improved GR716 support
+
+Added missing register definitions for AT697 PCI
+
+It is now possible to read the extended PCI configuration registers
+from AT697
+
+PCI slot numbering now start from AD16 for AT697
+
+Fixed a bug so it's possible to set more then one hardwar breakpoint
+on LEON2 systems
+
+Improved GR716 support
+
+Support MIG controllers in the evaluation version
+
+Fixed bug in verify command for trailing bytes
+
+Improved GR716 support
+
+---------------- v3.0.16 -------------------------------------------
+
+Improved a lot of register descriptions for GR716
+
+Fixed a bug related to license keys
+
+Improved EDCL to reduce the number of unnecessry retries.
+
+Added sector erase for spim flash
+
+Added -erase to flash load command to automatically erase before load.
+
+Fix bug that prevented block erasing on 2x16 configuration
+
+Fixed a printing error ins verify command introduced in 3.0.13
+
+Improved translation of virtaul addresses when having a bad PTE
+
+---------------- v3.0.15 -------------------------------------------
+
+Thread support working properly again, broken since 3.0.8
+
+Fixed a bug when calculating and programming EDAC checkbits for 8-bit flash.
+
+Disable GR716 memory protection units at startup, unless -ni
+
+Improved GR716 support
+
+Evaluation version supports the GR716-MINI board.
+
+Improved dissassembly output
+
+---------------- v3.0.14 -------------------------------------------
+
+Command verify now can handle unaligned data in binary files
+
+FlashPro 3/3x/4 support working again, (not working since 3.0.10)i
+
+Allow spaces in path-named when automatically loading TCL scripts
+during startup
+
+Added MicroSemi PolarFire DDR support
+
+
+---------------- v3.0.13 -------------------------------------------
+
+Improved GR716 support
+
+Added support for GRLIB GRCANFD - CAN-FD DMA Controller IP
+
+Improved disassebly output
+
+Turn off GR1553B DMA at when GRMON reset is issued
+
+IRQMP: Corrected number of map registers
+
+---------------- v3.0.12 -------------------------------------------
+
+Restored download speed for JTAG connections (which was
+hampered in 3.0.11).
+
+---------------- v3.0.11 -------------------------------------------
+
+Command memb/memh now only makes byte/half-word accesses,
+if supported by the debug link.
+Previously they only affected the printing of the data.
+
+---------------- v3.0.10 -------------------------------------------
+
+Added support 4x8-bit (32-bit) Flash
+
+Added support for map registers up to 64 singals for IRQAMP
+
+Added 32-bit and 8-bit EDAC programming of FLASH devices
+
+Added support for GR716 ASIC
+
+Print GR740 revision
+
+SPI Flash: Added support for Cypress S79FL256S. 16 MiB can be
+accessed via SPICTRL.
+
+---------------- v3.0.9 -------------------------------------------
+
+GDB server bug fixes
+
+---------------- v3.0.8 -------------------------------------------
+
+The command spim tx now supports multiple bytes
+
+Improved SPI flash support for N25Q00AA
+
+Added support to select JTAG cable by serial number
+
+GUI: Improved thread support for AMP
+
+User defined register descriptions in a TCL driver can now be
+accessed from TCL variables properly
+
+Fixed a bug in cmd bp that was introduced in 3.0.7
+
+---------------- v3.0.7 -------------------------------------------
+
+GUI: Various bug fixes and improvements
+
+Improved VxWorks 6.9 SMP and VxWorks 7 thread support
+
+Improved GR740 support, updated router and L2 cache registers
+
+GUI: Added support to cancel connection
+
+GUI: Added support to cancel a image launch
+
+---------------- v3.0.6 -------------------------------------------
+
+Add support for LEON-RTG4-EX 2018-05-08 bitstreams
+
+SPI Flash: Corrected erase command for Micron N25Q00AA
+
+---------------- v3.0.5 -------------------------------------------
+
+GUI: Various bug fixes and improvements
+
+GUI: Added dropdown list of last launch targets
+
+GUI: Cancel progress bars now working
+
+Turn off all timers execpt the first when reset is called.
+
+GUI: Fixed a deadlock int terminal
+
+Added support for GR740 revision 1
+
+---------------- v3.0.4 -------------------------------------------
+
+GUI: Various bug fixes and improvements
+
+GUI: Added a message view
+
+GUI: Removed the grey area that was left after moving the
+disasembly view.
+
+Added flag -sddcs to enable GR740 double chipselect mode
+
+Improved LOGAN support for multiple instanses
+
+SRCTRL driver now listens to the flag -romwidth.
+
+Distribution now includes grmon-gui.exe on Windows
+
+Fixed a bug when writing subwords or unaligned words
+
+Added about command
+
+GRMON will now terminate if GUI failes to start
+
+Fixed a crash when disassembling
+
+---------------- v3.0.3 -------------------------------------------
+
+Re-enabled commandline history
+
+Fixed startup crash in Windows
+
+Various minor GUI improvments
+
+Added support for ASR 22 and ASR 23 registers
+
+Fixed multi-line launch scripts
+
+Fixed a GUI launch related crash
+
+Freeze cpu timers when entering debug mode on GR740
+
+---------------- v3.0.2 -------------------------------------------
+
+Various GUI improvments
+
+Fixed execution hooks
+
+---------------- v3.0.1 -------------------------------------------
+
+Speed optimizations
+
+Added error messages

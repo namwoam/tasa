@@ -1,0 +1,412 @@
+/* MadCap Table Style: */
+
+/*<meta Version="7" />*/
+
+mcTableStyle
+{
+	name: NoBorderTable;
+	border-collapse: collapse;
+	border-left-style: solid;
+	border-left-width: 0px;
+	border-right-style: solid;
+	border-right-width: 0px;
+	border-top-style: solid;
+	border-top-width: 0px;
+	border-bottom-style: solid;
+	border-bottom-width: 0px;
+	max-id: 1;
+	cell-padding-top: 4px;
+	cell-padding-left: 0px;
+}
+
+mcTableColumnStyle
+{
+	span: 1;
+	separator-style: solid;
+	separator-width: 0px;
+	separator-color: #000000;
+	name: Column1;
+	id: 0;
+}
+
+mcTableBodyStyle
+{
+	span: 1;
+	font-weight: normal;
+	separator-style: solid;
+	separator-width: 0px;
+	separator-color: #000000;
+	name: Body1;
+	id: 1;
+}
+
+
+/* Cell Styles: */
+ 
+.TableStyle-NoBorderTable
+{
+	border-collapse: collapse;
+	border-left-style: solid;
+	border-left-width: 0px;
+	border-right-style: solid;
+	border-right-width: 0px;
+	border-top-style: solid;
+	border-top-width: 0px;
+	border-bottom-style: solid;
+	border-bottom-width: 0px;
+	border-spacing: 0px 0px;
+}
+
+.TableStyle-NoBorderTable .Column-Column1
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadI-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .HeadI-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadE-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .HeadE-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadF-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .HeadF-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadH-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .HeadH-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadD-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .HeadD-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadC-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .HeadC-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadB-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .HeadB-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadA-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .HeadA-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .HeadG-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .HeadG-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootI-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .FootI-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootE-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .FootE-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootF-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .FootF-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootH-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .FootH-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootD-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .FootD-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootC-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .FootC-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootB-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .FootB-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootA-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .FootA-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .FootG-Column1-
+{
+	padding-left: 0px;
+	padding-top: 4px;
+}
+
+.TableStyle-NoBorderTable .FootG-Column1- p
+{
+	
+}
+
+.TableStyle-NoBorderTable .Body-Body1
+{
+	
+}
+
+.TableStyle-NoBorderTable .BodyI-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyI-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyE-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+	border-bottom-width: 0px;
+	border-bottom-color: #000000;
+	border-bottom-style: solid;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .BodyE-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyF-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+	border-bottom-width: 0px;
+	border-bottom-color: #000000;
+	border-bottom-style: solid;
+}
+
+.TableStyle-NoBorderTable .BodyF-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyH-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .BodyH-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyD-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+	border-bottom-width: 0px;
+	border-bottom-color: #000000;
+	border-bottom-style: solid;
+}
+
+.TableStyle-NoBorderTable .BodyD-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyC-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyC-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyB-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+	border-right-width: 0px;
+	border-right-color: #000000;
+	border-right-style: solid;
+}
+
+.TableStyle-NoBorderTable .BodyB-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyA-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyA-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyG-Column1-Body1
+{
+	padding-left: 0px;
+	padding-top: 4px;
+	font-weight: normal;
+}
+
+.TableStyle-NoBorderTable .BodyG-Column1-Body1 p
+{
+	font-weight: normal;
+}
+
+

@@ -1,0 +1,1 @@
+define({r:0.5,st:'Stem',n:1,t:[0],m:[],u:['../Enhancements_fixes_common.html'],s:['$'],p:[['$',4],['libraries',1]]});

@@ -1,0 +1,182 @@
+/*<meta />*/
+
+@media only screen and (max-width: 750px)
+{
+	/* Search Styles */
+
+	.search-bar .search-filter
+	{
+		font-size: 1em;
+	}
+
+	.button.login-button.feedback-required,
+	.button.edit-user-profile-button.feedback-required
+	{
+		display: none;
+	}
+
+	.pulse-frame
+	{
+		display: none;
+	}
+
+	.buttons._Skins_Components_TOOLBAR.mc-component
+	{
+		
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button
+	{
+		background-repeat: no-repeat;
+		background: #555555;
+		background: -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: linear-gradient(#555555, #555555);
+		background-position: center center;
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.collapse-all-button
+	{
+		background: #555555 url('Images/collapse.png') no-repeat center center;
+		background: url('Images/collapse.png') no-repeat center center, -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/collapse.png') no-repeat center center, -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: url('Images/collapse.png') no-repeat center center, -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/collapse.png') no-repeat center center, -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/collapse.png') no-repeat center center, -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/collapse.png') no-repeat center center, linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: url('Skins/Default/Stylesheets/Components/Images/collapse.png') no-repeat center center, linear-gradient(#555555, #555555);
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.current-topic-index-button
+	{
+		background-repeat: no-repeat;
+		background: #555555;
+		background: -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: linear-gradient(#555555, #555555);
+		background-position: center center;
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.expand-all-button
+	{
+		background: #555555 url('Images/expand.png') no-repeat center center;
+		background: url('Images/expand.png') no-repeat center center, -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/expand.png') no-repeat center center, -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: url('Images/expand.png') no-repeat center center, -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/expand.png') no-repeat center center, -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/expand.png') no-repeat center center, -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/expand.png') no-repeat center center, linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: url('Skins/Default/Stylesheets/Components/Images/expand.png') no-repeat center center, linear-gradient(#555555, #555555);
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.next-topic-button
+	{
+		background: #555555 url('Images/navigate-next_white.png') no-repeat center center;
+		background: url('Images/navigate-next_white.png') no-repeat center center, -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/navigate-next_white.png') no-repeat center center, -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: url('Images/navigate-next_white.png') no-repeat center center, -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/navigate-next_white.png') no-repeat center center, -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/navigate-next_white.png') no-repeat center center, -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/navigate-next_white.png') no-repeat center center, linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: url('Skins/Default/Stylesheets/Components/Images/navigate-next_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.previous-topic-button
+	{
+		background: #555555 url('Images/navigate-previous_white.png') no-repeat center center;
+		background: url('Images/navigate-previous_white.png') no-repeat center center, -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/navigate-previous_white.png') no-repeat center center, -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: url('Images/navigate-previous_white.png') no-repeat center center, -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/navigate-previous_white.png') no-repeat center center, -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/navigate-previous_white.png') no-repeat center center, -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/navigate-previous_white.png') no-repeat center center, linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: url('Skins/Default/Stylesheets/Components/Images/navigate-previous_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.print-button
+	{
+		background: #555555 url('Images/printer_white.png') no-repeat center center;
+		background: url('Images/printer_white.png') no-repeat center center, -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/printer_white.png') no-repeat center center, -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: url('Images/printer_white.png') no-repeat center center, -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/printer_white.png') no-repeat center center, -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/printer_white.png') no-repeat center center, -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/printer_white.png') no-repeat center center, linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: url('Skins/Default/Stylesheets/Components/Images/printer_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.remove-highlight-button
+	{
+		background: #555555 url('Images/highlight_white.png') no-repeat center center;
+		background: url('Images/highlight_white.png') no-repeat center center, -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/highlight_white.png') no-repeat center center, -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: url('Images/highlight_white.png') no-repeat center center, -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/highlight_white.png') no-repeat center center, -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/highlight_white.png') no-repeat center center, -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/highlight_white.png') no-repeat center center, linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: url('Skins/Default/Stylesheets/Components/Images/highlight_white.png') no-repeat center center, linear-gradient(#555555, #555555);
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.select-language-button
+	{
+		background: #555555 url('Images/select-language.png') no-repeat center center;
+		background: url('Images/select-language.png') no-repeat center center, -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/select-language.png') no-repeat center center, -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: url('Images/select-language.png') no-repeat center center, -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/select-language.png') no-repeat center center, -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/select-language.png') no-repeat center center, -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/select-language.png') no-repeat center center, linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: url('Skins/Default/Stylesheets/Components/Images/select-language.png') no-repeat center center, linear-gradient(#555555, #555555);
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button.select-skin-button
+	{
+		background: #555555 url('Images/select-skin.png') no-repeat center center;
+		background: url('Images/select-skin.png') no-repeat center center, -moz-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/select-skin.png') no-repeat center center, -webkit-gradient(linear, left top, left bottom, color-stop(0%,#555555), color-stop(100%,#555555));
+		background: url('Images/select-skin.png') no-repeat center center, -webkit-linear-gradient(top, #555555 0%, #555555 100%);
+		background: url('Images/select-skin.png') no-repeat center center, -o-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/select-skin.png') no-repeat center center, -ms-linear-gradient(top, #555555 0%,#555555 100%);
+		background: url('Images/select-skin.png') no-repeat center center, linear-gradient(top, #555555 0%,#555555 100%);
+		-pie-background: url('Skins/Default/Stylesheets/Components/Images/select-skin.png') no-repeat center center, linear-gradient(#555555, #555555);
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .toolbar-button-drop-down
+	{
+		background-color: #FFFFFF;
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .toolbar-button-drop-down.select-language-drop-down
+	{
+		background-color: #FFFFFF;
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .toolbar-button-drop-down.select-language-drop-down ul li:hover
+	{
+		background-color: #E5EFF7;
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .toolbar-button-drop-down.select-skin-drop-down
+	{
+		background-color: #FFFFFF;
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .toolbar-button-drop-down.select-skin-drop-down ul li:hover
+	{
+		background-color: #E5EFF7;
+	}
+
+	._Skins_Components_TOOLBAR.mc-component .button-separator
+	{
+		
+	}
+}
+
