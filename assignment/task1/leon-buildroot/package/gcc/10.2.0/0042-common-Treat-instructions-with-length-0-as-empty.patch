@@ -1,0 +1,25 @@
+From fb294e85ebe476291843a4daef98abf100982eb7 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Wed, 19 Oct 2022 10:52:03 +0200
+Subject: [PATCH 42/50] common: Treat instructions with length 0 as empty
+
+This is to handle the membar_empty instruction when compiling for UT699.
+---
+ gcc/config/sparc/sparc.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/config/sparc/sparc.c b/gcc/config/sparc/sparc.c
+index 0394e29ceac..537340539db 100644
+--- a/gcc/config/sparc/sparc.c
++++ b/gcc/config/sparc/sparc.c
+@@ -1122,6 +1122,7 @@ next_active_non_empty_insn (rtx_insn *insn)
+   while (insn
+ 	 && ((GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE)
+ 	     || (GET_CODE(PATTERN(insn)) == ASM_INPUT)
++	     || (get_attr_length (insn) == 0)
+ 	     || (USEFUL_INSN_P (insn)
+ 		 && (asm_noperands (PATTERN (insn))>=0)
+ 		 && !strcmp (decode_asm_operands (PATTERN (insn),
+-- 
+2.34.1
+

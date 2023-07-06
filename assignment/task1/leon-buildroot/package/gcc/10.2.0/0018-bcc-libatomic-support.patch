@@ -1,0 +1,91 @@
+From a89941d1b6bab6b83345cf7047bd52366fa48319 Mon Sep 17 00:00:00 2001
+From: Martin Aberg <maberg@gaisler.com>
+Date: Thu, 30 Aug 2018 19:04:26 +0200
+Subject: [PATCH 18/50] bcc: libatomic support
+
+---
+ gcc/config/sparc/bcc.h             |  1 +
+ libatomic/config/bcc/host-config.h | 15 +++++++++++++++
+ libatomic/config/bcc/lock.c        | 20 ++++++++++++++++++++
+ libatomic/configure.tgt            |  4 ++++
+ 4 files changed, 40 insertions(+)
+ create mode 100644 libatomic/config/bcc/host-config.h
+ create mode 100644 libatomic/config/bcc/lock.c
+
+diff --git a/gcc/config/sparc/bcc.h b/gcc/config/sparc/bcc.h
+index f12ad851c50..fbc2f89e107 100644
+--- a/gcc/config/sparc/bcc.h
++++ b/gcc/config/sparc/bcc.h
+@@ -48,6 +48,7 @@ crt0.S.o%s crti.o%s crtbegin.o%s \
+ " \
+ --start-group \
+ -lbcc \
++-latomic \
+ %{!qnano: -lc} \
+ %{qnano: -lc_nano} \
+ --end-group \
+diff --git a/libatomic/config/bcc/host-config.h b/libatomic/config/bcc/host-config.h
+new file mode 100644
+index 00000000000..a59d89e7714
+--- /dev/null
++++ b/libatomic/config/bcc/host-config.h
+@@ -0,0 +1,15 @@
++int bcc_set_pil(int newpil);
++
++static inline UWORD protect_start (void *ptr)
++{
++        (void) sizeof(ptr);
++        return bcc_set_pil(15);
++}
++
++static inline void protect_end (void *ptr, UWORD plevel)
++{
++        bcc_set_pil(plevel);
++}
++
++#include_next <host-config.h>
++
+diff --git a/libatomic/config/bcc/lock.c b/libatomic/config/bcc/lock.c
+new file mode 100644
+index 00000000000..b71327b1ae7
+--- /dev/null
++++ b/libatomic/config/bcc/lock.c
+@@ -0,0 +1,20 @@
++#include "libatomic_i.h"
++
++static int __bcc_libatomic_lock;
++
++void
++libat_lock_n (void *ptr, size_t n)
++{
++        (void) sizeof(ptr);
++        (void) sizeof(n);
++        __bcc_libatomic_lock = protect_start(NULL);
++}
++
++void
++libat_unlock_n (void *ptr, size_t n)
++{
++        (void) sizeof(ptr);
++        (void) sizeof(n);
++        protect_end(NULL, __bcc_libatomic_lock);
++}
++
+diff --git a/libatomic/configure.tgt b/libatomic/configure.tgt
+index c6c51e60206..fcac34d7f9e 100644
+--- a/libatomic/configure.tgt
++++ b/libatomic/configure.tgt
+@@ -151,6 +151,10 @@ case "${target}" in
+ 	config_path="rtems"
+ 	;;
+ 
++  sparc-gaisler-elf)
++	config_path="bcc"
++	;;
++
+   *-*-elf*)
+ 	# ??? No target OS.  We could be targeting bare-metal kernel-mode,
+ 	# or user-mode for some custom OS.  If the target supports TAS,
+-- 
+2.34.1
+

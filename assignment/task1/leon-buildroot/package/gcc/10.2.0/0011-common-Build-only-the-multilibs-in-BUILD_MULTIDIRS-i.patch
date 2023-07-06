@@ -1,0 +1,26 @@
+From 12ffb9f77081294ba35dbe55c88db08add3ab8aa Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Mon, 11 Dec 2017 15:55:35 +0100
+Subject: [PATCH 11/50] common: Build only the multilibs in BUILD_MULTIDIRS if
+ it has been defined
+
+---
+ config-ml.in | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/config-ml.in b/config-ml.in
+index 5720d38d23f..1aa7d7b8a85 100644
+--- a/config-ml.in
++++ b/config-ml.in
+@@ -231,6 +231,8 @@ done
+ # Target libraries are configured for the host they run on, so we check
+ # $host here, not $target.
+ 
++multidirs=${BUILD_MULTIDIRS:-$multidirs}
++
+ case "${host}" in
+ arm-*-*)
+ 	if [ x"$enable_fpu" = xno ]
+-- 
+2.34.1
+

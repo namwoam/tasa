@@ -1,0 +1,23 @@
+From 38888461b87747470776c149d622b8cc1b0d6a5f Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Fri, 9 Oct 2020 16:01:45 +0200
+Subject: [PATCH 10/14] nptl: Increase timeout for tst-stack4
+
+---
+ nptl/tst-stack4.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/nptl/tst-stack4.c b/nptl/tst-stack4.c
+index 3030f75027..23a47131eb 100644
+--- a/nptl/tst-stack4.c
++++ b/nptl/tst-stack4.c
+@@ -155,5 +155,5 @@ do_test (void)
+ }
+ 
+ #define TEST_FUNCTION do_test ()
+-#define TIMEOUT 100
++#define TIMEOUT 1000
+ #include "../test-skeleton.c"
+-- 
+2.34.1
+

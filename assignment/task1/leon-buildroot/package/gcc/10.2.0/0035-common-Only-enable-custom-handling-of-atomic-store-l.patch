@@ -1,0 +1,35 @@
+From 5e355de51336c7da3368781ec491028c864ad1e1 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Tue, 27 Oct 2020 12:25:53 +0100
+Subject: [PATCH 35/50] common: Only enable custom handling of atomic
+ store/load for V9
+
+---
+ gcc/config/sparc/sync.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/config/sparc/sync.md b/gcc/config/sparc/sync.md
+index 096372c0978..506e90ba2ce 100644
+--- a/gcc/config/sparc/sync.md
++++ b/gcc/config/sparc/sync.md
+@@ -117,7 +117,7 @@
+   [(match_operand:I 0 "register_operand" "")
+    (match_operand:I 1 "memory_operand" "")
+    (match_operand:SI 2 "const_int_operand" "")]
+-  ""
++  "TARGET_V9"
+ {
+   enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+ 
+@@ -144,7 +144,7 @@
+   [(match_operand:I 0 "memory_operand" "")
+    (match_operand:I 1 "register_operand" "")
+    (match_operand:SI 2 "const_int_operand" "")]
+-  ""
++  "TARGET_V9"
+ {
+   enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+ 
+-- 
+2.34.1
+

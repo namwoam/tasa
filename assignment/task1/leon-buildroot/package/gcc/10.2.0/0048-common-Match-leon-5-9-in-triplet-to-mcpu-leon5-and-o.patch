@@ -1,0 +1,45 @@
+From 94c76c84eef37452a7b962280b7214662da03ead Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 4 Jan 2023 14:55:47 +0100
+Subject: [PATCH 48/50] common: Match leon[5-9] in triplet to mcpu=leon5 and/or
+ mtune=leon5
+
+---
+ gcc/config.gcc | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/config.gcc b/gcc/config.gcc
+index f850f129195..5c269184883 100644
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -3908,9 +3908,12 @@ if test x$with_cpu = x ; then
+ 	*-leon-*)
+ 	  with_cpu=leon
+ 	  ;;
+-	*-leon[3-9]*)
++	*-leon[3-4]*)
+ 	  with_cpu=leon3
+ 	  ;;
++	*-leon[5-9]*)
++	  with_cpu=leon5
++	  ;;
+ 	*-leon[3-9]v7*)
+ 	  with_cpu=leon3v7
+ 	  ;;
+@@ -5299,9 +5302,12 @@ case ${target} in
+ 		      *-leon-*)
+ 			  with_tune=leon
+ 			  ;;
+-		      *-leon[3-9]*)
++		      *-leon[3-4]*)
+ 			  with_tune=leon3
+ 			  ;;
++		      *-leon[5-9]*)
++			  with_tune=leon5
++			  ;;
+ 		      esac
+ 		fi
+ 
+-- 
+2.34.1
+

@@ -1,0 +1,66 @@
+From 69aa9ee13c72a284a4b377f978566e317677be94 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Mon, 11 Sep 2017 14:31:54 +0200
+Subject: [PATCH 22/50] linux: Set up v8, leon3, and mfix-ut700 as multilibs
+
+v8 is the default for sparc-*-linux. MULTILIB_OSDIRNAMES needed to
+generate a sysroot suffer per multilib to pick to the correct sysroot
+folder for glibc files. Used by buildroot.
+---
+ gcc/config.gcc           | 17 ++++++-----------
+ gcc/config/sparc/t-linux | 10 ++++++++++
+ 2 files changed, 16 insertions(+), 11 deletions(-)
+
+diff --git a/gcc/config.gcc b/gcc/config.gcc
+index ddec8d3319e..0e73df961a9 100644
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -3307,23 +3307,18 @@ sparc-*-rtems*)
+ sparc-*-linux*)
+ 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/tso.h"
+ 	extra_options="${extra_options} sparc/long-double-switch.opt"
+-	case ${target} in
+-	    *-leon-*)
+-		tmake_file="${tmake_file} sparc/t-sparc sparc/t-leon"
+-		;;
+-	    *-leon[3-9]*)
+-		tmake_file="${tmake_file} sparc/t-sparc sparc/t-leon3"
+-		;;
+-	    *)
+-		tmake_file="${tmake_file} sparc/t-sparc"
+-		;;
+-	esac
++	tmake_file="${tmake_file} sparc/t-sparc"
+ 	if test x$enable_targets = xall; then
+ 		tm_file="sparc/biarch64.h ${tm_file} sparc/linux64.h"
+ 		tmake_file="${tmake_file} sparc/t-linux64"
+ 	else
+ 		tm_file="${tm_file} sparc/linux.h"
++		if test x$with_cpu = x ; then
++			with_cpu=v8
++		fi
+ 		tmake_file="${tmake_file} sparc/t-linux"
++		tm_file="$tm_file ./sysroot-suffix.h"
++		tmake_file="$tmake_file t-sysroot-suffix"
+ 	fi
+ 	;;
+ sparc-*-netbsdelf*)
+diff --git a/gcc/config/sparc/t-linux b/gcc/config/sparc/t-linux
+index bb8fc29e55b..661c6b0a013 100644
+--- a/gcc/config/sparc/t-linux
++++ b/gcc/config/sparc/t-linux
+@@ -1 +1,11 @@
+ MULTIARCH_DIRNAME = $(call if_multiarch,sparc-linux-gnu)
++
++# v8 is implicitly default
++
++MULTILIB_OPTIONS = mcpu=leon3 mfix-ut700
++MULTILIB_DIRNAMES = leon3 mfix-ut700
++MULTILIB_MATCHES =
++
++MULTILIB_REQUIRED =
++MULTILIB_REQUIRED += mcpu=leon3 mfix-ut700
++MULTILIB_OSDIRNAMES = leon3=!leon3 mfix-ut700=!mfix-ut700
+-- 
+2.34.1
+

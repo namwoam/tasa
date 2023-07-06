@@ -1,0 +1,293 @@
+From 0db701605ecfd48e02b48f7d28639a02ae6b8296 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 2 Sep 2020 11:47:33 +0200
+Subject: [PATCH 24/28] sparc32,leon: Add errata fix for the TN-0018 errata
+
+---
+ arch/sparc/Kconfig               |  7 ++++
+ arch/sparc/include/asm/head_32.h | 10 ++++++
+ arch/sparc/include/asm/leon.h    | 59 ++++++++++++++++++++++++++++++++
+ arch/sparc/kernel/entry.S        | 35 +++++++++++++++++--
+ arch/sparc/kernel/head_32.S      |  1 +
+ arch/sparc/kernel/rtrap_32.S     |  5 +++
+ 6 files changed, 115 insertions(+), 2 deletions(-)
+
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index ec793504a630..a2b72b4019c4 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -397,11 +397,18 @@ config SPARC_LEON
+ if SPARC_LEON
+ config SPARC_LEON_FIX_UT700
+ 	bool "UT700 errata fixes"
++	select SPARC_LEON_FIX_TN0018
+ 	default n
+ 	help
+ 	  If you say Y here, errata fixes will be included for UT700 errata.
+ 	  If unsure, say N.
+ 
++config SPARC_LEON_FIX_TN0018
++	bool "Errata fix for the TN-0018 errata"
++	default n
++	help
++	  If you say Y here, errata fixes will be included for the TN-0018 errata.
++
+ config SPARC_LEON_CAS
+ 	bool "Use Compare and Swap"
+ 	default y
+diff --git a/arch/sparc/include/asm/head_32.h b/arch/sparc/include/asm/head_32.h
+index d2809c859d0c..f6832d36d7ae 100644
+--- a/arch/sparc/include/asm/head_32.h
++++ b/arch/sparc/include/asm/head_32.h
+@@ -21,8 +21,13 @@
+         rd %psr, %l0; mov num, %l7; b bad_trap_handler; rd %wim, %l3;
+ 
+ /* This is for traps when we want just skip the instruction which caused it */
++#ifdef CONFIG_SPARC_LEON_FIX_TN0018
++#define SKIP_TRAP(type, name) \
++	TRAP_ENTRY(type, skip_trap_tn0018)
++#else
+ #define SKIP_TRAP(type, name) \
+ 	jmpl %l2, %g0; rett %l2 + 4; nop; nop;
++#endif
+ 
+ /* Notice that for the system calls we pull a trick.  We load up a
+  * different pointer to the system call vector table in %l7, but call
+@@ -63,8 +68,13 @@
+         b setcc_trap_handler; rd %psr, %l0; nop; nop;
+ 
+ /* The Get PSR software trap for userland. */
++#ifdef CONFIG_SPARC_LEON_FIX_TN0018
++#define GETPSR_TRAP \
++        b getpsr_trap_handler_tn0018; rd %psr, %i0; nop; nop;
++#else
+ #define GETPSR_TRAP \
+ 	rd %psr, %i0; jmp %l2; rett %l2 + 4; nop;
++#endif
+ 
+ /* This is for hard interrupts from level 1-14, 15 is non-maskable (nmi) and
+  * gets handled with another macro.
+diff --git a/arch/sparc/include/asm/leon.h b/arch/sparc/include/asm/leon.h
+index 143c06f8c7bc..9d5485c6dd1f 100644
+--- a/arch/sparc/include/asm/leon.h
++++ b/arch/sparc/include/asm/leon.h
+@@ -58,6 +58,8 @@
+ #define ASI_LEON3_SYSCTRL_DCFG		0x0c
+ #define ASI_LEON3_SYSCTRL_CFG_SNOOPING (1 << 27)
+ #define ASI_LEON3_SYSCTRL_CFG_SSIZE(c) (1 << ((c >> 20) & 0xf))
++#define ASI_LEON3_SYSCTRL_CTRL_IP_BIT  15
++#define ASI_LEON3_SYSCTRL_CTRL_ICS     (0x3 << 0)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -272,4 +274,61 @@ extern int leon_ipi_irq;
+  * 64Kbytes by the Host controller.
+  */
+ 
++/*
++ * TN-0018 errata fix macros. Needs to be here due to otherwise circular
++ * dependencies between leon.h and asmmacro.h (that otherwise contains errata
++ * fix macros for assembly).
++ */
++#ifdef CONFIG_SPARC_LEON_FIX_TN0018
++/*
++ * l3: (out) original cctrl
++ * l4: (out) original cctrl with ics=0
++ * NOTE: This macro modifies psr.icc.
++ */
++#define TN0018_WAIT_IFLUSH					\
++	1:							\
++        lda     [%g0] ASI_LEON3_SYSCTRL, %l3;			\
++	srl     %l3, ASI_LEON3_SYSCTRL_CTRL_IP_BIT, %l4;	\
++	andcc   %l4, 1, %g0;					\
++	bne     1b;						\
++         andn   %l3, ASI_LEON3_SYSCTRL_CTRL_ICS, %l4;
++
++
++#define TN0018_WRITE_PSR(psrsrc)		\
++        wr      %psrsrc, %psr;			\
++	WRITE_PAUSE
++
++/*
++ * l3: (in) original cctrl
++ * l4: (in) original cctrl with ics=0
++ * NOTE: This macro MUST be immediately followed by the "jmp;rett" pair.
++ */
++#define TN0018_FIX					\
++	/* align the sta for performance */		\
++	.align	0x20;					\
++	/* disable icache */				\
++	sta	%l4, [%g0] ASI_LEON3_SYSCTRL;		\
++	/* delay for sta to have effect on rett */	\
++	nop;						\
++	/* delay + catch rf parity error on l1 */	\
++	or	%l1, %l1, %l1;				\
++	/* delay + catch rf parity error on l2 */	\
++	or	%l2, %l2, %l2;				\
++	/* re-enable icache after rett */		\
++	sta	%l3, [%g0] ASI_LEON3_SYSCTRL;		\
++	/* delay ensures insn after gets cached */	\
++	nop;
++
++#define TN0018_FULL_FIX(psrsrc)			\
++	TN0018_WAIT_IFLUSH			\
++	TN0018_WRITE_PSR(psrsrc)		\
++	TN0018_FIX
++
++#else
++#define TN0018_WAIT_IFLUSH
++#define TN0018_WRITE_PSR(psrsrc)
++#define TN0018_FIX
++#define TN0018_FULL_FIX(psrsrc)
++#endif /* CONFIG_SPARC_LEON_FIX_TN0018 */
++
+ #endif
+diff --git a/arch/sparc/kernel/entry.S b/arch/sparc/kernel/entry.S
+index c0fdf1de10f2..66a11fc3dc30 100644
+--- a/arch/sparc/kernel/entry.S
++++ b/arch/sparc/kernel/entry.S
+@@ -31,6 +31,7 @@
+ 
+ #include <asm/asmmacro.h>
+ #include <asm/export.h>
++#include <asm/leon.h>
+ 
+ #define curptr      g6
+ 
+@@ -159,10 +160,12 @@ floppy_fifo_emptied:
+ 	B2B_SINGLE_NOP
+ 	st	%l6, [%l7 + %lo(pdma_size)]
+ 
++	TN0018_WAIT_IFLUSH
+ 	/* Restore condition codes */
+ 	wr	%l0, 0x0, %psr
+ 	WRITE_PAUSE
+ 
++	TN0018_FIX
+ 	jmp	%l1
+ 	rett	%l2
+ 
+@@ -460,6 +463,7 @@ bad_instruction:
+ 	RESTORE_ALL
+ 
+ 1:	/* unimplemented flush - just skip */
++	TN0018_FULL_FIX(l0)
+ 	jmpl	%l2, %g0
+ 	 rett	%l2 + 4
+ 
+@@ -542,6 +546,7 @@ fpe_trap_handler:
+ 	or	%l5, %lo(fpsave_catch2), %l5
+ 	wr	%l0, 0x0, %psr
+ 	WRITE_PAUSE
++	/* TN0018 note: We know we return to stfsr */
+ 	jmp	%l5
+ 	 rett	%l5 + 4
+ 1:	
+@@ -549,6 +554,7 @@ fpe_trap_handler:
+ 	or	%l5, %lo(fpsave_catch), %l5
+ 	wr	%l0, 0x0, %psr
+ 	WRITE_PAUSE
++	/* TN0018 note: We know we return to stfsr */
+ 	jmp	%l5
+ 	 rett	%l5 + 4
+ 
+@@ -715,6 +721,8 @@ flush_patch_one:
+ getcc_trap_handler:
+ 	srl	%l0, 20, %g1	! give user
+ 	and	%g1, 0xf, %g1	! only ICC bits in %psr
++
++	TN0018_FULL_FIX(l0)
+ 	jmp	%l2		! advance over trap instruction
+ 	rett	%l2 + 0x4	! like this...
+ 
+@@ -730,14 +738,37 @@ setcc_trap_handler:
+ 	set	PSR_ICC, %l5
+ 	andn	%l0, %l5, %l0	! clear ICC bits in %psr
+ 	and	%l4, %l5, %l4	! clear non-ICC bits in user value
+-	or	%l4, %l0, %l4	! or them in... mix mix mix
++	or	%l4, %l0, %l5	! or them in... mix mix mix
++
++	TN0018_WAIT_IFLUSH
+ 
+-	wr	%l4, 0x0, %psr	! set new %psr
++	wr	%l5, 0x0, %psr	! set new %psr
+ 	WRITE_PAUSE		! TI scumbags...
+ 
++	TN0018_FIX
+ 	jmp	%l2		! advance over trap instruction
+ 	rett	%l2 + 0x4	! like this...
+ 
++#ifdef CONFIG_SPARC_LEON_FIX_TN0018
++	/* The getpsr software trap TN0018 version.
++	 * The user wants the psr in %o0, established in %i0 in trap table.
++	 */
++
++	.align	4
++	.globl	getpsr_trap_handler_tn0018
++getpsr_trap_handler_tn0018:
++	TN0018_FULL_FIX(i0)
++	jmp	%l2
++	rett	%l2 + 0x4
++
++	.align	4
++	.globl	skip_trap_tn0018
++skip_trap_tn0018:
++	TN0018_FULL_FIX(l0)
++	jmp	%l2
++	rett	%l2 + 0x4
++#endif
++
+ sun4m_nmi_error:
+ 	/* NMI async memory error handling. */
+ 	sethi	%hi(0x80000000), %l4
+diff --git a/arch/sparc/kernel/head_32.S b/arch/sparc/kernel/head_32.S
+index cdff4d974434..f769e2617f7e 100644
+--- a/arch/sparc/kernel/head_32.S
++++ b/arch/sparc/kernel/head_32.S
+@@ -27,6 +27,7 @@
+ #include <asm/pgtable.h>	/* PGDIR_SHIFT */
+ #include <asm/export.h>
+ #include <asm/asmmacro.h>
++#include <asm/leon.h>
+ 
+ 	.data
+ /* The following are used with the prom_vector node-ops to figure out
+diff --git a/arch/sparc/kernel/rtrap_32.S b/arch/sparc/kernel/rtrap_32.S
+index 8931fe266346..9b6978e5fd67 100644
+--- a/arch/sparc/kernel/rtrap_32.S
++++ b/arch/sparc/kernel/rtrap_32.S
+@@ -14,6 +14,7 @@
+ #include <asm/winmacro.h>
+ #include <asm/asmmacro.h>
+ #include <asm/thread_info.h>
++#include <asm/leon.h>
+ 
+ #define t_psr     l0
+ #define t_pc      l1
+@@ -151,9 +152,11 @@ ret_trap_userwins_ok:
+ 	LOAD_PT_YREG(sp, g1)
+ 	LOAD_PT_GLOBALS(sp)
+ 
++	TN0018_WAIT_IFLUSH
+ 	wr	%t_psr, 0x0, %psr
+ 	WRITE_PAUSE
+ 
++	TN0018_FIX
+ 	jmp	%t_pc
+ 	rett	%t_npc
+ 	
+@@ -207,9 +210,11 @@ rtrap_patch5:	and	%g1, 0xff, %g1
+ 2:
+ 	sethi	%hi(PSR_SYSCALL), %twin_tmp1
+ 	andn	%t_psr, %twin_tmp1, %t_psr
++	TN0018_WAIT_IFLUSH
+ 	wr	%t_psr, 0x0, %psr
+ 	WRITE_PAUSE
+ 
++	TN0018_FIX
+ 	jmp	%t_pc
+ 	rett	%t_npc
+ 
+-- 
+2.17.1
+

@@ -1,0 +1,83 @@
+From b70b34f5ac7d4bc2983b7ed3c61a116d7a433cce Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Tue, 1 Oct 2019 15:47:29 +0200
+Subject: [PATCH 10/50] common: Add support for C++ exception handling for REX
+
+Remove the LSB used to identify REX mode when searching through the call
+frame information. Restore it when jumping to the exception landing pad.
+---
+ libgcc/unwind-dw2.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/libgcc/unwind-dw2.c b/libgcc/unwind-dw2.c
+index fe896565d2e..b1bcd4055f2 100644
+--- a/libgcc/unwind-dw2.c
++++ b/libgcc/unwind-dw2.c
+@@ -351,7 +351,11 @@ _Unwind_GRByValue (struct _Unwind_Context *context, int index)
+ inline _Unwind_Ptr
+ _Unwind_GetIP (struct _Unwind_Context *context)
+ {
++#ifdef __sparc__
++  return (_Unwind_Ptr)((_Unwind_Word)context->ra) & ~1;
++#else
+   return (_Unwind_Ptr) context->ra;
++#endif
+ }
+ 
+ /* Retrieve the return address and flag whether that IP is before
+@@ -361,7 +365,12 @@ inline _Unwind_Ptr
+ _Unwind_GetIPInfo (struct _Unwind_Context *context, int *ip_before_insn)
+ {
+   *ip_before_insn = _Unwind_IsSignalFrame (context);
++
++#ifdef __sparc__
++  return (_Unwind_Ptr)((_Unwind_Word)context->ra) & ~1;
++#else
+   return (_Unwind_Ptr) context->ra;
++#endif
+ }
+ 
+ /* Overwrite the return address for CONTEXT with VAL.  */
+@@ -369,7 +378,11 @@ _Unwind_GetIPInfo (struct _Unwind_Context *context, int *ip_before_insn)
+ inline void
+ _Unwind_SetIP (struct _Unwind_Context *context, _Unwind_Ptr val)
+ {
++#ifdef __sparc__
++  context->ra = (void *) (val | ((_Unwind_Word)context->ra & 1));
++#else
+   context->ra = (void *) val;
++#endif
+ }
+ 
+ void *
+@@ -967,7 +980,12 @@ execute_cfa_program (const unsigned char *insn_ptr,
+      In signal frames, return address is after last completed instruction,
+      so we add 1 to return address to make the comparison <=.  */
+   while (insn_ptr < insn_end
++#ifdef __sparc__
++	 && fs->pc < (void*)((_Unwind_Word)context->ra & ~1)
++	 + _Unwind_IsSignalFrame (context))
++#else
+ 	 && fs->pc < context->ra + _Unwind_IsSignalFrame (context))
++#endif
+     {
+       unsigned char insn = *insn_ptr++;
+       _uleb128_t reg, utmp;
+@@ -1260,8 +1278,14 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
+   if (context->ra == 0)
+     return _URC_END_OF_STACK;
+ 
++#ifdef __sparc__
++  fde = _Unwind_Find_FDE ((void*)((_Unwind_Word)context->ra & ~1) +
++			  _Unwind_IsSignalFrame (context) - 1,
++			  &context->bases);
++#else
+   fde = _Unwind_Find_FDE (context->ra + _Unwind_IsSignalFrame (context) - 1,
+ 			  &context->bases);
++#endif
+   if (fde == NULL)
+     {
+ #ifdef MD_FALLBACK_FRAME_STATE_FOR
+-- 
+2.34.1
+

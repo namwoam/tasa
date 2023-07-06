@@ -1,0 +1,28 @@
+From aab79fea7d3b8328116313487582cfeba0bec652 Mon Sep 17 00:00:00 2001
+From: Konrad Eisele <konrad@gaisler.com>
+Date: Tue, 10 Apr 2012 15:22:11 +0200
+Subject: [PATCH 14/28] sparc32,leon: prevent long uart fifo discovery loop
+
+On GR712 uart might be disabled. To avoid spinning forever limit loopcount
+
+Signed-off-by: Konrad Eisele <konrad@gaisler.com>
+---
+ drivers/tty/serial/apbuart.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/tty/serial/apbuart.c b/drivers/tty/serial/apbuart.c
+index e8d56e899ec7..a22c48e5d217 100644
+--- a/drivers/tty/serial/apbuart.c
++++ b/drivers/tty/serial/apbuart.c
+@@ -363,7 +363,7 @@ static int apbuart_scan_fifo_size(struct uart_port *port, int portnumber)
+ 
+ 	UART_PUT_CTRL(port, ctrl | UART_CTRL_TE);
+ 
+-	while (!UART_TX_READY(UART_GET_STATUS(port)))
++	while ((!UART_TX_READY(UART_GET_STATUS(port))) && loop < 0x7fffff)
+ 		loop++;
+ 
+ 	/*
+-- 
+2.17.1
+

@@ -1,0 +1,33 @@
+From f9c156b099985740a2c521ff237ef70916edd160 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Thu, 22 Oct 2020 16:36:05 +0200
+Subject: [PATCH 12/32] sparc32,leon: Add cpuinfo for LEON5 and add fpuinfo for
+ GRFPU5 and NanoFPU
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/kernel/cpu.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/sparc/kernel/cpu.c b/arch/sparc/kernel/cpu.c
+index 79cd6ccfeac0..5eb0b28ae282 100644
+--- a/arch/sparc/kernel/cpu.c
++++ b/arch/sparc/kernel/cpu.c
+@@ -196,11 +196,14 @@ static const struct manufacturer_info __initconst manufacturer_info[] = {
+ 	PSR_IMPL_LEON,		/* Aeroflex Gaisler */
+ 	.cpu_info = {
+ 		CPU(3, "LEON"),
++		CPU(5, "LEON5"),
+ 		CPU(-1, NULL)
+ 	},
+ 	.fpu_info = {
+ 		FPU(2, "GRFPU"),
+ 		FPU(3, "GRFPU-Lite"),
++		FPU(4, "GRFPU5"),
++		FPU(5, "NanoFPU"),
+ 		FPU(-1, NULL)
+ 	}
+ },{
+-- 
+2.34.1
+

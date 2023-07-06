@@ -1,0 +1,172 @@
+From 2085257d467983f3414fcea3be708c970c463f5f Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Wed, 18 Jan 2017 15:34:52 +0100
+Subject: [PATCH 02/50] common: Avoid GMP configuration warning
+
+See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55699
+---
+ Makefile.def |  6 +++---
+ Makefile.in  | 52 ++++++++++++++++++++++++++--------------------------
+ 2 files changed, 29 insertions(+), 29 deletions(-)
+
+diff --git a/Makefile.def b/Makefile.def
+index 36fd26b0367..8251755bbf6 100644
+--- a/Makefile.def
++++ b/Makefile.def
+@@ -49,15 +49,15 @@ host_modules= { module= gcc; bootstrap=true;
+ 		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
+ host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
+ 		// Work around in-tree gmp configure bug with missing flex.
+-		extra_configure_flags='--disable-shared LEX="touch lex.yy.c"';
++		extra_configure_flags='--disable-shared --disable-assembly LEX="touch lex.yy.c"';
+ 		extra_make_flags='AM_CFLAGS="-DNO_ASM"';
+ 		no_install= true;
+ 		// none-*-* disables asm optimizations, bootstrap-testing
+ 		// the compiler more thoroughly.
+-	        host="none-${host_vendor}-${host_os}";
++	        //host="none-${host_vendor}-${host_os}";
+ 		// gmp's configure will complain if given anything
+ 		// different from host for target.
+-	        target="none-${host_vendor}-${host_os}"; };
++	        target="${host_alias}";};
+ host_modules= { module= mpfr; lib_path=src/.libs; bootstrap=true;
+ 		extra_configure_flags='--disable-shared @extra_mpfr_configure_flags@';
+ 		extra_make_flags='AM_CFLAGS="-DNO_ASM"';
+diff --git a/Makefile.in b/Makefile.in
+index 36e369df6e7..3a22d973db0 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -12641,8 +12641,8 @@ configure-gmp:
+ 	$(SHELL) \
+ 	  $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} --disable-shared LEX="touch lex.yy.c" \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} --disable-shared --disable-assembly LEX="touch lex.yy.c" \
+ 	  || exit 1
+ @endif gmp
+ 
+@@ -12674,11 +12674,11 @@ configure-stage1-gmp:
+ 	module_srcdir=gmp; \
+ 	$(SHELL) $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} \
+ 	   \
+ 	  $(STAGE1_CONFIGURE_FLAGS) \
+-	  --disable-shared LEX="touch lex.yy.c"
++	  --disable-shared --disable-assembly LEX="touch lex.yy.c"
+ @endif gmp-bootstrap
+ 
+ .PHONY: configure-stage2-gmp maybe-configure-stage2-gmp
+@@ -12708,11 +12708,11 @@ configure-stage2-gmp:
+ 	module_srcdir=gmp; \
+ 	$(SHELL) $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} \
+ 	  --with-build-libsubdir=$(HOST_SUBDIR) \
+ 	  $(STAGE2_CONFIGURE_FLAGS) \
+-	  --disable-shared LEX="touch lex.yy.c"
++	  --disable-shared --disable-assembly LEX="touch lex.yy.c"
+ @endif gmp-bootstrap
+ 
+ .PHONY: configure-stage3-gmp maybe-configure-stage3-gmp
+@@ -12742,11 +12742,11 @@ configure-stage3-gmp:
+ 	module_srcdir=gmp; \
+ 	$(SHELL) $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} \
+ 	  --with-build-libsubdir=$(HOST_SUBDIR) \
+ 	  $(STAGE3_CONFIGURE_FLAGS) \
+-	  --disable-shared LEX="touch lex.yy.c"
++	  --disable-shared --disable-assembly LEX="touch lex.yy.c"
+ @endif gmp-bootstrap
+ 
+ .PHONY: configure-stage4-gmp maybe-configure-stage4-gmp
+@@ -12776,11 +12776,11 @@ configure-stage4-gmp:
+ 	module_srcdir=gmp; \
+ 	$(SHELL) $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} \
+ 	  --with-build-libsubdir=$(HOST_SUBDIR) \
+ 	  $(STAGE4_CONFIGURE_FLAGS) \
+-	  --disable-shared LEX="touch lex.yy.c"
++	  --disable-shared --disable-assembly LEX="touch lex.yy.c"
+ @endif gmp-bootstrap
+ 
+ .PHONY: configure-stageprofile-gmp maybe-configure-stageprofile-gmp
+@@ -12810,11 +12810,11 @@ configure-stageprofile-gmp:
+ 	module_srcdir=gmp; \
+ 	$(SHELL) $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} \
+ 	  --with-build-libsubdir=$(HOST_SUBDIR) \
+ 	  $(STAGEprofile_CONFIGURE_FLAGS) \
+-	  --disable-shared LEX="touch lex.yy.c"
++	  --disable-shared --disable-assembly LEX="touch lex.yy.c"
+ @endif gmp-bootstrap
+ 
+ .PHONY: configure-stagetrain-gmp maybe-configure-stagetrain-gmp
+@@ -12878,11 +12878,11 @@ configure-stagefeedback-gmp:
+ 	module_srcdir=gmp; \
+ 	$(SHELL) $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} \
+ 	  --with-build-libsubdir=$(HOST_SUBDIR) \
+ 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
+-	  --disable-shared LEX="touch lex.yy.c"
++	  --disable-shared --disable-assembly LEX="touch lex.yy.c"
+ @endif gmp-bootstrap
+ 
+ .PHONY: configure-stageautoprofile-gmp maybe-configure-stageautoprofile-gmp
+@@ -12912,11 +12912,11 @@ configure-stageautoprofile-gmp:
+ 	module_srcdir=gmp; \
+ 	$(SHELL) $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} \
+ 	  --with-build-libsubdir=$(HOST_SUBDIR) \
+ 	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
+-	  --disable-shared LEX="touch lex.yy.c"
++	  --disable-shared --disable-assembly LEX="touch lex.yy.c"
+ @endif gmp-bootstrap
+ 
+ .PHONY: configure-stageautofeedback-gmp maybe-configure-stageautofeedback-gmp
+@@ -12946,11 +12946,11 @@ configure-stageautofeedback-gmp:
+ 	module_srcdir=gmp; \
+ 	$(SHELL) $$s/$$module_srcdir/configure \
+ 	  --srcdir=$${topdir}/$$module_srcdir \
+-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+-	  --target=none-${host_vendor}-${host_os} \
++	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
++	  --target=${host_alias} \
+ 	  --with-build-libsubdir=$(HOST_SUBDIR) \
+ 	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
+-	  --disable-shared LEX="touch lex.yy.c"
++	  --disable-shared --disable-assembly LEX="touch lex.yy.c"
+ @endif gmp-bootstrap
+ 
+ 
+-- 
+2.34.1
+

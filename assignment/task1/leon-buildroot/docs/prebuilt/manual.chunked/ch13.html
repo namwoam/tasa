@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 13. Legal notice and licensing</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt02.html" title="Part II. User guide" /><link rel="prev" href="ch12.html" title="Chapter 12. Known issues" /><link rel="next" href="ch14.html" title="Chapter 14. Beyond Buildroot" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch12.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch14.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="legal-info"></a>Chapter 13. Legal notice and licensing</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_complying_with_open_source_licenses"></a>13.1. Complying with open source licenses</h2></div></div></div><p>All of the end products of Buildroot (toolchain, root filesystem, kernel,
+bootloaders) contain open source software, released under various licenses.</p><p>Using open source software gives you the freedom to build rich embedded
+systems, choosing from a wide range of packages, but also imposes some
+obligations that you must know and honour.
+Some licenses require you to publish the license text in the documentation of
+your product. Others require you to redistribute the source code of the
+software to those that receive your product.</p><p>The exact requirements of each license are documented in each package, and
+it is your responsibility (or that of your legal office) to comply with those
+requirements.
+To make this easier for you, Buildroot can collect for you some material you
+will probably need. To produce this material, after you have configured
+Buildroot with <code class="literal">make menuconfig</code>, <code class="literal">make xconfig</code> or <code class="literal">make gconfig</code>, run:</p><pre class="screen">make legal-info</pre><p>Buildroot will collect legally-relevant material in your output directory,
+under the <code class="literal">legal-info/</code> subdirectory.
+There you will find:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+A <code class="literal">README</code> file, that summarizes the produced material and contains warnings
+  about material that Buildroot could not produce.
+</li><li class="listitem">
+<code class="literal">buildroot.config</code>: this is the Buildroot configuration file that is usually
+  produced with <code class="literal">make menuconfig</code>, and which is necessary to reproduce the
+  build.
+</li><li class="listitem">
+The source code for all packages; this is saved in the <code class="literal">sources/</code> and
+  <code class="literal">host-sources/</code> subdirectories for target and host packages respectively.
+  The source code for packages that set <code class="literal">&lt;PKG&gt;_REDISTRIBUTE = NO</code> will not be
+  saved.
+  Patches that were applied are also saved, along with a file named <code class="literal">series</code>
+  that lists the patches in the order they were applied. Patches are under the
+  same license as the files that they modify.
+  Note: Buildroot applies additional patches to Libtool scripts of
+  autotools-based packages. These patches can be found under
+  <code class="literal">support/libtool</code> in the Buildroot source and, due to technical
+  limitations, are not saved with the package sources. You may need to
+  collect them manually.
+</li><li class="listitem">
+A manifest file (one for host and one for target packages) listing the
+  configured packages, their version, license and related information.
+  Some of this information might not be defined in Buildroot; such items are
+  marked as "unknown".
+</li><li class="listitem">
+The license texts of all packages, in the <code class="literal">licenses/</code> and <code class="literal">host-licenses/</code>
+  subdirectories for target and host packages respectively.
+  If the license file(s) are not defined in Buildroot, the file is not produced
+  and a warning in the <code class="literal">README</code> indicates this.
+</li></ul></div><p>Please note that the aim of the <code class="literal">legal-info</code> feature of Buildroot is to
+produce all the material that is somehow relevant for legal compliance with the
+package licenses. Buildroot does not try to produce the exact material that
+you must somehow make public. Certainly, more material is produced than is
+needed for a strict legal compliance. For example, it produces the source code
+for packages released under BSD-like licenses, that you are not required to
+redistribute in source form.</p><p>Moreover, due to technical limitations, Buildroot does not produce some
+material that you will or may need, such as the toolchain source code for
+some of the external toolchains and the Buildroot source code itself.
+When you run <code class="literal">make legal-info</code>, Buildroot produces warnings in the <code class="literal">README</code>
+file to inform you of relevant material that could not be saved.</p><p>Finally, keep in mind that the output of <code class="literal">make legal-info</code> is based on
+declarative statements in each of the packages recipes. The Buildroot
+developers try to do their best to keep those declarative statements as
+accurate as possible, to the best of their knowledge. However, it is very
+well possible that those declarative statements are not all fully accurate
+nor exhaustive. You (or your legal department) <span class="emphasis"><em>have</em></span> to check the output
+of <code class="literal">make legal-info</code> before using it as your own compliance delivery. See
+the <span class="emphasis"><em>NO WARRANTY</em></span> clauses (clauses 11 and 12) in the <code class="literal">COPYING</code> file at the
+root of the Buildroot distribution.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="legal-info-buildroot"></a>13.2. Complying with the Buildroot license</h2></div></div></div><p>Buildroot itself is an open source software, released under the
+<a class="ulink" href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html" target="_top">GNU General
+Public License, version 2</a> or (at your option) any later version, with
+the exception of the package patches detailed below.
+However, being a build system, it is not normally part of the end product:
+if you develop the root filesystem, kernel, bootloader or toolchain for a
+device, the code of Buildroot is only present on the development machine, not
+in the device storage.</p><p>Nevertheless, the general view of the Buildroot developers is that you should
+release the Buildroot source code along with the source code of other packages
+when releasing a product that contains GPL-licensed software.
+This is because the
+<a class="ulink" href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html" target="_top">GNU GPL</a>
+defines the "<span class="emphasis"><em>complete source code</em></span>" for an executable work as "<span class="emphasis"><em>all the
+source code for all modules it contains, plus any associated interface
+definition files, plus the scripts used to control compilation and installation
+of the executable</em></span>".
+Buildroot is part of the <span class="emphasis"><em>scripts used to control compilation and
+installation of the executable</em></span>, and as such it is considered part of the
+material that must be redistributed.</p><p>Keep in mind that this is only the Buildroot developers' opinion, and you
+should consult your legal department or lawyer in case of any doubt.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_patches_to_packages"></a>13.2.1. Patches to packages</h3></div></div></div><p>Buildroot also bundles patch files, which are applied to the sources
+of the various packages. Those patches are not covered by the license
+of Buildroot. Instead, they are covered by the license of the software
+to which the patches are applied. When said software is available
+under multiple licenses, the Buildroot patches are only provided under
+the publicly accessible licenses.</p><p>See <a class="xref" href="ch19.html" title="Chapter 19. Patching a package">Chapter 19, <em>Patching a package</em></a> for the technical details.</p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

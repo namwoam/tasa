@@ -1,0 +1,43 @@
+
+================ LEON Buildroot 2022.02-1.2 ================
+
+Rebase upon Buildroot 2022.02.11.
+
+Step up to:
+- LEON Linux 5.10-1.4 kernel
+- LEON Linux 5.10 Toolchain 1.4
+- MKLINUXIMG 2.0.14
+- MKPROM 2.0.69
+
+Add support for configure leon5 architecture variant that enables -mcpu=leon5.
+
+Add support for enabling UT700 errata fixes for other external toolchains than
+the default one.
+
+Make it possible to build a toolchain in Buildroot with the same GLIBC and GCC
+version as our latest prebuilt external toolchain.
+
+Announce OpenMP support for LEON Linux toolchains.
+
+================ LEON Buildroot 2022.02-1.1 ================
+
+Rebase upon Buildroot 2022.02.3.
+
+User's manual update, including pointers on setting up a kernel development
+environment under Buildroot and pointers on upgrading Buildroot to newer
+LEON Buildroot releases or following an upstream stable Buildroot branch.
+
+================ LEON Buildroot 2022.02-1.0 ================
+
+Initial LEON Buildroot release based on Buildroot 2022.02.2.
+
+It includes default configurations using GCC 10 for generic LEON3/4/5 systems,
+GR740 as well as UT700. LEON specific manual can be found in docs/gaisler.
+Buildroot manual in docs/prebuilt.
+
+Our latest toolchains, the MKLINUXIMG second stage bootloader as well as
+optionally the MKPROM2 boot loader can be downloaded automatically and
+configured within the Buildroot configuration interface.
+
+(This release is aimed to be used in a standalone fashion and not under
+Linuxbuild.)

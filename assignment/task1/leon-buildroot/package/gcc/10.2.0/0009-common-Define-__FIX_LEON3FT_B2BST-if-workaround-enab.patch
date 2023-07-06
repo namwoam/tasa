@@ -1,0 +1,27 @@
+From 76a2f5138ba495a083f0e5fe308ea817a2d3c68f Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Fri, 4 Sep 2020 11:10:10 +0200
+Subject: [PATCH 09/50] common: Define __FIX_LEON3FT_B2BST if workaround
+ enabled
+
+---
+ gcc/config/sparc/sparc-c.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/gcc/config/sparc/sparc-c.c b/gcc/config/sparc/sparc-c.c
+index 925af2e2e3a..b957223ee08 100644
+--- a/gcc/config/sparc/sparc-c.c
++++ b/gcc/config/sparc/sparc-c.c
+@@ -33,6 +33,9 @@ sparc_target_macros (void)
+ 
+   cpp_define (parse_in, "__BIG_ENDIAN__");
+ 
++  if (sparc_fix_b2bst)
++    cpp_define (parse_in, "__FIX_LEON3FT_B2BST");
++
+   if (TARGET_ARCH64)
+     {
+       cpp_assert (parse_in, "cpu=sparc64");
+-- 
+2.34.1
+

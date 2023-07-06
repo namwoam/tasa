@@ -1,0 +1,865 @@
+From 3e8d4de3caefd82f1065a981049d7b6d087836e9 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Thu, 22 Sep 2016 07:54:04 +0200
+Subject: [PATCH 05/14] sparc: Fix TN-0009 errata for SPARC
+
+This is also known as the b2bst errata or back-to-back store errata.
+
+This relies upon defines not in mainline gcc.
+---
+ sysdeps/sparc/fpu/bits/fenv.h                 |  6 ++-
+ sysdeps/sparc/fpu/fpu_control.h               |  6 ++-
+ sysdeps/sparc/sparc32/add_n.S                 | 10 ++--
+ sysdeps/sparc/sparc32/dl-trampoline.S         | 11 ++++-
+ sysdeps/sparc/sparc32/lshift.S                |  9 ++--
+ sysdeps/sparc/sparc32/memcpy.S                | 43 +++++++++--------
+ sysdeps/sparc/sparc32/memset.S                | 42 ++++++++++++++---
+ sysdeps/sparc/sparc32/rshift.S                |  9 ++--
+ sysdeps/sparc/sparc32/stpcpy.S                | 25 ++++++++--
+ sysdeps/sparc/sparc32/strcat.S                | 46 ++++++++++++++++---
+ sysdeps/sparc/sparc32/strcpy.S                | 36 ++++++++++++++-
+ sysdeps/sparc/sparc32/sub_n.S                 | 10 ++--
+ .../sysv/linux/sparc/sparc32/getcontext.S     |  4 +-
+ .../sysv/linux/sparc/sparc32/swapcontext.S    |  3 +-
+ .../unix/sysv/linux/sparc/sparc32/sysdep.h    |  8 ++++
+ 15 files changed, 207 insertions(+), 61 deletions(-)
+
+diff --git a/sysdeps/sparc/fpu/bits/fenv.h b/sysdeps/sparc/fpu/bits/fenv.h
+index 8da89637f7..42e8b47d50 100644
+--- a/sysdeps/sparc/fpu/bits/fenv.h
++++ b/sysdeps/sparc/fpu/bits/fenv.h
+@@ -88,7 +88,11 @@ typedef unsigned long int fenv_t;
+ # define __fenv_stfsr(X)   __asm__ __volatile__ ("stx %%fsr,%0" : "=m" (X))
+ # define __fenv_ldfsr(X)   __asm__ __volatile__ ("ldx %0,%%fsr" : : "m" (X))
+ #else
+-# define __fenv_stfsr(X)   __asm__ __volatile__ ("nop; st %%fsr,%0" : "=m" (X))
++# ifdef __FIX_LEON3FT_B2BST
++#  define __fenv_stfsr(X)   __asm__ __volatile__ ("nop; nop; st %%fsr,%0; nop; nop" : "=m" (X))
++# else
++#  define __fenv_stfsr(X)   __asm__ __volatile__ ("nop; st %%fsr,%0" : "=m" (X))
++# endif
+ # define __fenv_ldfsr(X)   __asm__ __volatile__ ("ld %0,%%fsr" : : "m" (X))
+ #endif
+ 
+diff --git a/sysdeps/sparc/fpu/fpu_control.h b/sysdeps/sparc/fpu/fpu_control.h
+index d53910be74..bd9cc5711e 100644
+--- a/sysdeps/sparc/fpu/fpu_control.h
++++ b/sysdeps/sparc/fpu/fpu_control.h
+@@ -62,7 +62,11 @@ typedef unsigned long int fpu_control_t;
+ # define _FPU_GETCW(cw) __asm__ __volatile__ ("stx %%fsr,%0" : "=m" (*&cw))
+ # define _FPU_SETCW(cw) __asm__ __volatile__ ("ldx %0,%%fsr" : : "m" (*&cw))
+ #else
+-# define _FPU_GETCW(cw) __asm__ __volatile__ ("nop; st %%fsr,%0" : "=m" (*&cw))
++# ifdef __FIX_LEON3FT_B2BST
++#  define _FPU_GETCW(cw) __asm__ __volatile__ ("nop; nop; st %%fsr,%0; nop; nop" : "=m" (*&cw))
++# else
++#  define _FPU_GETCW(cw) __asm__ __volatile__ ("nop; st %%fsr,%0" : "=m" (*&cw))
++# endif
+ # define _FPU_SETCW(cw) __asm__ __volatile__ ("ld %0,%%fsr" : : "m" (*&cw))
+ #endif
+ 
+diff --git a/sysdeps/sparc/sparc32/add_n.S b/sysdeps/sparc/sparc32/add_n.S
+index 61fd430ed7..a3e14ae917 100644
+--- a/sysdeps/sparc/sparc32/add_n.S
++++ b/sysdeps/sparc/sparc32/add_n.S
+@@ -172,26 +172,26 @@ LOC(loop2):
+ 	ldd	[S1_PTR+0],%g2
+ 	ldd	[S2_PTR+0],%o4
+ 	addxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+0]
+ 	addxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+0]
+ 	st	%g3,[RES_PTR+4]
+ 	ldd	[S1_PTR+8],%g2
+ 	ldd	[S2_PTR+8],%o4
+ 	addxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+8]
+ 	addxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+8]
+ 	st	%g3,[RES_PTR+12]
+ 	ldd	[S1_PTR+16],%g2
+ 	ldd	[S2_PTR+16],%o4
+ 	addxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+16]
+ 	addxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+16]
+ 	st	%g3,[RES_PTR+20]
+ 	ldd	[S1_PTR+24],%g2
+ 	ldd	[S2_PTR+24],%o4
+ 	addxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+24]
+ 	addxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+24]
+ 	st	%g3,[RES_PTR+28]
+ 	addx	%g0,%g0,%o4		! save cy in register
+ 	addcc	SIZE,-8,SIZE
+@@ -209,8 +209,8 @@ LOC(loope2):
+ 	ldd	[S1_PTR+0],%g2
+ 	ldd	[S2_PTR+0],%o4
+ 	addxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+0]
+ 	addxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+0]
+ 	st	%g3,[RES_PTR+4]
+ 	addx	%g0,%g0,%o4		! save cy in register
+ 	addcc	SIZE,-2,SIZE
+diff --git a/sysdeps/sparc/sparc32/dl-trampoline.S b/sysdeps/sparc/sparc32/dl-trampoline.S
+index 62a7f18cde..1125549dae 100644
+--- a/sysdeps/sparc/sparc32/dl-trampoline.S
++++ b/sysdeps/sparc/sparc32/dl-trampoline.S
+@@ -70,16 +70,24 @@ _dl_profile_save_regs:
+ 	cfi_startproc
+ 
+ 	std	%l0, [%sp + ( 0 * 8)]
++	B2B_SINGLE_NOP
+ 	std	%l2, [%sp + ( 1 * 8)]
++	B2B_SINGLE_NOP
+ 	std	%l4, [%sp + ( 2 * 8)]
++	B2B_SINGLE_NOP
+ 	std	%l6, [%sp + ( 3 * 8)]
++	B2B_SINGLE_NOP
+ 	std	%i0, [%sp + ( 4 * 8)]
++	B2B_SINGLE_NOP
+ 	std	%i2, [%sp + ( 5 * 8)]
++	B2B_SINGLE_NOP
+ 	std	%i4, [%sp + ( 6 * 8)]
++	B2B_SINGLE_NOP
+ 	std	%i6, [%sp + ( 7 * 8)]
+ 	ld	[%fp + (8 * 8)], %l4
++	st	%l4, [%sp + (8 * 8)]
+ 	retl
+-	 st	%l4, [%sp + (8 * 8)]
++	 nop
+ 
+ 	cfi_endproc
+ 
+@@ -122,6 +130,7 @@ _dl_profile_invoke:
+ 	 nop
+ 
+ 	std	%o0, [%sp + ( 9 * 8)]
++	B2B_SINGLE_NOP
+ 	std	%f0, [%sp + (10 * 8)]
+ 
+ 	mov	%l5, %o0
+diff --git a/sysdeps/sparc/sparc32/lshift.S b/sysdeps/sparc/sparc32/lshift.S
+index 26364f309c..29f0b3085c 100644
+--- a/sysdeps/sparc/sparc32/lshift.S
++++ b/sysdeps/sparc/sparc32/lshift.S
+@@ -36,8 +36,9 @@ ENTRY(__mpn_lshift)
+ 	add	%o2,-1,%o2
+ 	andcc	%o2,4-1,%g4	! number of limbs in first loop
+ 	srl	%g2,%o5,%g1	! compute function result
+-	be	LOC(0)		! if multiple of 4 limbs, skip first loop
+ 	st	%g1,[%sp+80]
++	be	LOC(0)		! if multiple of 4 limbs, skip first loop
++	 nop
+ 
+ 	sub	%o2,%g4,%o2	! adjust count for main loop
+ 
+@@ -50,8 +51,9 @@ LOC(loop0):
+ 	srl	%g3,%o5,%g1
+ 	mov	%g3,%g2
+ 	or	%o4,%g1,%o4
++	st	%o4,[%o0+0]
+ 	bne	LOC(loop0)
+-	 st	%o4,[%o0+0]
++	 nop
+ 
+ LOC(0):	tst	%o2
+ 	be	LOC(end)
+@@ -84,8 +86,9 @@ LOC(loop):
+ 
+ 	add	%o1,-16,%o1
+ 	or	%g4,%g1,%g4
++	st	%g4,[%o0+0]
+ 	bne	LOC(loop)
+-	 st	%g4,[%o0+0]
++	 nop
+ 
+ LOC(end):
+ 	sll	%g2,%o3,%g2
+diff --git a/sysdeps/sparc/sparc32/memcpy.S b/sysdeps/sparc/sparc32/memcpy.S
+index c7248f9e35..21c97ab6f8 100644
+--- a/sysdeps/sparc/sparc32/memcpy.S
++++ b/sysdeps/sparc/sparc32/memcpy.S
+@@ -39,12 +39,12 @@
+ 
+ #define MOVE_BIGALIGNCHUNK(src, dst, offset, t0, t1, t2, t3, t4, t5, t6, t7) 				\
+ 	ldd	[%src + offset + 0x00], %t0; 								\
+-	ldd	[%src + offset + 0x08], %t2; 								\
+-	ldd	[%src + offset + 0x10], %t4; 								\
+-	ldd	[%src + offset + 0x18], %t6; 								\
+ 	std	%t0, [%dst + offset + 0x00]; 								\
++	ldd	[%src + offset + 0x08], %t2; 								\
+ 	std	%t2, [%dst + offset + 0x08]; 								\
++	ldd	[%src + offset + 0x10], %t4; 								\
+ 	std	%t4, [%dst + offset + 0x10]; 								\
++	ldd	[%src + offset + 0x18], %t6; 								\
+ 	std	%t6, [%dst + offset + 0x18];
+ 
+ #define MOVE_LASTCHUNK(src, dst, offset, t0, t1, t2, t3) 						\
+@@ -57,8 +57,8 @@
+ 
+ #define MOVE_LASTALIGNCHUNK(src, dst, offset, t0, t1, t2, t3) 						\
+ 	ldd	[%src - offset - 0x10], %t0; 								\
+-	ldd	[%src - offset - 0x08], %t2; 								\
+ 	std	%t0, [%dst - offset - 0x10]; 								\
++	ldd	[%src - offset - 0x08], %t2; 								\
+ 	std	%t2, [%dst - offset - 0x08];
+ 
+ #define MOVE_SHORTCHUNK(src, dst, offset, t0, t1) 							\
+@@ -79,8 +79,8 @@
+ 	srl	%t2, shir, %t1; 									\
+ 	srl	%t3, shir, %t6; 									\
+ 	sll	%t2, shil, %t2; 									\
+-	or	%t1, %prev, %t1; 									\
+ 	std	%t4, [%dst + offset + offset2 - 0x04]; 							\
++	or	%t1, %prev, %t1; 									\
+ 	std	%t0, [%dst + offset + offset2 + 0x04];							\
+ 	sll	%t3, shil, %prev; 									\
+ 	or	%t6, %t2, %t4;
+@@ -99,15 +99,16 @@
+ 	sll	%t2, shil, %t6; 									\
+ 	or	%t4, %prev, %t2; 									\
+ 	sll	%t3, shil, %prev; 									\
+-	or	%t5, %t6, %t3;										\
+ 	std	%t0, [%dst + offset + offset2 + 0x00]; 							\
++	or	%t5, %t6, %t3;										\
+ 	std	%t2, [%dst + offset + offset2 + 0x08];
+ 
+ 	.text
+ ENTRY(__mempcpy)
+ 	add		%o0, %o2, %g1
++	st		%g1, [%sp + 64]
+ 	ba		101f
+-	 st		%g1, [%sp + 64]
++	 nop
+ END(__mempcpy)
+ 
+ 	.align	4
+@@ -189,8 +190,8 @@ ENTRY(memcpy)		/* %o0=dst %o1=src %o2=len */
+ 
+ 	ldd		[%o1], %g2
+ 	add		%o0, 8, %o0
+-	st		%g2, [%o0 - 0x08]
+ 	add		%o1, 8, %o1
++	st		%g2, [%o0 - 0x08]
+ 	st		%g3, [%o0 - 0x04]
+ 
+ 81:	be		1f
+@@ -402,8 +403,8 @@ ENTRY(memcpy)		/* %o0=dst %o1=src %o2=len */
+ 4:	lduh		[%o1], %g2
+ 	add		%o1, 2, %o1
+ 	srl		%g2, 8, %g3
+-	sub		%o2, 2, %o2
+ 	stb		%g3, [%o0]
++	sub		%o2, 2, %o2
+ 	add		%o0, 2, %o0
+ 	stb		%g2, [%o0 - 1]
+ 3:	 andcc		%o1, 4, %g0
+@@ -413,12 +414,12 @@ ENTRY(memcpy)		/* %o0=dst %o1=src %o2=len */
+ 
+ 	ld		[%o1], %o4
+ 	srl		%o4, 24, %g2
+-	stb		%g2, [%o0]
+ 	srl		%o4, 16, %g3
++	stb		%g2, [%o0]
+ 	stb		%g3, [%o0 + 1]
+ 	srl		%o4, 8, %g2
+-	stb		%g2, [%o0 + 2]
+ 	sub		%o2, 4, %o2
++	stb		%g2, [%o0 + 2]
+ 	stb		%o4, [%o0 + 3]
+ 	add		%o1, 4, %o1
+ 	add		%o0, 4, %o0
+@@ -456,11 +457,12 @@ ENTRY(memcpy)		/* %o0=dst %o1=src %o2=len */
+ 	 add		%o0, 16, %o0
+ 
+ 	srl		%g1, 16, %g2
+-1:	st		%o4, [%o0 - 7]
++1:	srl		%g1, 8, %g4
++	st		%o4, [%o0 - 7]
+ 	sth		%g2, [%o0 - 3]
+-	srl		%g1, 8, %g4
++	stb		%g4, [%o0 - 1]
+ 	b		88f
+-	 stb		%g4, [%o0 - 1]
++	 nop
+ 32:	ld		[%o1], %g2
+ 	add		%o1, 4, %o1
+ 	srl		%g2, 16, %g3
+@@ -492,8 +494,9 @@ ENTRY(memcpy)		/* %o0=dst %o1=src %o2=len */
+ 
+ 	srl		%g1, 16, %g2
+ 1:	st		%o4, [%o0 - 6]
++	sth		%g2, [%o0 - 2]
+ 	b		88f
+-	 sth		%g2, [%o0 - 2]
++	 nop
+ 33:	ld		[%o1], %g2
+ 	sub		%o2, 4, %o2
+ 	srl		%g2, 24, %g3
+@@ -529,8 +532,9 @@ ENTRY(memcpy)		/* %o0=dst %o1=src %o2=len */
+ 
+ 	srl		%g1, 24, %g2
+ 1:	st		%o4, [%o0 - 5]
++	stb		%g2, [%o0 - 1]
+ 	b		88f
+-	 stb		%g2, [%o0 - 1]
++	 nop
+ 41:	SMOVE_ALIGNCHUNK(o1, o0, 0x00, g2, g3, g4, g5, o4, o5, g6, g1, 8, 24, -3)
+ 	SMOVE_ALIGNCHUNK(o1, o0, 0x10, g2, g3, g4, g5, o4, o5, g6, g1, 8, 24, -3)
+ 	SMOVE_ALIGNCHUNK(o1, o0, 0x20, g2, g3, g4, g5, o4, o5, g6, g1, 8, 24, -3)
+@@ -550,10 +554,11 @@ ENTRY(memcpy)		/* %o0=dst %o1=src %o2=len */
+ 	 add		%o0, 16, %o0
+ 
+ 	srl		%g1, 16, %g2
+-1:	sth		%g2, [%o0 - 3]
+-	srl		%g1, 8, %g4
++1:	srl		%g1, 8, %g4
++	sth		%g2, [%o0 - 3]
++	stb		%g4, [%o0 - 1]
+ 	b		88f
+-	 stb		%g4, [%o0 - 1]
++	 nop
+ 43:	SMOVE_ALIGNCHUNK(o1, o0, 0x00, g2, g3, g4, g5, o4, o5, g6, g1, 24, 8, 3)
+ 	SMOVE_ALIGNCHUNK(o1, o0, 0x10, g2, g3, g4, g5, o4, o5, g6, g1, 24, 8, 3)
+ 	SMOVE_ALIGNCHUNK(o1, o0, 0x20, g2, g3, g4, g5, o4, o5, g6, g1, 24, 8, 3)
+diff --git a/sysdeps/sparc/sparc32/memset.S b/sysdeps/sparc/sparc32/memset.S
+index fe49d152ae..7826470473 100644
+--- a/sysdeps/sparc/sparc32/memset.S
++++ b/sysdeps/sparc/sparc32/memset.S
+@@ -24,23 +24,39 @@
+ 	/* Store 64 bytes at (BASE + OFFSET) using value SOURCE. */
+ #define ZERO_BIG_BLOCK(base, offset, source)    	\
+ 	std		source, [base + offset + 0x00]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base + offset + 0x08]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base + offset + 0x10]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base + offset + 0x18]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base + offset + 0x20]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base + offset + 0x28]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base + offset + 0x30]; \
+-	std		source, [base + offset + 0x38];
++	B2B_SINGLE_NOP					\
++	std		source, [base + offset + 0x38]; \
++	B2B_SINGLE_NOP
+ 
+ #define ZERO_LAST_BLOCKS(base, offset, source)		\
+ 	std		source, [base - offset - 0x38]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base - offset - 0x30]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base - offset - 0x28]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base - offset - 0x20]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base - offset - 0x18]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base - offset - 0x10]; \
++	B2B_SINGLE_NOP					\
+ 	std		source, [base - offset - 0x08]; \
+-	std		source, [base - offset - 0x00];
++	B2B_SINGLE_NOP					\
++	std		source, [base - offset - 0x00]; \
++	B2B_SINGLE_NOP
+ 
+ 	.text
+ 	.align 4
+@@ -49,12 +65,14 @@ ENTRY(__bzero)
+ 	 mov		%g0, %g3
+ 
+ 3:	cmp		%o2, 3
++	stb		%g3, [%o0]
+ 	be		2f
+-	 stb		%g3, [%o0]
++	 nop
+ 
+ 	cmp		%o2, 2
++	stb		%g3, [%o0 + 0x01]
+ 	be		2f
+-	 stb		%g3, [%o0 + 0x01]
++	 nop
+ 
+ 	stb		%g3, [%o0 + 0x02]
+ 2:	sub		%o2, 4, %o2
+@@ -99,9 +117,18 @@ ENTRY(memset)
+ 
+ 	mov		%o7, %g4
+ 101:	call		100f
+-	 srl		%o2, 1, %o3
++#ifdef __FIX_LEON3FT_B2BST
++	 mov		%o2, %o3	/* 8 bytes of std+nop sets 8 bytes */
++#else
++	 srl		%o2, 1, %o3	/* 4 bytes of std sets 8 bytes */
++#endif
+ 	mov		%g4, %o7
++	/* The +128 or +64 is for the size of 2 x ZERO_LAST_BLOCKS */
++#ifdef __FIX_LEON3FT_B2BST
++	jmpl		%o4 + (20f + 128 - 101b), %g0
++#else
+ 	jmpl		%o4 + (20f + 64 - 101b), %g0
++#endif
+ 	 add		%o0, %o2, %o0
+ 
+ 100:	retl
+@@ -120,8 +147,9 @@ ENTRY(memset)
+ 	 andcc		%o1, 1, %g0
+ 	sth		%g3, [%o0]
+ 	add		%o0, 2, %o0
+-1:	bne,a		8f
+-	 stb		%g3, [%o0]
++1:	be		8f
++	 nop
++	stb		%g3, [%o0]
+ 8:	retl
+ 	 mov		%g1, %o0
+ 7:	orcc		%o1, 0, %g0
+diff --git a/sysdeps/sparc/sparc32/rshift.S b/sysdeps/sparc/sparc32/rshift.S
+index cce6b39f09..8f134b0250 100644
+--- a/sysdeps/sparc/sparc32/rshift.S
++++ b/sysdeps/sparc/sparc32/rshift.S
+@@ -33,8 +33,9 @@ ENTRY(__mpn_rshift)
+ 	add	%o2,-1,%o2
+ 	andcc	%o2,4-1,%g4	! number of limbs in first loop
+ 	sll	%g2,%o5,%g1	! compute function result
+-	be	LOC(0)		! if multiple of 4 limbs, skip first loop
+ 	st	%g1,[%sp+80]
++	be	LOC(0)		! if multiple of 4 limbs, skip first loop
++	 nop
+ 
+ 	sub	%o2,%g4,%o2	! adjust count for main loop
+ 
+@@ -47,8 +48,9 @@ LOC(loop0):
+ 	sll	%g3,%o5,%g1
+ 	mov	%g3,%g2
+ 	or	%o4,%g1,%o4
++	st	%o4,[%o0-4]
+ 	bne	LOC(loop0)
+-	 st	%o4,[%o0-4]
++	 nop
+ 
+ LOC(0):	tst	%o2
+ 	be	LOC(end)
+@@ -81,8 +83,9 @@ LOC(loop):
+ 
+ 	add	%o1,16,%o1
+ 	or	%g4,%g1,%g4
++	st	%g4,[%o0-4]
+ 	bne	LOC(loop)
+-	 st	%g4,[%o0-4]
++	 nop
+ 
+ LOC(end):
+ 	srl	%g2,%o3,%g2
+diff --git a/sysdeps/sparc/sparc32/stpcpy.S b/sysdeps/sparc/sparc32/stpcpy.S
+index 373b5a463b..e4bcc3b861 100644
+--- a/sysdeps/sparc/sparc32/stpcpy.S
++++ b/sysdeps/sparc/sparc32/stpcpy.S
+@@ -79,6 +79,11 @@ ENTRY(__stpcpy)
+ 	bne		16f
+ 	 sub		%g0, 4, %g1
+ 
++#ifdef __FIX_LEON3FT_B2BST
++	b		11f
++	 nop
++31:	st		%o5, [%o0 + %g1]
++#endif
+ 11:	add		%g1, 4, %g1
+ 	ld		[%o1 + %g1], %o5
+ 	sub		%o5, %o2, %o4
+@@ -86,8 +91,13 @@ ENTRY(__stpcpy)
+ 	andn		%o4, %o5, %o4
+ #endif
+ 	andcc		%o4, %o3, %g0
++#ifdef __FIX_LEON3FT_B2BST
++	be		31b
++	 nop
++#else
+ 	be,a		11b
+ 	 st		%o5, [%o0 + %g1]
++#endif
+ 
+ 	/* Check every byte. */
+ 	srl		%o5, 24, %g5
+@@ -100,14 +110,16 @@ ENTRY(__stpcpy)
+ 	andcc		%g5, 0xff, %g0
+ 	be		12f
+ 	 andcc		%o5, 0xff, %g0
++	st		%o5, [%o0 + %g1]
+ 	bne		11b
+-	 st		%o5, [%o0 + %g1]
++	 nop
+ 	add		%o0, %g1, %o0
+ 	retl
+ 	 add		%o0, 3, %o0
+ 12:	srl		%o5, 16, %o5
+ 	sth		%o5, [%o0 + %g1]
+ 	add		%g1, 2, %g1
++	B2B_SINGLE_NOP
+ 	stb		%g0, [%o0 + %g1]
+ 	retl
+ 	 add		%o0, %g1, %o0
+@@ -122,8 +134,8 @@ ENTRY(__stpcpy)
+ 
+ 15:	srl		%o5, 24, %o4
+ 	srl		%o5, 16, %g1
+-	stb		%o4, [%o0]
+ 	srl		%o5, 8, %g4
++	stb		%o4, [%o0]
+ 	stb		%g1, [%o0 + 1]
+ 	stb		%g4, [%o0 + 2]
+ 	stb		%o5, [%o0 + 3]
+@@ -137,16 +149,19 @@ ENTRY(__stpcpy)
+ 	/* Check every byte. */
+ 	srl		%o5, 24, %g5
+ 	andcc		%g5, 0xff, %g4
++	stb		%g4, [%o0]
+ 	be		19f
+-	 stb		%g4, [%o0]
++	 nop
+ 	srl		%o5, 16, %g5
+ 	andcc		%g5, 0xff, %g4
++	stb		%g4, [%o0 + 1]
+ 	be		18f
+-	 stb		%g4, [%o0 + 1]
++	 nop
+ 	srl		%o5, 8, %g5
+ 	andcc		%g5, 0xff, %g4
++	stb		%g4, [%o0 + 2]
+ 	be		17f
+- 	 stb		%g4, [%o0 + 2]
++	 nop
+ 	andcc		%o5, 0xff, %g4
+ 	stb		%g4, [%o0 + 3]
+ 	bne		16b
+diff --git a/sysdeps/sparc/sparc32/strcat.S b/sysdeps/sparc/sparc32/strcat.S
+index 9f2a956d29..bb952ff75a 100644
+--- a/sysdeps/sparc/sparc32/strcat.S
++++ b/sysdeps/sparc/sparc32/strcat.S
+@@ -118,11 +118,12 @@ ENTRY(strcat)
+ 	srl		%o5, 8, %o4
+ 	cmp		%o4, 0
+ 	stb		%o4, [%o0]
+-	bne,a		12f
+-	 stb		%o5, [%o0 + 1]
++	bne		12f
++	 nop
+ 	retl
+ 	 mov		%g2, %o0
+-12:	andcc		%o5, 0xff, %o5
++12:	stb		%o5, [%o0 + 1]
++	andcc		%o5, 0xff, %o5
+ 	bne		4f
+ 	 add		%o0, 2, %o0
+ 	retl
+@@ -134,16 +135,27 @@ ENTRY(strcat)
+ 
+ 4:	andcc		%o0, 3, %g3
+ 	bne		12f
++#ifdef __FIX_LEON3FT_B2BST
++	 ld		[%o1], %o5	/* Replicate delay slot ld */
++	b		32f		/* Do not load twice */
++	 nop
++31:	st		%o5, [%o0 - 4]
++#endif
+ 1:	ld		[%o1], %o5
+-	add		%o1, 4, %o1
++32:	add		%o1, 4, %o1
+ 	sub		%o5, %o2, %o4
+ #ifdef EIGHTBIT_NOT_RARE
+ 	andn		%o4, %o5, %o4
+ #endif
+ 	add		%o0, 4, %o0
+ 	andcc		%o4, %o3, %g0
++#ifdef __FIX_LEON3FT_B2BST
++	be		31b
++	 nop
++#else
+ 	be,a		1b
+ 	 st		%o5, [%o0 - 4]
++#endif
+ 
+ 	srl		%o5, 24, %g5
+ 	andcc		%g5, 0xff, %g0
+@@ -155,8 +167,9 @@ ENTRY(strcat)
+ 	andcc		%g5, 0xff, %g0
+ 	be		3f
+ 	 andcc		%o5, 0xff, %g0
++	st		%o5, [%o0 - 4]
+ 	bne		1b
+-	 st		%o5, [%o0 - 4]
++	 nop
+ 	retl
+ 	 mov		%g2, %o0
+ 3:	srl		%o5, 16, %o5
+@@ -185,6 +198,11 @@ ENTRY(strcat)
+ 	sub		%o0, 1, %o0
+ 	srl		%o5, 8, %g5
+ 	sth		%g5, [%o0 + 2]
++#ifdef __FIX_LEON3FT_B2BST
++	b		1f
++	 nop
++31:	st		%g5, [%o0]
++#endif
+ 1:	add		%o0, 4, %o0
+ 4:	sll		%o5, 24, %g6
+ 	ld		[%o1], %o5
+@@ -196,8 +214,13 @@ ENTRY(strcat)
+ #endif
+ 	or		%g5, %g6, %g5
+ 	andcc		%o4, %o3, %g0
++#ifdef __FIX_LEON3FT_B2BST
++	be		31b
++	 nop
++#else
+ 	be,a		1b
+ 	 st		%g5, [%o0]
++#endif
+ 	srl		%o5, 24, %o4
+ 	andcc		%o4, 0xff, %g0
+ 	be		6f
+@@ -251,6 +274,11 @@ ENTRY(strcat)
+ 	 srl		%o5, 16, %g5
+ 	sth		%g5, [%o0]
+ 	sub		%o0, 2, %o0
++#ifdef __FIX_LEON3FT_B2BST
++	b		1f
++	 nop
++31:	st		%g5, [%o0]
++#endif
+ 1:	add		%o0, 4, %o0
+ 4:	sll		%o5, 16, %g6
+ 	ld		[%o1], %o5
+@@ -262,8 +290,13 @@ ENTRY(strcat)
+ #endif
+ 	or		%g5, %g6, %g5
+ 	andcc		%o4, %o3, %g0
++#ifdef __FIX_LEON3FT_B2BST
++	be		31b
++	 nop
++#else
+ 	be,a		1b
+ 	 st		%g5, [%o0]
++#endif
+ 	srl		%o5, 24, %o4
+ 	andcc		%o4, 0xff, %g0
+ 	be		7f
+@@ -318,8 +351,9 @@ ENTRY(strcat)
+ #endif
+ 	or		%g5, %g6, %g5
+ 	andcc		%o4, %o3, %g0
++	st		%g5, [%o0]
+ 	be		1b
+-	 st		%g5, [%o0]
++	 nop
+ 	srl		%o5, 24, %o4
+ 	andcc		%o4, 0xff, %g0
+ 	be		0b
+diff --git a/sysdeps/sparc/sparc32/strcpy.S b/sysdeps/sparc/sparc32/strcpy.S
+index 4abf5c1505..d8418b010f 100644
+--- a/sysdeps/sparc/sparc32/strcpy.S
++++ b/sysdeps/sparc/sparc32/strcpy.S
+@@ -76,13 +76,23 @@ ENTRY(strcpy)
+ 5:	andcc		%o0, 3, %g3
+ 6:	bne		10f
+ 	 or		%o4, %lo(0x01010101), %o2
++#ifdef __FIX_LEON3FT_B2BST
++	b		1f
++	 nop
++31:	st		%o5, [%o0 - 4]
++#endif
+ 1:	ld		[%o1], %o5
+ 	add		%o1, 4, %o1
+ 	sub		%o5, %o2, %o4
+ 	add		%o0, 4, %o0
+ 	andcc		%o4, %o3, %g0
++#ifdef __FIX_LEON3FT_B2BST
++	be		31b
++	 nop
++#else
+ 	be,a		1b
+ 	 st		%o5, [%o0 - 4]
++#endif
+ 
+ 	srl		%o5, 24, %g5
+ 	andcc		%g5, 0xff, %g0
+@@ -94,8 +104,9 @@ ENTRY(strcpy)
+ 	andcc		%g5, 0xff, %g0
+ 	be		3f
+ 	 andcc		%o5, 0xff, %g0
++	st		%o5, [%o0 - 4]
+ 	bne		1b
+-	 st		%o5, [%o0 - 4]
++	 nop
+ 	retl
+ 	 mov		%g2, %o0
+ 3:	srl		%o5, 16, %o5
+@@ -125,6 +136,11 @@ ENTRY(strcpy)
+ 	sub		%o0, 1, %o0
+ 	srl		%o5, 8, %g5
+ 	sth		%g5, [%o0 + 2]
++#ifdef __FIX_LEON3FT_B2BST
++	b		1f
++	 nop
++31:	st		%g5, [%o0]
++#endif
+ 1:	add		%o0, 4, %o0
+ 4:	sll		%o5, 24, %g6
+ 	ld		[%o1], %o5
+@@ -133,8 +149,13 @@ ENTRY(strcpy)
+ 	sub		%o5, %o2, %o4
+ 	or		%g5, %g6, %g5
+ 	andcc		%o4, %o3, %g0
++#ifdef __FIX_LEON3FT_B2BST
++	be		31b
++	 nop
++#else
+ 	be,a		1b
+ 	 st		%g5, [%o0]
++#endif
+ 	srl		%o5, 24, %o4
+ 	andcc		%o4, 0xff, %g0
+ 	be		6f
+@@ -184,6 +205,11 @@ ENTRY(strcpy)
+ 	 srl		%o5, 16, %g5
+ 	sth		%g5, [%o0]
+ 	sub		%o0, 2, %o0
++#ifdef __FIX_LEON3FT_B2BST
++	b		1f
++	 nop
++31:	st		%g5, [%o0]
++#endif
+ 1:	add		%o0, 4, %o0
+ 4:	sll		%o5, 16, %g6
+ 	ld		[%o1], %o5
+@@ -192,8 +218,13 @@ ENTRY(strcpy)
+ 	sub		%o5, %o2, %o4
+ 	or		%g5, %g6, %g5
+ 	andcc		%o4, %o3, %g0
++#ifdef __FIX_LEON3FT_B2BST
++	be		31b
++	 nop
++#else
+ 	be,a		1b
+ 	 st		%g5, [%o0]
++#endif
+ 	srl		%o5, 24, %o4
+ 	andcc		%o4, 0xff, %g0
+ 	be		7f
+@@ -242,8 +273,9 @@ ENTRY(strcpy)
+ 	sub		%o5, %o2, %o4
+ 	or		%g5, %g6, %g5
+ 	andcc		%o4, %o3, %g0
++	st		%g5, [%o0]
+ 	be		1b
+-	 st		%g5, [%o0]
++	 nop
+ 	srl		%o5, 24, %o4
+ 	andcc		%o4, 0xff, %g0
+ 	be		0b
+diff --git a/sysdeps/sparc/sparc32/sub_n.S b/sysdeps/sparc/sparc32/sub_n.S
+index 2201f55208..ccaacd6ce0 100644
+--- a/sysdeps/sparc/sparc32/sub_n.S
++++ b/sysdeps/sparc/sparc32/sub_n.S
+@@ -263,26 +263,26 @@ LOC(loop2):
+ 	ldd	[S1_PTR+0],%g2
+ 	ldd	[S2_PTR+0],%o4
+ 	subxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+0]
+ 	subxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+0]
+ 	st	%g3,[RES_PTR+4]
+ 	ldd	[S1_PTR+8],%g2
+ 	ldd	[S2_PTR+8],%o4
+ 	subxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+8]
+ 	subxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+8]
+ 	st	%g3,[RES_PTR+12]
+ 	ldd	[S1_PTR+16],%g2
+ 	ldd	[S2_PTR+16],%o4
+ 	subxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+16]
+ 	subxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+16]
+ 	st	%g3,[RES_PTR+20]
+ 	ldd	[S1_PTR+24],%g2
+ 	ldd	[S2_PTR+24],%o4
+ 	subxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+24]
+ 	subxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+24]
+ 	st	%g3,[RES_PTR+28]
+ 	addx	%g0,%g0,%o4		! save cy in register
+ 	addcc	SIZE,-8,SIZE
+@@ -300,8 +300,8 @@ LOC(loope2):
+ 	ldd	[S1_PTR+0],%g2
+ 	ldd	[S2_PTR+0],%o4
+ 	subxcc	%g2,%o4,%g2
+-	st	%g2,[RES_PTR+0]
+ 	subxcc	%g3,%o5,%g3
++	st	%g2,[RES_PTR+0]
+ 	st	%g3,[RES_PTR+4]
+ 	addx	%g0,%g0,%o4		! save cy in register
+ 	addcc	SIZE,-2,SIZE
+diff --git a/sysdeps/unix/sysv/linux/sparc/sparc32/getcontext.S b/sysdeps/unix/sysv/linux/sparc/sparc32/getcontext.S
+index 5e92bec815..a6bec7683d 100644
+--- a/sysdeps/unix/sysv/linux/sparc/sparc32/getcontext.S
++++ b/sysdeps/unix/sysv/linux/sparc/sparc32/getcontext.S
+@@ -38,11 +38,11 @@ ENTRY(__getcontext)
+ 	/* In reality, we only use the GREG_PC value when setting
+ 	   or swapping contexts.  But we fill in NPC for completeness.  */
+ 	add	%i7, 8, %o0
++	B2B_SINGLE_NOP
+ 	st	%o0, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_PC]
+ 	add	%o0, 4, %o0
+-	st	%o0, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_NPC]
+-
+ 	rd	%y, %o1
++	st	%o0, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_NPC]
+ 	st	%o1, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_Y]
+ 
+ 	st	%g1, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_G1]
+diff --git a/sysdeps/unix/sysv/linux/sparc/sparc32/swapcontext.S b/sysdeps/unix/sysv/linux/sparc/sparc32/swapcontext.S
+index d5f2bba1c5..4ff6b08b18 100644
+--- a/sysdeps/unix/sysv/linux/sparc/sparc32/swapcontext.S
++++ b/sysdeps/unix/sysv/linux/sparc/sparc32/swapcontext.S
+@@ -39,10 +39,11 @@ ENTRY(__swapcontext)
+ 	ta	ST_FLUSH_WINDOWS
+ 	st	%g0, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_PSR]
+ 	add	%i7, 8, %o0
++	B2B_SINGLE_NOP
+ 	st	%o0, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_PC]
+ 	add	%o0, 4, %o0
+-	st	%o0, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_NPC]
+ 	rd	%y, %o1
++	st	%o0, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_NPC]
+ 	st	%o1, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_Y]
+ 	st	%g1, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_G1]
+ 	st	%g2, [%i0 + UC_MCONTEXT + MC_GREGS + GREG_G2]
+diff --git a/sysdeps/unix/sysv/linux/sparc/sparc32/sysdep.h b/sysdeps/unix/sysv/linux/sparc/sparc32/sysdep.h
+index 2c3754770b..a014302bb4 100644
+--- a/sysdeps/unix/sysv/linux/sparc/sparc32/sysdep.h
++++ b/sysdeps/unix/sysv/linux/sparc/sparc32/sysdep.h
+@@ -143,4 +143,12 @@ ENTRY(name);					\
+ # endif
+ #endif
+ 
++#ifdef __FIX_LEON3FT_B2BST
++#define B2B_SINGLE_NOP nop;
++#define B2B_DOUBLE_NOP nop; nop;
++#else
++#define B2B_SINGLE_NOP
++#define B2B_DOUBLE_NOP
++#endif
++
+ #endif /* linux/sparc/sysdep.h */
+-- 
+2.34.1
+

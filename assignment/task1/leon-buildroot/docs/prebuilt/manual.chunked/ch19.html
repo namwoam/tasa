@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 19. Patching a package</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt03.html" title="Part III. Developer guide" /><link rel="prev" href="ch18.html" title="Chapter 18. Adding new packages to Buildroot" /><link rel="next" href="ch20.html" title="Chapter 20. Download infrastructure" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch18.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch20.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="patch-policy"></a>Chapter 19. Patching a package</h2></div></div></div><p>While integrating a new package or updating an existing one, it may be
+necessary to patch the source of the software to get it cross-built within
+Buildroot.</p><p>Buildroot offers an infrastructure to automatically handle this during
+the builds. It supports three ways of applying patch sets: downloaded patches,
+patches supplied within buildroot and patches located in a user-defined
+global patch directory.</p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_providing_patches"></a>19.1. Providing patches</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_downloaded"></a>19.1.1. Downloaded</h3></div></div></div><p>If it is necessary to apply a patch that is available for download, then add it
+to the <code class="literal">&lt;packagename&gt;_PATCH</code> variable. If an entry contains <code class="literal">://</code>,
+then Buildroot will assume it is a full URL and download the patch
+from this location. Otherwise, Buildroot will assume that the patch should be
+downloaded from <code class="literal">&lt;packagename&gt;_SITE</code>. It can be a single patch,
+or a tarball containing a patch series.</p><p>Like for all downloads, a hash should be added to the <code class="literal">&lt;packagename&gt;.hash</code>
+file.</p><p>This method is typically used for packages from Debian.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_within_buildroot"></a>19.1.2. Within Buildroot</h3></div></div></div><p>Most patches are provided within Buildroot, in the package
+directory; these typically aim to fix cross-compilation, libc support,
+or other such issues.</p><p>These patch files should be named <code class="literal">&lt;number&gt;-&lt;description&gt;.patch</code>.</p><div class="itemizedlist"><p class="title"><strong>Notes</strong></p><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The patch files coming with Buildroot should not contain any package version
+  reference in their filename.
+</li><li class="listitem">
+The field <code class="literal">&lt;number&gt;</code> in the patch file name refers to the <span class="emphasis"><em>apply order</em></span>,
+  and shall start at 1; It is preferred to pad the number with zeros up to 4
+  digits, like <span class="emphasis"><em>git-format-patch</em></span> does. E.g.: <code class="literal">0001-foobar-the-buz.patch</code>
+</li><li class="listitem">
+The patch email subject prefix shall not be numbered. Patches shall
+  be generated with the <code class="literal">git format-patch -N</code> command, since this
+  numbering is automatically added for series. For example, the patch
+  subject line should look like <code class="literal">Subject: [PATCH] foobar the buz</code> rather
+  than <code class="literal">Subject: [PATCH n/m] foobar the buz</code>.
+</li><li class="listitem">
+Previously, it was mandatory for patches to be prefixed with the name of
+  the package, like <code class="literal">&lt;package&gt;-&lt;number&gt;-&lt;description&gt;.patch</code>, but that is
+  no longer the case. Existing packages will be fixed as time passes. <span class="emphasis"><em>Do
+  not prefix patches with the package name.</em></span>
+</li><li class="listitem">
+Previously, a <code class="literal">series</code> file, as used by <code class="literal">quilt</code>, could also be added in
+  the package directory. In that case, the <code class="literal">series</code> file defines the patch
+  application order. This is deprecated, and will be removed in the future.
+  <span class="emphasis"><em>Do not use a series file.</em></span>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_global_patch_directory"></a>19.1.3. Global patch directory</h3></div></div></div><p>The <code class="literal">BR2_GLOBAL_PATCH_DIR</code> configuration file option can be
+used to specify a space separated list of one or more directories
+containing global package patches. See <a class="xref" href="ch09.html#customize-patches" title="9.8. Adding project-specific patches">Section 9.8, “Adding project-specific patches”</a> for
+details.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="patch-apply-order"></a>19.2. How patches are applied</h2></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Run the <code class="literal">&lt;packagename&gt;_PRE_PATCH_HOOKS</code> commands if defined;
+</li><li class="listitem">
+Cleanup the build directory, removing any existing <code class="literal">*.rej</code> files;
+</li><li class="listitem">
+If <code class="literal">&lt;packagename&gt;_PATCH</code> is defined, then patches from these
+  tarballs are applied;
+</li><li class="listitem"><p class="simpara">
+If there are some <code class="literal">*.patch</code> files in the package’s Buildroot
+  directory or in a package subdirectory named <code class="literal">&lt;packageversion&gt;</code>,
+  then:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If a <code class="literal">series</code> file exists in the package directory, then patches are
+  applied according to the <code class="literal">series</code> file;
+</li><li class="listitem">
+Otherwise, patch files matching <code class="literal">*.patch</code> are applied in alphabetical
+  order.
+  So, to ensure they are applied in the right order, it is highly
+  recommended to name the patch files like this:
+  <code class="literal">&lt;number&gt;-&lt;description&gt;.patch</code>, where <code class="literal">&lt;number&gt;</code> refers to the
+  <span class="emphasis"><em>apply order</em></span>.
+</li></ul></div></li><li class="listitem">
+If <code class="literal">BR2_GLOBAL_PATCH_DIR</code> is defined, the directories will be
+  enumerated in the order they are specified. The patches are applied
+  as described in the previous step.
+</li><li class="listitem">
+Run the <code class="literal">&lt;packagename&gt;_POST_PATCH_HOOKS</code> commands if defined.
+</li></ol></div><p>If something goes wrong in the steps <span class="emphasis"><em>3</em></span> or <span class="emphasis"><em>4</em></span>, then the build fails.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_format_and_licensing_of_the_package_patches"></a>19.3. Format and licensing of the package patches</h2></div></div></div><p>Patches are released under the same license as the software they apply
+to (see <a class="xref" href="ch13.html#legal-info-buildroot" title="13.2. Complying with the Buildroot license">Section 13.2, “Complying with the Buildroot license”</a>).</p><p>A message explaining what the patch does, and why it is needed, should
+be added in the header commentary of the patch.</p><p>You should add a <code class="literal">Signed-off-by</code> statement in the header of the each
+patch to help with keeping track of the changes and to certify that the
+patch is released under the same license as the software that is modified.</p><p>If the software is under version control, it is recommended to use the
+upstream SCM software to generate the patch set.</p><p>Otherwise, concatenate the header with the output of the
+<code class="literal">diff -purN package-version.orig/ package-version/</code> command.</p><p>If you update an existing patch (e.g. when bumping the package version),
+make sure the existing From header and Signed-off-by tags are not
+removed, but do update the rest of the patch comment when appropriate.</p><p>At the end, the patch should look like:</p><pre class="screen">configure.ac: add C++ support test
+
+Signed-off-by: John Doe &lt;john.doe@noname.org&gt;
+
+--- configure.ac.orig
++++ configure.ac
+@@ -40,2 +40,12 @@
+
+AC_PROG_MAKE_SET
++
++AC_CACHE_CHECK([whether the C++ compiler works],
++               [rw_cv_prog_cxx_works],
++               [AC_LANG_PUSH([C++])
++                AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
++                               [rw_cv_prog_cxx_works=yes],
++                               [rw_cv_prog_cxx_works=no])
++                AC_LANG_POP([C++])])
++
++AM_CONDITIONAL([CXX_WORKS], [test "x$rw_cv_prog_cxx_works" = "xyes"])</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_integrating_patches_found_on_the_web"></a>19.4. Integrating patches found on the Web</h2></div></div></div><p>When integrating a patch of which you are not the author, you have to
+add a few things in the header of the patch itself.</p><p>Depending on whether the patch has been obtained from the project
+repository itself, or from somewhere on the web, add one of the
+following tags:</p><pre class="screen">Backported from: &lt;some commit id&gt;</pre><p>or</p><pre class="screen">Fetch from: &lt;some url&gt;</pre><p>It is also sensible to add a few words about any changes to the patch
+that may have been necessary.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch18.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt03.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch20.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

@@ -1,0 +1,65 @@
+From a007e05b39abb9ca5c04ef35398629932cc0e839 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 29 Apr 2015 14:05:30 +0200
+Subject: [PATCH 06/28] sparc: leon: Distinguish between IRQMP and IRQAMP
+ interrupt controllers
+
+This makes sure that the icsel[] registers are only used when having
+multiple interrupt controllers in the interrupt controller core.
+
+If trying to read the icsel[0] register on an IRQMP controller, the
+pending register are actually read which is not necessary zero. Trying
+to read the ampctrl register to figure out number of interrupt
+controllers will wrap to the interrupt level register on a IRQMP core
+which contains zeroes in bits 31-28 which will be interpreted correctly.
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/include/asm/leon_amba.h |  1 +
+ arch/sparc/kernel/leon_kernel.c    | 11 ++++++++---
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/arch/sparc/include/asm/leon_amba.h b/arch/sparc/include/asm/leon_amba.h
+index 6433a93f5126..29f6952b23cf 100644
+--- a/arch/sparc/include/asm/leon_amba.h
++++ b/arch/sparc/include/asm/leon_amba.h
+@@ -81,6 +81,7 @@ struct amba_prom_registers {
+ 
+ #define LEON3_IRQMPSTATUS_CPUNR     28
+ #define LEON3_IRQMPSTATUS_BROADCAST 27
++#define LEON3_IRQMPAMPCTRL_NCTRL 28
+ 
+ #define GPTIMER_CONFIG_IRQNT(a)          (((a) >> 3) & 0x1f)
+ #define GPTIMER_CONFIG_ISSEP(a)          ((a) & (1 << 8))
+diff --git a/arch/sparc/kernel/leon_kernel.c b/arch/sparc/kernel/leon_kernel.c
+index 39229940d725..779a0100bf8c 100644
+--- a/arch/sparc/kernel/leon_kernel.c
++++ b/arch/sparc/kernel/leon_kernel.c
+@@ -313,6 +313,7 @@ void __init leon_init_timers(void)
+ 	int err;
+ 	u32 config;
+ 	u32 ctrl;
++	u32 nirqctrl;
+ 
+ 	sparc_config.get_cycles_offset = leon_cycles_offset;
+ 	sparc_config.cs_period = 1000000 / HZ;
+@@ -410,9 +411,13 @@ void __init leon_init_timers(void)
+ 	 * accessed anyway.
+ 	 * In AMP systems, Linux must run on CPU0 for the time being.
+ 	 */
+-	icsel = LEON3_BYPASS_LOAD_PA(&leon3_irqctrl_regs->icsel[boot_cpu_id/8]);
+-	icsel = (icsel >> ((7 - (boot_cpu_id&0x7)) * 4)) & 0xf;
+-	leon3_irqctrl_regs += icsel;
++	nirqctrl = LEON3_BYPASS_LOAD_PA(&leon3_irqctrl_regs->ampctrl) >>
++		LEON3_IRQMPAMPCTRL_NCTRL;
++	if (nirqctrl) {
++		icsel = LEON3_BYPASS_LOAD_PA(&leon3_irqctrl_regs->icsel[boot_cpu_id/8]);
++		icsel = (icsel >> ((7 - (boot_cpu_id&0x7)) * 4)) & 0xf;
++		leon3_irqctrl_regs += icsel;
++	}
+ 
+ 	/* Mask all IRQs on boot-cpu IRQ controller */
+ 	LEON3_BYPASS_STORE_PA(&leon3_irqctrl_regs->mask[boot_cpu_id], 0);
+-- 
+2.17.1
+

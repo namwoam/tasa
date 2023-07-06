@@ -1,0 +1,25 @@
+From 621e8260b6f8844a10094d62cdf3d52fa34fb95a Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 4 Jan 2023 14:53:26 +0100
+Subject: [PATCH 47/50] common: Allow configuring with --with-cpu=leon5
+
+---
+ gcc/config.gcc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcc/config.gcc b/gcc/config.gcc
+index 886d3b3a77a..f850f129195 100644
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -5085,7 +5085,7 @@ case "${target}" in
+ 			case ${val} in
+ 			"" | sparc | sparcv9 | sparc64 \
+ 			| v7 | cypress \
+-			| v8 | supersparc | hypersparc | leon | leon3 | leon3v7 \
++			| v8 | supersparc | hypersparc | leon | leon3 | leon3v7 | leon5 \
+ 			| sparclite | f930 | f934 | sparclite86x \
+ 			| sparclet | tsc701 \
+ 			| v9 | ultrasparc | ultrasparc3 | niagara | niagara2 \
+-- 
+2.34.1
+

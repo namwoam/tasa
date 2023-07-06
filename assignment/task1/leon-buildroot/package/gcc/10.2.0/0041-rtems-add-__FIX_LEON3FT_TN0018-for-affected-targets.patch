@@ -1,0 +1,28 @@
+From b907bc4ec8b6b04dc0453e65bbb84dd014163057 Mon Sep 17 00:00:00 2001
+From: Daniel Hellstrom <daniel@gaisler.com>
+Date: Mon, 21 Sep 2020 14:36:03 +0200
+Subject: [PATCH 41/50] rtems: add __FIX_LEON3FT_TN0018 for affected targets
+
+Enable a define FIX_LEON3FT_TN0018 for the LEON3FT targets affecdted
+by the GRLIB-TN-0018 errata described here:
+  https://www.gaisler.com/notes
+---
+ gcc/config/sparc/rtemself.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/gcc/config/sparc/rtemself.h b/gcc/config/sparc/rtemself.h
+index 6570590d64d..ddec98c8384 100644
+--- a/gcc/config/sparc/rtemself.h
++++ b/gcc/config/sparc/rtemself.h
+@@ -33,6 +33,8 @@
+ 	builtin_assert ("system=rtems");	\
+ 	if (sparc_fix_b2bst)			\
+ 	  builtin_define ("__FIX_LEON3FT_B2BST"); \
++	if (sparc_fix_gr712rc || sparc_fix_ut700 || sparc_fix_ut699) \
++	  builtin_define ("__FIX_LEON3FT_TN0018"); \
+     }						\
+   while (0)
+ 
+-- 
+2.34.1
+

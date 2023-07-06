@@ -1,0 +1,27 @@
+From c44533532c0508302d52ef6add59b2bc3b5cbdb3 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Thu, 6 Jul 2017 10:30:27 +0200
+Subject: [PATCH 11/28] sparc32,leon: Fix description of SPARC_LEON config
+ option
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 59004c9e7dbe..f410af868ae0 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -387,7 +387,7 @@ config SPARC_LEON
+ 	select USB_UHCI_BIG_ENDIAN_MMIO
+ 	select USB_UHCI_BIG_ENDIAN_DESC
+ 	help
+-	  If you say Y here if you are running on a SPARC-LEON processor.
++	  Say Y here if you are running on a SPARC-LEON processor.
+ 	  The LEON processor is a synthesizable VHDL model of the
+ 	  SPARC-v8 standard. LEON is  part of the GRLIB collection of
+ 	  IP cores that are distributed under GPL. GRLIB can be downloaded
+-- 
+2.17.1
+

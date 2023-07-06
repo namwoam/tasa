@@ -1,0 +1,26 @@
+From 4022f4ab8e34f1f7fa73f386725f1b328d6ce5c7 Mon Sep 17 00:00:00 2001
+From: Daniel Hellstrom <daniel@gaisler.com>
+Date: Mon, 21 Sep 2020 14:18:49 +0200
+Subject: [PATCH 40/50] rcc: add option to avoid linking with
+ librtemsdefaultconfig
+
+An addition to previous commit:
+	"rcc: add librtemsdefaultconfig to make POSIX apps link"
+---
+ gcc/config/sparc/rcc.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcc/config/sparc/rcc.h b/gcc/config/sparc/rcc.h
+index 1144e98ba74..915f10acc63 100644
+--- a/gcc/config/sparc/rcc.h
++++ b/gcc/config/sparc/rcc.h
+@@ -33,5 +33,5 @@ along with GCC; see the file COPYING3.  If not see
+ #undef LIB_SPEC
+ #define LIB_SPEC "%{!qrtems:%{!qbsp=*: " STD_LIB_SPEC "}}" \
+ "%{!nostdlib: %{qrtems|qbsp=*: --start-group \
+- -lrtemsbsp %{qbsp=*: -lrtemsdefaultconfigbsp} -lrtemscpu \
++ -lrtemsbsp %{qbsp=*: %{!qnortemsdefaultconfigbsp: -lrtemsdefaultconfigbsp}} -lrtemscpu \
+  -latomic -lc -lgcc --end-group %{!qnolinkcmds: -T linkcmds%s}}}"
+-- 
+2.34.1
+

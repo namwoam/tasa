@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 4. Buildroot quick start</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt01.html" title="Part I. Getting started" /><link rel="prev" href="ch03.html" title="Chapter 3. Getting Buildroot" /><link rel="next" href="ch05.html" title="Chapter 5. Community resources" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch03.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch05.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="_buildroot_quick_start"></a>Chapter 4. Buildroot quick start</h2></div></div></div><p><span class="strong"><strong>Important</strong></span>: you can and should <span class="strong"><strong>build everything as a normal user</strong></span>. There
+is no need to be root to configure and use Buildroot. By running all
+commands as a regular user, you protect your system against packages
+behaving badly during compilation and installation.</p><p>The first step when using Buildroot is to create a configuration.
+Buildroot has a nice configuration tool similar to the one you can
+find in the <a class="ulink" href="http://www.kernel.org/" target="_top">Linux kernel</a> or in
+<a class="ulink" href="http://www.busybox.net/" target="_top">BusyBox</a>.</p><p>From the buildroot directory, run</p><pre class="screen"> $ make menuconfig</pre><p>for the original curses-based configurator, or</p><pre class="screen"> $ make nconfig</pre><p>for the new curses-based configurator, or</p><pre class="screen"> $ make xconfig</pre><p>for the Qt-based configurator, or</p><pre class="screen"> $ make gconfig</pre><p>for the GTK-based configurator.</p><p>All of these "make" commands will need to build a configuration
+utility (including the interface), so you may need to install
+"development" packages for relevant libraries used by the
+configuration utilities. Refer to <a class="xref" href="ch02.html" title="Chapter 2. System requirements">Chapter 2, <em>System requirements</em></a> for more details,
+specifically the <a class="link" href="ch02.html#requirement-optional" title="2.2. Optional packages">optional requirements</a>
+to get the dependencies of your favorite interface.</p><p>For each menu entry in the configuration tool, you can find associated
+help that describes the purpose of the entry. Refer to <a class="xref" href="ch06.html" title="Chapter 6. Buildroot configuration">Chapter 6, <em>Buildroot configuration</em></a>
+for details on some specific configuration aspects.</p><p>Once everything is configured, the configuration tool generates a
+<code class="literal">.config</code> file that contains the entire configuration. This file will be
+read by the top-level Makefile.</p><p>To start the build process, simply run:</p><pre class="screen"> $ make</pre><p>By default, Buildroot does not support top-level parallel build, so
+running <code class="literal">make -jN</code> is not necessary. There is however experimental
+support for top-level parallel build, see
+<a class="xref" href="ch08.html#top-level-parallel-build" title="8.12. Top-level parallel build">Section 8.12, “Top-level parallel build”</a>.</p><p>The <code class="literal">make</code> command will generally perform the following steps:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+download source files (as required);
+</li><li class="listitem">
+configure, build and install the cross-compilation toolchain, or
+  simply import an external toolchain;
+</li><li class="listitem">
+configure, build and install selected target packages;
+</li><li class="listitem">
+build a kernel image, if selected;
+</li><li class="listitem">
+build a bootloader image, if selected;
+</li><li class="listitem">
+create a root filesystem in selected formats.
+</li></ul></div><p>Buildroot output is stored in a single directory, <code class="literal">output/</code>.
+This directory contains several subdirectories:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">images/</code> where all the images (kernel image, bootloader and root
+  filesystem images) are stored. These are the files you need to put
+  on your target system.
+</li><li class="listitem">
+<code class="literal">build/</code> where all the components are built (this includes tools
+  needed by Buildroot on the host and packages compiled for the
+  target). This directory contains one subdirectory for each of these
+  components.
+</li><li class="listitem">
+<code class="literal">host/</code> contains both the tools built for the host, and the sysroot
+  of the target toolchain. The former is an installation of tools
+  compiled for the host that are needed for the proper execution of
+  Buildroot, including the cross-compilation toolchain. The latter
+  is a hierarchy similar to a root filesystem hierarchy. It contains
+  the headers and libraries of all user-space packages that provide
+  and install libraries used by other packages. However, this
+  directory is <span class="emphasis"><em>not</em></span> intended to be the root filesystem for the target:
+  it contains a lot of development files, unstripped binaries and
+  libraries that make it far too big for an embedded system. These
+  development files are used to compile libraries and applications for
+  the target that depend on other libraries.
+</li><li class="listitem">
+<code class="literal">staging/</code> is a symlink to the target toolchain sysroot inside
+  <code class="literal">host/</code>, which exists for backwards compatibility.
+</li><li class="listitem">
+<code class="literal">target/</code> which contains <span class="emphasis"><em>almost</em></span> the complete root filesystem for
+  the target: everything needed is present except the device files in
+  <code class="literal">/dev/</code> (Buildroot can’t create them because Buildroot doesn’t run
+  as root and doesn’t want to run as root). Also, it doesn’t have the correct
+  permissions (e.g. setuid for the busybox binary). Therefore, this directory
+  <span class="strong"><strong>should not be used on your target</strong></span>. Instead, you should use one of
+  the images built in the <code class="literal">images/</code> directory. If you need an
+  extracted image of the root filesystem for booting over NFS, then
+  use the tarball image generated in <code class="literal">images/</code> and extract it as
+  root. Compared to <code class="literal">staging/</code>, <code class="literal">target/</code> contains only the files and
+  libraries needed to run the selected target applications: the
+  development files (headers, etc.) are not present, the binaries are
+  stripped.
+</li></ul></div><p>These commands, <code class="literal">make menuconfig|nconfig|gconfig|xconfig</code> and <code class="literal">make</code>, are the
+basic ones that allow to easily and quickly generate images fitting
+your needs, with all the features and applications you enabled.</p><p>More details about the "make" command usage are given in
+<a class="xref" href="ch08.html#make-tips" title="8.1. make tips">Section 8.1, “<span class="emphasis"><em>make</em></span> tips”</a>.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

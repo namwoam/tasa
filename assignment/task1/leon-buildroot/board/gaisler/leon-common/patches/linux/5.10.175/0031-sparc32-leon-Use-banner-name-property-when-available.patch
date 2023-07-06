@@ -1,0 +1,86 @@
+From 315becbd20f50b842c47b4438c884cec5b17f50e Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Fri, 24 Feb 2023 07:50:46 +0100
+Subject: [PATCH 31/32] sparc32,leon: Use banner-name property when available
+ when printing system type
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/include/asm/machines.h |  1 +
+ arch/sparc/kernel/idprom.c        | 41 ++++++++++++++++++++++++-------
+ 2 files changed, 33 insertions(+), 9 deletions(-)
+
+diff --git a/arch/sparc/include/asm/machines.h b/arch/sparc/include/asm/machines.h
+index 9f78f70c6f11..69d4450440ce 100644
+--- a/arch/sparc/include/asm/machines.h
++++ b/arch/sparc/include/asm/machines.h
+@@ -11,6 +11,7 @@
+ struct Sun_Machine_Models {
+ 	char *name;
+ 	unsigned char id_machtype;
++	int use_banner;
+ };
+ 
+ /* The machine type in the idprom area looks like this:
+diff --git a/arch/sparc/kernel/idprom.c b/arch/sparc/kernel/idprom.c
+index d6c46d512220..3d7b81808c0f 100644
+--- a/arch/sparc/kernel/idprom.c
++++ b/arch/sparc/kernel/idprom.c
+@@ -28,14 +28,37 @@ static struct idprom idprom_buffer;
+  * know about.  See asm-sparc/machines.h for empirical constants.
+  */
+ static struct Sun_Machine_Models Sun_Machines[] = {
+-/* First, Leon */
+-{ .name = "Leon3 System-on-a-Chip",  .id_machtype = (M_LEON | M_LEON3_SOC) },
+-/* Finally, early Sun4m's */
+-{ .name = "Sun4m SparcSystem600",    .id_machtype = (SM_SUN4M | SM_4M_SS60) },
+-{ .name = "Sun4m SparcStation10/20", .id_machtype = (SM_SUN4M | SM_4M_SS50) },
+-{ .name = "Sun4m SparcStation5",     .id_machtype = (SM_SUN4M | SM_4M_SS40) },
+-/* One entry for the OBP arch's which are sun4d, sun4e, and newer sun4m's */
+-{ .name = "Sun4M OBP based system",  .id_machtype = (SM_SUN4M_OBP | 0x0) } };
++	/* First, Leon */
++	{
++		.name = "Leon3 System-on-a-Chip",
++		.id_machtype = (M_LEON | M_LEON3_SOC),
++		.use_banner = 1
++	},
++	/* Finally, early Sun4m's */
++	{
++		.name = "Sun4m SparcSystem600",
++		.id_machtype = (SM_SUN4M | SM_4M_SS60),
++		.use_banner = 0
++	},
++	{
++		.name = "Sun4m SparcStation10/20",
++		.id_machtype = (SM_SUN4M | SM_4M_SS50),
++		.use_banner = 0
++	},
++	{
++		.name = "Sun4m SparcStation5",
++		.id_machtype = (SM_SUN4M | SM_4M_SS40),
++		.use_banner = 0
++	},
++	/* One entry for the OBP arch's which are sun4d, sun4e, and newer
++	 * sun4m's
++	 */
++	{
++		.name = "Sun4M OBP based system",
++		.id_machtype = (SM_SUN4M_OBP | 0x0),
++		.use_banner = 1
++	}
++};
+ 
+ static void __init display_system_type(unsigned char machtype)
+ {
+@@ -44,7 +67,7 @@ static void __init display_system_type(unsigned char machtype)
+ 
+ 	for (i = 0; i < ARRAY_SIZE(Sun_Machines); i++) {
+ 		if (Sun_Machines[i].id_machtype == machtype) {
+-			if (machtype != (SM_SUN4M_OBP | 0x00) ||
++			if (!Sun_Machines[i].use_banner ||
+ 			    prom_getproperty(prom_root_node, "banner-name",
+ 					     sysname, sizeof(sysname)) <= 0)
+ 				printk(KERN_WARNING "TYPE: %s\n",
+-- 
+2.34.1
+

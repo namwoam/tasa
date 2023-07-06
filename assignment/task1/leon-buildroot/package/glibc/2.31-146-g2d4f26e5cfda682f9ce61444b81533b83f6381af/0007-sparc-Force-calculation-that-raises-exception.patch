@@ -1,0 +1,73 @@
+From 676ffe242c54bd2cc683a9fdaa72b9cec6194567 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Thu, 17 Nov 2022 12:26:39 +0100
+Subject: [PATCH 07/14] sparc: Force calculation that raises exception
+
+Makes math/test-fenv pass.
+---
+ sysdeps/sparc/fpu/fraiseexcpt.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/sysdeps/sparc/fpu/fraiseexcpt.c b/sysdeps/sparc/fpu/fraiseexcpt.c
+index 7ae71656e9..8a4baea227 100644
+--- a/sysdeps/sparc/fpu/fraiseexcpt.c
++++ b/sysdeps/sparc/fpu/fraiseexcpt.c
+@@ -20,6 +20,7 @@
+ #include <float.h>
+ #include <math.h>
+ #include <shlib-compat.h>
++#include <fpu_control.h>
+ 
+ int
+ __feraiseexcept (int excepts)
+@@ -30,6 +31,7 @@ __feraiseexcept (int excepts)
+     0.0, 1.0, DBL_MAX, DBL_MIN, M_PI
+   };
+   double d;
++  fpu_control_t cw;
+ 
+   /* Raise exceptions represented by EXPECTS.  But we must raise only
+      one signal at a time.  It is important the if the overflow/underflow
+@@ -43,6 +45,7 @@ __feraiseexcept (int excepts)
+       __asm ("" : "=e" (d) : "0" (c.zero));
+       d /= c.zero;
+       __asm __volatile ("" : : "e" (d));
++      _FPU_GETCW(cw);
+     }
+ 
+   /* Next: division by zero.  */
+@@ -51,6 +54,7 @@ __feraiseexcept (int excepts)
+       __asm ("" : "=e" (d) : "0" (c.one));
+       d /= c.zero;
+       __asm __volatile ("" : : "e" (d));
++      _FPU_GETCW(cw);
+     }
+ 
+   /* Next: overflow.  */
+@@ -59,6 +63,7 @@ __feraiseexcept (int excepts)
+       __asm ("" : "=e" (d) : "0" (c.max));
+       d *= d;
+       __asm __volatile ("" : : "e" (d));
++      _FPU_GETCW(cw);
+     }
+ 
+   /* Next: underflow.  */
+@@ -67,6 +72,7 @@ __feraiseexcept (int excepts)
+       __asm ("" : "=e" (d) : "0" (c.min));
+       d *= d;
+       __asm __volatile ("" : : "e" (d));
++      _FPU_GETCW(cw);
+     }
+ 
+   /* Last: inexact.  */
+@@ -75,6 +81,7 @@ __feraiseexcept (int excepts)
+       __asm ("" : "=e" (d) : "0" (c.one));
+       d /= c.pi;
+       __asm __volatile ("" : : "e" (d));
++      _FPU_GETCW(cw);
+     }
+ 
+   /* Success.  */
+-- 
+2.34.1
+

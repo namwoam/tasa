@@ -1,0 +1,67 @@
+From 517b8e8c55da489f1cb44857f6de0aabe3c371f8 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Fri, 24 Feb 2023 15:12:12 +0100
+Subject: [PATCH] Add leon3 and leon5 to the sparc platform
+
+---
+ tools/build/src/tools/builtin.py                           | 2 +-
+ tools/build/src/tools/features/instruction-set-feature.jam | 2 +-
+ tools/build/src/tools/gcc.jam                              | 2 ++
+ tools/build/src/tools/gcc.py                               | 2 ++
+ 4 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/tools/build/src/tools/builtin.py b/tools/build/src/tools/builtin.py
+index 493354bfb..267f2ac15 100644
+--- a/tools/build/src/tools/builtin.py
++++ b/tools/build/src/tools/builtin.py
+@@ -301,7 +301,7 @@ def register_globals ():
+ 
+         # Sparc
+         'v7', 'cypress', 'v8', 'supersparc', 'sparclite', 'hypersparc', 'sparclite86x', 'f930', 'f934',
+-        'sparclet', 'tsc701', 'v9', 'ultrasparc', 'ultrasparc3',
++        'sparclet', 'tsc701', 'v9', 'ultrasparc', 'ultrasparc3', 'leon3', 'leon5',
+ 
+         # RS/6000 & PowerPC
+         '401', '403', '405', '405fp', '440', '440fp', '505', '601', '602',
+diff --git a/tools/build/src/tools/features/instruction-set-feature.jam b/tools/build/src/tools/features/instruction-set-feature.jam
+index 003c674f4..7e3a84f5a 100644
+--- a/tools/build/src/tools/features/instruction-set-feature.jam
++++ b/tools/build/src/tools/features/instruction-set-feature.jam
+@@ -40,7 +40,7 @@ feature.feature instruction-set
+ 
+         # Sparc
+         v7 cypress v8 supersparc sparclite hypersparc sparclite86x f930 f934
+-        sparclet tsc701 v9 ultrasparc ultrasparc3
++        sparclet tsc701 v9 ultrasparc ultrasparc3 leon3 leon5
+ 
+         # RS/6000 & PowerPC
+         401 403 405 405fp 440 440fp 505 601 602 603 603e 604 604e 620 630 740 7400
+diff --git a/tools/build/src/tools/gcc.jam b/tools/build/src/tools/gcc.jam
+index 47a113223..0c3cfbcf8 100644
+--- a/tools/build/src/tools/gcc.jam
++++ b/tools/build/src/tools/gcc.jam
+@@ -1221,6 +1221,8 @@ cpu-flags gcc OPTIONS : sparc : tsc701 : -mcpu=tsc701 ;
+ cpu-flags gcc OPTIONS : sparc : v9 : -mcpu=v9 ;
+ cpu-flags gcc OPTIONS : sparc : ultrasparc : -mcpu=ultrasparc ;
+ cpu-flags gcc OPTIONS : sparc : ultrasparc3 : -mcpu=ultrasparc3 ;
++cpu-flags gcc OPTIONS : sparc : leon3 : -mcpu=leon3 ;
++cpu-flags gcc OPTIONS : sparc : leon5 : -mcpu=leon5 ;
+ # RS/6000 & PowerPC
+ cpu-flags gcc OPTIONS : power : 403 : -mcpu=403 ;
+ cpu-flags gcc OPTIONS : power : 505 : -mcpu=505 ;
+diff --git a/tools/build/src/tools/gcc.py b/tools/build/src/tools/gcc.py
+index 020efb6f5..3be22ada6 100644
+--- a/tools/build/src/tools/gcc.py
++++ b/tools/build/src/tools/gcc.py
+@@ -829,6 +829,8 @@ cpu_flags('gcc', 'OPTIONS', 'sparc', 'tsc701', ['-mcpu=tsc701'])
+ cpu_flags('gcc', 'OPTIONS', 'sparc', 'v9', ['-mcpu=v9'])
+ cpu_flags('gcc', 'OPTIONS', 'sparc', 'ultrasparc', ['-mcpu=ultrasparc'])
+ cpu_flags('gcc', 'OPTIONS', 'sparc', 'ultrasparc3', ['-mcpu=ultrasparc3'])
++cpu_flags('gcc', 'OPTIONS', 'sparc', 'leon3', ['-mcpu=leon3'])
++cpu_flags('gcc', 'OPTIONS', 'sparc', 'leon5', ['-mcpu=leon5'])
+ # RS/6000 & PowerPC
+ flags('gcc', 'OPTIONS', ['<architecture>power/<address-model>32'], ['-m32'])
+ flags('gcc', 'OPTIONS', ['<architecture>power/<address-model>64'], ['-m64'])
+-- 
+2.34.1
+

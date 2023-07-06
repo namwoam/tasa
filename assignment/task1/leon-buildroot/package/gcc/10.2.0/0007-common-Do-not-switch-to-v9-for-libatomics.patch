@@ -1,0 +1,31 @@
+From 12cd17dd2a7cc1cb35c51cc1de5647faf1ca0da8 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Fri, 4 Sep 2020 08:41:32 +0200
+Subject: [PATCH 07/50] common: Do not switch to v9 for libatomics
+
+---
+ libatomic/configure.tgt | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/libatomic/configure.tgt b/libatomic/configure.tgt
+index 5dd0926d207..c6c51e60206 100644
+--- a/libatomic/configure.tgt
++++ b/libatomic/configure.tgt
+@@ -62,14 +62,6 @@ case "${target_cpu}" in
+         esac
+         ;;
+   sparc)
+-	case " ${CC} ${CFLAGS} " in
+-	  *" -m64 "*)
+-	    ;;
+-	  *)
+-	    if test -z "$with_cpu"; then
+-	      XCFLAGS="${XCFLAGS} -mcpu=v9"
+-	    fi
+-	esac
+ 	ARCH=sparc
+ 	;;
+   sparc64|sparcv9)
+-- 
+2.34.1
+

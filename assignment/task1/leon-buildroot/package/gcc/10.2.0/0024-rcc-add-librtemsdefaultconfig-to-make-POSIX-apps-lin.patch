@@ -1,0 +1,26 @@
+From a4652b5a612694e2832926ef0a852431db5a8a2e Mon Sep 17 00:00:00 2001
+From: Daniel Hellstrom <daniel@gaisler.com>
+Date: Mon, 4 May 2020 12:59:38 +0200
+Subject: [PATCH 24/50] rcc: add librtemsdefaultconfig to make POSIX apps link
+
+This is only needed if the application does not define a RTEMS
+kernel configuration. This will include a default RTEMS kernel
+configuration for POSIX applications.
+---
+ gcc/config/sparc/rcc.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcc/config/sparc/rcc.h b/gcc/config/sparc/rcc.h
+index 5b6b3a677e9..1144e98ba74 100644
+--- a/gcc/config/sparc/rcc.h
++++ b/gcc/config/sparc/rcc.h
+@@ -33,5 +33,5 @@ along with GCC; see the file COPYING3.  If not see
+ #undef LIB_SPEC
+ #define LIB_SPEC "%{!qrtems:%{!qbsp=*: " STD_LIB_SPEC "}}" \
+ "%{!nostdlib: %{qrtems|qbsp=*: --start-group \
+- -lrtemsbsp -lrtemscpu \
++ -lrtemsbsp %{qbsp=*: -lrtemsdefaultconfigbsp} -lrtemscpu \
+  -latomic -lc -lgcc --end-group %{!qnolinkcmds: -T linkcmds%s}}}"
+-- 
+2.34.1
+

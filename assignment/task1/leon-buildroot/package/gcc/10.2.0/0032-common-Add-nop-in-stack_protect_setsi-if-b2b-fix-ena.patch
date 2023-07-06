@@ -1,0 +1,35 @@
+From acc93b28ad508bbd1d28c40d1e0998d7dd00f3d4 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Thu, 1 Oct 2020 09:11:38 +0200
+Subject: [PATCH 32/50] common: Add nop in stack_protect_setsi if b2b fix
+ enabled
+
+---
+ gcc/config/sparc/sparc.md | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/config/sparc/sparc.md b/gcc/config/sparc/sparc.md
+index a9a63fcf326..8d2db23cbcc 100644
+--- a/gcc/config/sparc/sparc.md
++++ b/gcc/config/sparc/sparc.md
+@@ -8316,9 +8316,15 @@ visl")
+ 	(unspec:SI [(match_operand:SI 1 "memory_operand" "m")] UNSPEC_SP_SET))
+    (set (match_scratch:SI 2 "=&r") (const_int 0))]
+   "TARGET_ARCH32"
+-  "ld\t%1, %2\;st\t%2, %0\;mov\t0, %2"
++{
++  if (sparc_fix_b2bst)
++    return "ld\t%1, %2\;st\t%2, %0\;mov\t0, %2\;nop";
++  else
++    return "ld\t%1, %2\;st\t%2, %0\;mov\t0, %2";
++}
+   [(set_attr "type" "multi")
+-   (set_attr "length" "3")])
++   (set (attr "length") (if_then_else (eq_attr "fix_b2bst" "true")
++		      (const_int 4) (const_int 1)))])
+ 
+ (define_insn "stack_protect_setdi"
+   [(set (match_operand:DI 0 "memory_operand" "=m")
+-- 
+2.34.1
+

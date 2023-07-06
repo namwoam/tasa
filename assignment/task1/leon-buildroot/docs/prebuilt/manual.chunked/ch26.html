@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 26. Makeusers syntax documentation</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt04.html" title="Part IV. Appendix" /><link rel="prev" href="ch25.html" title="Chapter 25. Makedev syntax documentation" /><link rel="next" href="ch27.html" title="Chapter 27. Migrating from older Buildroot versions" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch25.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch27.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="makeuser-syntax"></a>Chapter 26. Makeusers syntax documentation</h2></div></div></div><p>The syntax to create users is inspired by the makedev syntax, above, but
+is specific to Buildroot.</p><p>The syntax for adding a user is a space-separated list of fields, one
+user per line; the fields are:</p><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /><col class="col_4" /><col class="col_5" /><col class="col_6" /><col class="col_7" /><col class="col_8" /><col class="col_9" /></colgroup><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>username</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>uid</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>group</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>gid</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>password</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>home</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>shell</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>groups</p></td><td style="" align="left" valign="top"><p>comment</p></td></tr></tbody></table></div><p>Where:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">username</code> is the desired user name (aka login name) for the user.
+  It can not be <code class="literal">root</code>, and must be unique. If set to <code class="literal">-</code>, then just a
+  group will be created.
+</li><li class="listitem">
+<code class="literal">uid</code> is the desired UID for the user. It must be unique, and not
+  <code class="literal">0</code>. If set to <code class="literal">-1</code> or <code class="literal">-2</code>, then a unique UID will be computed by
+  Buildroot, with <code class="literal">-1</code> denoting a system UID from [100…999] and <code class="literal">-2</code>
+  denoting a user UID from [1000…1999].
+</li><li class="listitem">
+<code class="literal">group</code> is the desired name for the user’s main group. It can not
+  be <code class="literal">root</code>. If the group does not exist, it will be created.
+</li><li class="listitem">
+<code class="literal">gid</code> is the desired GID for the user’s main group. It must be unique,
+  and not <code class="literal">0</code>. If set to <code class="literal">-1</code> or <code class="literal">-2</code>, and the group does not already
+  exist, then a unique GID will be computed by Buildroot, with <code class="literal">-1</code>
+  denoting a system GID from [100…999] and <code class="literal">-2</code> denoting a user GID
+  from [1000…1999].
+</li><li class="listitem">
+<code class="literal">password</code> is the crypt(3)-encoded password. If prefixed with <code class="literal">!</code>,
+  then login is disabled. If prefixed with <code class="literal">=</code>, then it is interpreted
+  as clear-text, and will be crypt-encoded (using MD5). If prefixed with
+  <code class="literal">!=</code>, then the password will be crypt-encoded (using MD5) and login
+  will be disabled. If set to <code class="literal">*</code>, then login is not allowed. If set to
+  <code class="literal">-</code>, then no password value will be set.
+</li><li class="listitem">
+<code class="literal">home</code> is the desired home directory for the user. If set to <span class="emphasis"><em>-</em></span>, no
+  home directory will be created, and the user’s home will be <code class="literal">/</code>.
+  Explicitly setting <code class="literal">home</code> to <code class="literal">/</code> is not allowed.
+</li><li class="listitem">
+<code class="literal">shell</code> is the desired shell for the user. If set to <code class="literal">-</code>, then
+  <code class="literal">/bin/false</code> is set as the user’s shell.
+</li><li class="listitem">
+<code class="literal">groups</code> is the comma-separated list of additional groups the user
+  should be part of. If set to <code class="literal">-</code>, then the user will be a member of
+  no additional group. Missing groups will be created with an arbitrary
+  <code class="literal">gid</code>.
+</li><li class="listitem">
+<code class="literal">comment</code> (aka <a class="ulink" href="https://en.wikipedia.org/wiki/Gecos_field" target="_top">GECOS</a>
+  field) is an almost-free-form text.
+</li></ul></div><p>There are a few restrictions on the content of each field:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+except for <code class="literal">comment</code>, all fields are mandatory.
+</li><li class="listitem">
+except for <code class="literal">comment</code>, fields may not contain spaces.
+</li><li class="listitem">
+no field may contain a colon (<code class="literal">:</code>).
+</li></ul></div><p>If <code class="literal">home</code> is not <code class="literal">-</code>, then the home directory, and all files below,
+will belong to the user and its main group.</p><p>Examples:</p><pre class="screen">foo -1 bar -1 !=blabla /home/foo /bin/sh alpha,bravo Foo user</pre><p>This will create this user:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">username</code> (aka login name) is: <code class="literal">foo</code>
+</li><li class="listitem">
+<code class="literal">uid</code> is computed by Buildroot
+</li><li class="listitem">
+main <code class="literal">group</code> is: <code class="literal">bar</code>
+</li><li class="listitem">
+main group <code class="literal">gid</code> is computed by Buildroot
+</li><li class="listitem">
+clear-text <code class="literal">password</code> is: <code class="literal">blabla</code>, will be crypt(3)-encoded, and login is disabled.
+</li><li class="listitem">
+<code class="literal">home</code> is: <code class="literal">/home/foo</code>
+</li><li class="listitem">
+<code class="literal">shell</code> is: <code class="literal">/bin/sh</code>
+</li><li class="listitem">
+<code class="literal">foo</code> is also a member of <code class="literal">groups</code>: <code class="literal">alpha</code> and <code class="literal">bravo</code>
+</li><li class="listitem">
+<code class="literal">comment</code> is: <code class="literal">Foo user</code>
+</li></ul></div><pre class="screen">test 8000 wheel -1 = - /bin/sh - Test user</pre><p>This will create this user:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">username</code> (aka login name) is: <code class="literal">test</code>
+</li><li class="listitem">
+<code class="literal">uid</code> is : <code class="literal">8000</code>
+</li><li class="listitem">
+main <code class="literal">group</code> is: <code class="literal">wheel</code>
+</li><li class="listitem">
+main group <code class="literal">gid</code> is computed by Buildroot, and will use the value defined in the rootfs skeleton
+</li><li class="listitem">
+<code class="literal">password</code> is empty (aka no password).
+</li><li class="listitem">
+<code class="literal">home</code> is <code class="literal">/</code> but will not belong to <code class="literal">test</code>
+</li><li class="listitem">
+<code class="literal">shell</code> is: <code class="literal">/bin/sh</code>
+</li><li class="listitem">
+<code class="literal">test</code> is not a member of any additional <code class="literal">groups</code>
+</li><li class="listitem">
+<code class="literal">comment</code> is: <code class="literal">Test user</code>
+</li></ul></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_caveat_with_automatic_uids_and_gids"></a>26.1. Caveat with automatic UIDs and GIDs</h2></div></div></div><p>When updating buildroot or when packages are added or removed to/from
+the configuration, it is possible that the automatic UIDs and GIDs are
+changed. This can be a problem if persistent files were created with
+that user or group: after upgrade, they will suddenly have a different
+owner.</p><p>Therefore, it is advisable to perpetuate the automatic IDs. This can be
+done by adding a users table with the generated IDs. It is only needed
+to do this for UIDs that actually create persistent files, e.g. database.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch25.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt04.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch27.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

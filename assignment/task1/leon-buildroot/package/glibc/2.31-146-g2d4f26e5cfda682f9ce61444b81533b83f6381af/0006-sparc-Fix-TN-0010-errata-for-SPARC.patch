@@ -1,0 +1,42 @@
+From 84c3edd5f4ab76b2d0d65929557146b25a942d61 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Mon, 14 Sep 2020 15:52:30 +0200
+Subject: [PATCH 06/14] sparc: Fix TN-0010 errata for SPARC
+
+This relies upon defines not in mainline gcc
+---
+ sysdeps/sparc/sparc32/pthread_spin_lock.S    | 3 +++
+ sysdeps/sparc/sparc32/pthread_spin_trylock.S | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/sysdeps/sparc/sparc32/pthread_spin_lock.S b/sysdeps/sparc/sparc32/pthread_spin_lock.S
+index 4a2a256ab3..36fcf7eef7 100644
+--- a/sysdeps/sparc/sparc32/pthread_spin_lock.S
++++ b/sysdeps/sparc/sparc32/pthread_spin_lock.S
+@@ -19,6 +19,9 @@
+ 
+ 	.text
+ ENTRY(pthread_spin_lock)
++#ifdef __FIX_LEON3FT_TN0010
++	nop
++#endif
+ 1:	ldstub		[%o0], %g1
+ 	orcc		%g1, 0x0, %g0
+ 	bne,a		2f
+diff --git a/sysdeps/sparc/sparc32/pthread_spin_trylock.S b/sysdeps/sparc/sparc32/pthread_spin_trylock.S
+index bd31fad711..7222787317 100644
+--- a/sysdeps/sparc/sparc32/pthread_spin_trylock.S
++++ b/sysdeps/sparc/sparc32/pthread_spin_trylock.S
+@@ -20,6 +20,9 @@
+ 
+ 	.text
+ ENTRY(pthread_spin_trylock)
++#ifdef __FIX_LEON3FT_TN0010
++	nop
++#endif
+ 	ldstub		[%o0], %o0
+ 	cmp		%o0, 0
+ 	bne,a		1f
+-- 
+2.34.1
+

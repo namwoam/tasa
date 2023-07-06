@@ -1,0 +1,50 @@
+From 9ca7d2297b4f64c91695f426a3881e5cf5bfa92f Mon Sep 17 00:00:00 2001
+From: Martin Aberg <maberg@gaisler.com>
+Date: Tue, 21 Jan 2020 13:13:03 +0100
+Subject: [PATCH 19/50] bcc: specs for GRLIB-TN-0018
+
+Affects link only. Enable with -qfix-tn0018 and -mfix-<component>
+---
+ gcc/config/sparc/bcc.h   | 10 ++++++++--
+ gcc/config/sparc/bcc.opt |  4 ++++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/config/sparc/bcc.h b/gcc/config/sparc/bcc.h
+index fbc2f89e107..0e5ed36746b 100644
+--- a/gcc/config/sparc/bcc.h
++++ b/gcc/config/sparc/bcc.h
+@@ -35,11 +35,17 @@ Boston, MA 02111-1307, USA.  */
+ } \
+ "
+ 
++#define BCC_STARTFILE_SPEC \
++ "%{qfix-tn0018|mfix-gr712rc|mfix-ut699|mfix-ut700: " \
++  "%{!qsvt: trap_table_mvt_tn0018.S.o%s; :trap_table_svt_tn0018.S.o%s}" \
++ "; :" \
++  "%{!qsvt: trap_table_mvt.S.o%s; :trap_table_svt.S.o%s}" \
++ "} "
++
+ #undef STARTFILE_SPEC
+ #define STARTFILE_SPEC \
++BCC_STARTFILE_SPEC \
+ " \
+-%{!qsvt: trap_table_mvt.S.o%s} \
+-%{qsvt: trap_table_svt.S.o%s} \
+ crt0.S.o%s crti.o%s crtbegin.o%s \
+ "
+ 
+diff --git a/gcc/config/sparc/bcc.opt b/gcc/config/sparc/bcc.opt
+index 67ba19cd7ec..2486ef6d582 100644
+--- a/gcc/config/sparc/bcc.opt
++++ b/gcc/config/sparc/bcc.opt
+@@ -10,3 +10,7 @@ qsvt
+ Driver
+ Enable single vector trapping
+ 
++qfix-tn0018
++Driver
++Enable workarounds for the GRLIB-TN-0018 errata
++
+-- 
+2.34.1
+

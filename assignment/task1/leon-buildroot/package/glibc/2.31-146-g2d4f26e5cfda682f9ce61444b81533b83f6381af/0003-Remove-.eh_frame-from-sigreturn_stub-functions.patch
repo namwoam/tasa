@@ -1,0 +1,47 @@
+From 574aa8afd81ed52deac7c56cbcbe58b021ea8877 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Thu, 28 May 2020 17:25:28 +0200
+Subject: [PATCH 03/14] Remove .eh_frame from sigreturn_stub functions
+
+It was not generated when the functions were written in C and
+causes cleanup-8 and cleanup-10 in the GCC testsuite to fail.
+---
+ .../sysv/linux/sparc/sparc32/sigreturn_stub.S  | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/sysdeps/unix/sysv/linux/sparc/sparc32/sigreturn_stub.S b/sysdeps/unix/sysv/linux/sparc/sparc32/sigreturn_stub.S
+index 727cc94737..c61b14619c 100644
+--- a/sysdeps/unix/sysv/linux/sparc/sparc32/sigreturn_stub.S
++++ b/sysdeps/unix/sysv/linux/sparc/sparc32/sigreturn_stub.S
+@@ -23,6 +23,7 @@
+ 
+    [1] https://lkml.org/lkml/2016/5/27/465  */
+ 
++/*
+ ENTRY (__rt_sigreturn_stub)
+ 	mov	__NR_rt_sigreturn, %g1
+ 	ta	0x10
+@@ -32,3 +33,20 @@ ENTRY (__sigreturn_stub)
+ 	mov	__NR_sigreturn, %g1
+ 	ta	0x10
+ END (__sigreturn_stub)
++*/
++
++.align 4
++.global __rt_sigreturn_stub
++.type __rt_sigreturn_stub, @function
++__rt_sigreturn_stub:;
++    mov 101, %g1
++    ta 0x10
++.size __rt_sigreturn_stub, . - __rt_sigreturn_stub
++
++.align 4
++.global __sigreturn_stub
++.type __sigreturn_stub, @function
++__sigreturn_stub:;
++    mov 216, %g1
++    ta 0x10
++.size __sigreturn_stub, . - __sigreturn_stub
+-- 
+2.34.1
+

@@ -1,0 +1,42 @@
+From da76dc06f5fe5c8d10a3ad7f19bab6575b9e1f6b Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Thu, 1 Oct 2020 09:19:12 +0200
+Subject: [PATCH 33/50] common: Enable instruction printout for mfix-flags
+
+Enabled with -mdebug=all.
+---
+ gcc/config/sparc/sparc.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/gcc/config/sparc/sparc.c b/gcc/config/sparc/sparc.c
+index d630e9910d8..228ceb4aa6c 100644
+--- a/gcc/config/sparc/sparc.c
++++ b/gcc/config/sparc/sparc.c
+@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
+ #include "builtins.h"
+ #include "tree-vector-builder.h"
+ #include "opts.h"
++#include "print-rtl.h"
++#include "pretty-print.h"
+ 
+ /* This file should be included last.  */
+ #include "target-def.h"
+@@ -1134,6 +1136,15 @@ sparc_do_work_around_errata (void)
+       else
+ 	jump = NULL;
+ 
++      /* Enabled with -mdebug=all */
++      if (TARGET_DEBUG_OPTIONS && USEFUL_INSN_P(insn))
++	{
++	  pretty_printer pretty_name;
++	  print_insn(&pretty_name, insn, 1);
++	  printf("Instruction: %s : %d\n", pp_formatted_text (&pretty_name),
++		 GET_CODE(PATTERN(insn)));
++	}
++
+       /* Place a NOP at the branch target of an integer branch if it is a
+ 	 floating-point operation or a floating-point branch.  */
+       if (sparc_fix_gr712rc
+-- 
+2.34.1
+

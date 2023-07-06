@@ -1,0 +1,49 @@
+From 5394f961bbab7fe4b7576739eb59d1d5f417e669 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Mon, 21 Sep 2020 11:07:10 +0200
+Subject: [PATCH 20/32] sparc32,leon: Add configuration option for enabling
+ -mfix-ut700
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/Kconfig  | 7 +++++++
+ arch/sparc/Makefile | 5 +++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index b7aa802d3372..73de59d47d47 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -395,6 +395,13 @@ config SPARC_LEON
+ 	  toolchain at www.gaisler.com.
+ 
+ if SPARC_LEON
++config SPARC_LEON_FIX_UT700
++	bool "UT700 errata fixes"
++	default n
++	help
++	  If you say Y here, errata fixes will be included for UT700 errata.
++	  If unsure, say N.
++
+ config SPARC_LEON_CAS
+ 	bool "Use Compare and Swap"
+ 	default y
+diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
+index 65cd5c7dc160..b63401ecbfbf 100644
+--- a/arch/sparc/Makefile
++++ b/arch/sparc/Makefile
+@@ -40,6 +40,11 @@ KBUILD_CFLAGS  += -Wa,-Av8
+ 
+ KBUILD_AFLAGS  += -m32 -mcpu=$(SPARC_MCPU) -Wa,-Av8
+ 
++ifeq ($(CONFIG_SPARC_LEON_FIX_UT700),y)
++KBUILD_CFLAGS  += -mfix-ut700
++KBUILD_AFLAGS  += -mfix-ut700
++endif
++
+ else
+ #####
+ # sparc64
+-- 
+2.34.1
+

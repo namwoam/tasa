@@ -1,0 +1,49 @@
+From 7b343bd80030c1151a0c5811927326f38791c941 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Fri, 11 Sep 2020 13:08:36 +0200
+Subject: [PATCH 27/50] linux: Set mcpu=leon3 as default, removing v8 as
+ multilib
+
+This is done because recent glibc version cannot even build for v8.
+---
+ gcc/config.gcc           |  2 +-
+ gcc/config/sparc/t-linux | 10 +++++-----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/gcc/config.gcc b/gcc/config.gcc
+index 0e73df961a9..fd452044cfc 100644
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -3314,7 +3314,7 @@ sparc-*-linux*)
+ 	else
+ 		tm_file="${tm_file} sparc/linux.h"
+ 		if test x$with_cpu = x ; then
+-			with_cpu=v8
++			with_cpu=leon3
+ 		fi
+ 		tmake_file="${tmake_file} sparc/t-linux"
+ 		tm_file="$tm_file ./sysroot-suffix.h"
+diff --git a/gcc/config/sparc/t-linux b/gcc/config/sparc/t-linux
+index 661c6b0a013..941cf53904c 100644
+--- a/gcc/config/sparc/t-linux
++++ b/gcc/config/sparc/t-linux
+@@ -1,11 +1,11 @@
+ MULTIARCH_DIRNAME = $(call if_multiarch,sparc-linux-gnu)
+ 
+-# v8 is implicitly default
++# leon3 is implicitly default
+ 
+-MULTILIB_OPTIONS = mcpu=leon3 mfix-ut700
+-MULTILIB_DIRNAMES = leon3 mfix-ut700
++MULTILIB_OPTIONS = mfix-ut700
++MULTILIB_DIRNAMES = mfix-ut700
+ MULTILIB_MATCHES =
+ 
+ MULTILIB_REQUIRED =
+-MULTILIB_REQUIRED += mcpu=leon3 mfix-ut700
+-MULTILIB_OSDIRNAMES = leon3=!leon3 mfix-ut700=!mfix-ut700
++MULTILIB_REQUIRED += mfix-ut700
++MULTILIB_OSDIRNAMES = mfix-ut700=!mfix-ut700
+-- 
+2.34.1
+

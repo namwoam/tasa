@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 27. Migrating from older Buildroot versions</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt04.html" title="Part IV. Appendix" /><link rel="prev" href="ch26.html" title="Chapter 26. Makeusers syntax documentation" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch26.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> </td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="migrating-from-ol-versions"></a>Chapter 27. Migrating from older Buildroot versions</h2></div></div></div><p>Some versions have introduced backward incompatibilities. This section
+explains those incompatibilities, and for each explains what to do to
+complete the migration.</p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="migrating-approach"></a>27.1. General approach</h2></div></div></div><p>To migrate from an older Buildroot version, take the following steps.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+For all your configurations, do a build in the old Buildroot
+  environment. Run <code class="literal">make graph-size</code>. Save
+  <code class="literal">graphs/file-size-stats.csv</code> in a different location. Run <code class="literal">make
+  clean</code> to remove the rest.
+</li><li class="listitem">
+Review the specific migration notes below and make the required
+  adaptations to external packages and custom build scripts.
+</li><li class="listitem">
+Update Buildroot.
+</li><li class="listitem">
+Run <code class="literal">make menuconfig</code> starting from the existing <code class="literal">.config</code>.
+</li><li class="listitem">
+If anything is enabled in the Legacy menu, check its help text,
+  unselect it, and save the configuration.
+</li><li class="listitem">
+For more details, review the git commit messages for the packages that
+  you need. Change into the <code class="literal">packages</code> directory and run
+  <code class="literal">git log &lt;old version&gt;.. — &lt;your packages&gt;</code>.
+</li><li class="listitem">
+Build in the new Buildroot environment.
+</li><li class="listitem">
+Fix build issues in external packages (usually due to updated
+  dependencies).
+</li><li class="listitem">
+Run <code class="literal">make graph-size</code>.
+</li><li class="listitem">
+Compare the new <code class="literal">file-size-stats.csv</code> with the original one, to
+  check if no required files have disappeared and if no new big unneeded
+  files have appeared.
+</li><li class="listitem">
+For configuration (and other) files in a custom overlay that overwrite
+  files created by Buildroot, check if there are changes in the
+  Buildroot-generated file that need to be propagated to your custom
+  file.
+</li></ol></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="br2-external-converting"></a>27.2. Migrating to 2016.11</h2></div></div></div><p>Before Buildroot 2016.11, it was possible to use only one br2-external
+tree at once. With Buildroot 2016.11 came the possibility to use more
+than one simultaneously (for details, see <a class="xref" href="ch09.html#outside-br-custom" title="9.2. Keeping customizations outside of Buildroot">Section 9.2, “Keeping customizations outside of Buildroot”</a>).</p><p>This however means that older br2-external trees are not usable as-is.
+A minor change has to be made: adding a name to your br2-external tree.</p><p>This can be done very easily in just a few steps:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+First, create a new file named <code class="literal">external.desc</code>, at the root of your
+   br2-external tree, with a single line defining the name of your
+   br2-external tree:
+</p><pre class="screen">$ echo 'name: NAME_OF_YOUR_TREE' &gt;external.desc</pre><p><strong>Note. </strong>Be careful when choosing a name: It has to be unique and be made
+with only ASCII characters from the set <code class="literal">[A-Za-z0-9_]</code>.</p></li><li class="listitem"><p class="simpara">
+Then, change every occurence of <code class="literal">BR2_EXTERNAL</code> in your br2-external
+   tree with the new variable:
+</p><pre class="screen">$ find . -type f | xargs sed -i 's/BR2_EXTERNAL/BR2_EXTERNAL_NAME_OF_YOUR_TREE_PATH/g'</pre></li></ul></div><p>Now, your br2-external tree can be used with Buildroot 2016.11 onward.</p><p><strong>Note: </strong>This change makes your br2-external tree incompatible with Buildroot
+before 2016.11.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="migrating-host-usr"></a>27.3. Migrating to 2017.08</h2></div></div></div><p>Before Buildroot 2017.08, host packages were installed in <code class="literal">$(HOST_DIR)/usr</code>
+(with e.g. the autotools' <code class="literal">--prefix=$(HOST_DIR)/usr</code>). With Buildroot
+2017.08, they are now installed directly in <code class="literal">$(HOST_DIR)</code>.</p><p>Whenever a package installs an executable that is linked with a library
+in <code class="literal">$(HOST_DIR)/lib</code>, it must have an RPATH pointing to that directory.</p><p>An RPATH pointing to <code class="literal">$(HOST_DIR)/usr/lib</code> is no longer accepted.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch26.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt04.html">Up</a></td><td width="40%" align="right"> </td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

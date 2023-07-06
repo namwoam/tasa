@@ -1,0 +1,30 @@
+From 58527ed4724ddd82b7a691ddfd9928e0c5c69923 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Wed, 12 Oct 2022 08:12:19 +0200
+Subject: [PATCH 11/14] Use arguments from SSH_ARGS when connecting during
+ cross-testing
+
+---
+ scripts/cross-test-ssh.sh | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/cross-test-ssh.sh b/scripts/cross-test-ssh.sh
+index 438c8f0d96..1a919e3354 100755
+--- a/scripts/cross-test-ssh.sh
++++ b/scripts/cross-test-ssh.sh
+@@ -132,4 +132,11 @@ fi
+ # so we need to re-quote the whole command to ensure it appears as
+ # the sole argument of the '-c' option.
+ full_command="$(bourne_quote "${command}")"
+-$ssh "$host" /bin/sh -c "$full_command"
++
++$ssh $SSH_ARGS "$host" /bin/sh -c "$full_command"
++r=$?
++if [ $r == 255 ]; then
++    echo "Unable to connect to $host!"
++fi
++
++exit $r
+-- 
+2.34.1
+

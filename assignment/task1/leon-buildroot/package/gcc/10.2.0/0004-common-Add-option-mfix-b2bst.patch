@@ -1,0 +1,29 @@
+From d2fbe12c5a24a2d6c0cde8862ccfaa83cc89bc6c Mon Sep 17 00:00:00 2001
+From: Martin Aberg <maberg@gaisler.com>
+Date: Fri, 6 Oct 2017 19:08:54 +0200
+Subject: [PATCH 04/50] common: Add option -mfix-b2bst
+
+---
+ gcc/config/sparc/sparc.opt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/gcc/config/sparc/sparc.opt b/gcc/config/sparc/sparc.opt
+index b3d688b392f..5ac94f4a61f 100644
+--- a/gcc/config/sparc/sparc.opt
++++ b/gcc/config/sparc/sparc.opt
+@@ -267,9 +267,9 @@ mfix-gr712rc
+ Target Report RejectNegative Var(sparc_fix_gr712rc)
+ Enable workarounds for the errata of the GR712RC processor.
+ 
+-;; Enable workaround for back-to-back store errata
+-TargetVariable
+-unsigned int sparc_fix_b2bst
++mfix-b2bst
++Target Report RejectNegative Var(sparc_fix_b2bst)
++Enable workarounds for LEON3FT store-store errata
+ 
+ ;; Enable workaround for GRLIB-TN-0013 errata
+ TargetVariable
+-- 
+2.34.1
+

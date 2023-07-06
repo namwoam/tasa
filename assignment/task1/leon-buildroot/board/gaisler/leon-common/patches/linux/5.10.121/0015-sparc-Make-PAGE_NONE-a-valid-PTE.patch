@@ -1,0 +1,28 @@
+From 7b94b829be3e37ee212c282dda088fdcd8ce556d Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Wed, 10 Jun 2020 12:26:44 +0200
+Subject: [PATCH 15/28] sparc: Make PAGE_NONE a valid PTE
+
+Otherwise when exiting a program that has set a page to PROT_NONE
+we get error messages about the page having a bad swap file mapping.
+See for example struct-ret-3.c in GCC.
+---
+ arch/sparc/include/asm/pgtsrmmu.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/sparc/include/asm/pgtsrmmu.h b/arch/sparc/include/asm/pgtsrmmu.h
+index 7708d015712b..117009b03cf4 100644
+--- a/arch/sparc/include/asm/pgtsrmmu.h
++++ b/arch/sparc/include/asm/pgtsrmmu.h
+@@ -74,7 +74,7 @@
+  * enforce all the protection levels that vma's can have.
+  * XXX But for now...
+  */
+-#define SRMMU_PAGE_NONE    __pgprot(SRMMU_CACHE | \
++#define SRMMU_PAGE_NONE    __pgprot(SRMMU_VALID | SRMMU_CACHE | \
+ 				    SRMMU_PRIV | SRMMU_REF)
+ #define SRMMU_PAGE_SHARED  __pgprot(SRMMU_VALID | SRMMU_CACHE | \
+ 				    SRMMU_EXEC | SRMMU_WRITE | SRMMU_REF)
+-- 
+2.17.1
+

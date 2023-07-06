@@ -1,0 +1,79 @@
+From 1c4ddb2c9b7b9aac4176e7ccf18562ebf81ed599 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Tue, 27 Dec 2022 12:47:51 +0100
+Subject: [PATCH 44/50] linux: Do not adhere to multilib sysroot subdirs when
+ multilibs are disabled
+
+Otherwise, e.g. a Buildroot toolchain (that is configured with
+--disable-multilib) that is built with e.g. -mfix-ut700 will look for
+libs in sysroot subdirs even though the toolchain does not have
+multilibs.
+
+This brings sparc/t-linux back to its upstream state and introduces all
+the multilib configuration in the new sparc/t-linux-mulitlib (inspired
+by how riscv-linux does it) when configuring the toolchain with
+--enable-multilib.
+---
+ gcc/config.gcc                    | 10 ++++++++--
+ gcc/config/sparc/t-linux          | 10 ----------
+ gcc/config/sparc/t-linux-multilib | 10 ++++++++++
+ 3 files changed, 18 insertions(+), 12 deletions(-)
+ create mode 100644 gcc/config/sparc/t-linux-multilib
+
+diff --git a/gcc/config.gcc b/gcc/config.gcc
+index 42db4993023..886d3b3a77a 100644
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -3325,9 +3325,15 @@ sparc-*-linux*)
+ 		if test x$with_cpu = x ; then
+ 			with_cpu=leon3
+ 		fi
++		case "x${enable_multilib}" in
++		xno) ;;
++		xyes)
++			tm_file="$tm_file ./sysroot-suffix.h"
++			tmake_file="${tmake_file} sparc/t-linux-multilib t-sysroot-suffix"
++			;;
++		*) echo "Unknown value for enable_multilib"; exit 1
++		esac
+ 		tmake_file="${tmake_file} sparc/t-linux"
+-		tm_file="$tm_file ./sysroot-suffix.h"
+-		tmake_file="$tmake_file t-sysroot-suffix"
+ 	fi
+ 	;;
+ sparc-*-netbsdelf*)
+diff --git a/gcc/config/sparc/t-linux b/gcc/config/sparc/t-linux
+index 941cf53904c..bb8fc29e55b 100644
+--- a/gcc/config/sparc/t-linux
++++ b/gcc/config/sparc/t-linux
+@@ -1,11 +1 @@
+ MULTIARCH_DIRNAME = $(call if_multiarch,sparc-linux-gnu)
+-
+-# leon3 is implicitly default
+-
+-MULTILIB_OPTIONS = mfix-ut700
+-MULTILIB_DIRNAMES = mfix-ut700
+-MULTILIB_MATCHES =
+-
+-MULTILIB_REQUIRED =
+-MULTILIB_REQUIRED += mfix-ut700
+-MULTILIB_OSDIRNAMES = mfix-ut700=!mfix-ut700
+diff --git a/gcc/config/sparc/t-linux-multilib b/gcc/config/sparc/t-linux-multilib
+new file mode 100644
+index 00000000000..a4fc3e26f4c
+--- /dev/null
++++ b/gcc/config/sparc/t-linux-multilib
+@@ -0,0 +1,10 @@
++
++# leon3 is implicitly default with Gaisler patches
++
++MULTILIB_OPTIONS = mfix-ut700
++MULTILIB_DIRNAMES = mfix-ut700
++MULTILIB_MATCHES =
++
++MULTILIB_REQUIRED =
++MULTILIB_REQUIRED += mfix-ut700
++MULTILIB_OSDIRNAMES = mfix-ut700=!mfix-ut700
+-- 
+2.34.1
+

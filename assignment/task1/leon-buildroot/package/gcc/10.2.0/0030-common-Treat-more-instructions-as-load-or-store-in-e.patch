@@ -1,0 +1,98 @@
+From 1a0034089b094e83f0ebffc7bbe79307aa1dfe8b Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Fri, 25 Sep 2020 13:17:46 +0200
+Subject: [PATCH 30/50] common: Treat more instructions as load or store in
+ errata workarounds
+
+Check the attribute of instruction to determine if it performs a store
+or load operation. This more generic approach sees the last instruction
+in the GOTdata_op model as a potential load and the memory barrier as
+a store instruction.
+---
+ gcc/config/sparc/sparc.c | 40 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 30 insertions(+), 10 deletions(-)
+
+diff --git a/gcc/config/sparc/sparc.c b/gcc/config/sparc/sparc.c
+index e394a87e575..fed7651959e 100644
+--- a/gcc/config/sparc/sparc.c
++++ b/gcc/config/sparc/sparc.c
+@@ -1049,6 +1049,31 @@ atomic_insn_for_leon3_p (rtx_insn *insn)
+     }
+ }
+ 
++/* True if INSN is a store instruction.  */
++
++static bool
++store_insn_p (rtx_insn *insn)
++{
++   if (GET_CODE (PATTERN (insn)) != SET)
++    return false;
++
++   return (get_attr_type (insn) == TYPE_STORE)
++     || (get_attr_type (insn) == TYPE_FPSTORE);
++}
++
++/* True if INSN is a load instruction.  */
++
++static bool
++load_insn_p (rtx_insn *insn)
++{
++   if (GET_CODE (PATTERN (insn)) != SET)
++    return false;
++
++   return (get_attr_type (insn) == TYPE_LOAD)
++     || (get_attr_type (insn) == TYPE_SLOAD)
++     || (get_attr_type (insn) == TYPE_FPLOAD);
++}
++
+ /* We use a machine specific pass to enable workarounds for errata.
+ 
+    We need to have the (essentially) final form of the insn stream in order
+@@ -1109,9 +1134,7 @@ sparc_do_work_around_errata (void)
+ 	 instruction at branch target.  */
+       if (sparc_fix_ut700
+ 	  && NONJUMP_INSN_P (insn)
+-	  && (set = single_set (insn)) != NULL_RTX
+-	  && mem_ref (SET_SRC (set))
+-	  && REG_P (SET_DEST (set)))
++	  && load_insn_p (insn))
+ 	{
+ 	  if (jump && jump_to_label_p (jump))
+ 	    {
+@@ -1215,11 +1238,10 @@ sparc_do_work_around_errata (void)
+ 	 2. any store instruction (e.g. st / stb / sth / stf / std / stdf)  */
+       if (sparc_fix_b2bst
+ 	  && NONJUMP_INSN_P (insn)
+-	  && (set = single_set (insn)) != NULL_RTX
+-	  && MEM_P (SET_DEST (set)))
++	  && store_insn_p (insn))
+ 	{
+ 	  /* Sequence B begins with a double-word store.  */
+-	  bool seq_b = GET_MODE_SIZE (GET_MODE (SET_DEST (set))) == 8;
++	  bool seq_b = GET_MODE_SIZE (GET_MODE (SET_DEST (single_set (insn)))) == 8;
+ 	  rtx_insn *after;
+ 	  int i;
+ 
+@@ -1249,8 +1271,7 @@ sparc_do_work_around_errata (void)
+ 	      if (seq_b)
+ 		{
+ 		  /* Add NOP if followed by a store.  */
+-		  if ((set = single_set (after)) != NULL_RTX
+-		      && MEM_P (SET_DEST (set)))
++		  if (store_insn_p (after))
+ 		    insert_nop = true;
+ 
+ 		  /* Otherwise it is ok.  */
+@@ -1272,8 +1293,7 @@ sparc_do_work_around_errata (void)
+ 
+ 	      /* Add NOP if third instruction is a store.  */
+ 	      if (i == 1
+-		  && (set = single_set (after)) != NULL_RTX
+-		  && MEM_P (SET_DEST (set)))
++		  && store_insn_p (after))
+ 		insert_nop = true;
+ 	    }
+ 	}
+-- 
+2.34.1
+

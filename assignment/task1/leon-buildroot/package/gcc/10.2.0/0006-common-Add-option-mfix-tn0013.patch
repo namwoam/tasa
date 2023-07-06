@@ -1,0 +1,29 @@
+From db72c448cc6c5ada594ec3e2220910c3e9730885 Mon Sep 17 00:00:00 2001
+From: Martin Aberg <maberg@gaisler.com>
+Date: Fri, 8 Dec 2017 16:35:08 +0100
+Subject: [PATCH 06/50] common: Add option -mfix-tn0013
+
+---
+ gcc/config/sparc/sparc.opt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/gcc/config/sparc/sparc.opt b/gcc/config/sparc/sparc.opt
+index 5ac94f4a61f..50fedbbd012 100644
+--- a/gcc/config/sparc/sparc.opt
++++ b/gcc/config/sparc/sparc.opt
+@@ -271,9 +271,9 @@ mfix-b2bst
+ Target Report RejectNegative Var(sparc_fix_b2bst)
+ Enable workarounds for LEON3FT store-store errata
+ 
+-;; Enable workaround for GRLIB-TN-0013 errata
+-TargetVariable
+-unsigned int sparc_fix_lost_divsqrt
++mfix-tn0013
++Target Report RejectNegative Var(sparc_fix_lost_divsqrt)
++Enable workarounds for the GRLIB-TN-0013 errata.
+ 
+ Mask(LONG_DOUBLE_128)
+ ;; Use 128-bit long double
+-- 
+2.34.1
+

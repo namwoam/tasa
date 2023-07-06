@@ -1,0 +1,25 @@
+From 2bf8b74aa45ea488d47dd459095dccc3c9aec162 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Fri, 5 Jun 2020 10:14:48 +0200
+Subject: [PATCH 23/50] linux: Disable sanitizers until we get asan working
+ again
+
+---
+ libsanitizer/configure.tgt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libsanitizer/configure.tgt b/libsanitizer/configure.tgt
+index 5d46990eba4..6f944a123a2 100644
+--- a/libsanitizer/configure.tgt
++++ b/libsanitizer/configure.tgt
+@@ -37,6 +37,7 @@ case "${target}" in
+ 	fi
+ 	;;
+   sparc*-*-linux*)
++        UNSUPPORTED=1
+ 	;;
+   s390*-*-linux*)
+ 	;;
+-- 
+2.34.1
+

@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 9. Project-specific customization</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt02.html" title="Part II. User guide" /><link rel="prev" href="ch08.html" title="Chapter 8. General Buildroot usage" /><link rel="next" href="ch10.html" title="Chapter 10. Using SELinux in Buildroot" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch08.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch10.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="customize"></a>Chapter 9. Project-specific customization</h2></div></div></div><p>Typical actions you may need to perform for a given project are:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+configuring Buildroot (including build options and toolchain,
+  bootloader, kernel, package and filesystem image type selection)
+</li><li class="listitem">
+configuring other components, like the Linux kernel and BusyBox
+</li><li class="listitem"><p class="simpara">
+customizing the generated target filesystem
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+adding or overwriting files on the target filesystem (using
+     <code class="literal">BR2_ROOTFS_OVERLAY</code>)
+</li><li class="listitem">
+modifying or deleting files on the target filesystem (using
+     <code class="literal">BR2_ROOTFS_POST_BUILD_SCRIPT</code>)
+</li><li class="listitem">
+running arbitrary commands prior to generating the filesystem image
+     (using <code class="literal">BR2_ROOTFS_POST_BUILD_SCRIPT</code>)
+</li><li class="listitem">
+setting file permissions and ownership (using
+     <code class="literal">BR2_ROOTFS_DEVICE_TABLE</code>)
+</li><li class="listitem">
+adding custom devices nodes (using
+     <code class="literal">BR2_ROOTFS_STATIC_DEVICE_TABLE</code>)
+</li></ul></div></li><li class="listitem">
+adding custom user accounts (using <code class="literal">BR2_ROOTFS_USERS_TABLES</code>)
+</li><li class="listitem">
+running arbitrary commands after generating the filesystem image
+  (using <code class="literal">BR2_ROOTFS_POST_IMAGE_SCRIPT</code>)
+</li><li class="listitem">
+adding project-specific patches to some packages (using
+  <code class="literal">BR2_GLOBAL_PATCH_DIR</code>)
+</li><li class="listitem">
+adding project-specific packages
+</li></ul></div><p>An important note regarding such <span class="emphasis"><em>project-specific</em></span> customizations:
+please carefully consider which changes are indeed project-specific and
+which changes are also useful to developers outside your project. The
+Buildroot community highly recommends and encourages the upstreaming of
+improvements, packages and board support to the official Buildroot
+project. Of course, it is sometimes not possible or desirable to
+upstream because the changes are highly specific or proprietary.</p><p>This chapter describes how to make such project-specific customizations
+in Buildroot and how to store them in a way that you can build the same
+image in a reproducible way, even after running <span class="emphasis"><em>make clean</em></span>. By
+following the recommended strategy, you can even use the same Buildroot
+tree to build multiple distinct projects!</p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="customize-dir-structure"></a>9.1. Recommended directory structure</h2></div></div></div><p>When customizing Buildroot for your project, you will be creating one or
+more project-specific files that need to be stored somewhere. While most
+of these files could be placed in <span class="emphasis"><em>any</em></span> location as their path is to be
+specified in the Buildroot configuration, the Buildroot developers
+recommend a specific directory structure which is described in this
+section.</p><p>Orthogonal to this directory structure, you can choose <span class="emphasis"><em>where</em></span> you place
+this structure itself: either inside the Buildroot tree, or outside of
+it using a br2-external tree. Both options are valid, the choice is up
+to you.</p><pre class="screen">+-- board/
+|   +-- &lt;company&gt;/
+|       +-- &lt;boardname&gt;/
+|           +-- linux.config
+|           +-- busybox.config
+|           +-- &lt;other configuration files&gt;
+|           +-- post_build.sh
+|           +-- post_image.sh
+|           +-- rootfs_overlay/
+|           |   +-- etc/
+|           |   +-- &lt;some files&gt;
+|           +-- patches/
+|               +-- foo/
+|               |   +-- &lt;some patches&gt;
+|               +-- libbar/
+|                   +-- &lt;some other patches&gt;
+|
++-- configs/
+|   +-- &lt;boardname&gt;_defconfig
+|
++-- package/
+|   +-- &lt;company&gt;/
+|       +-- Config.in (if not using a br2-external tree)
+|       +-- &lt;company&gt;.mk (if not using a br2-external tree)
+|       +-- package1/
+|       |    +-- Config.in
+|       |    +-- package1.mk
+|       +-- package2/
+|           +-- Config.in
+|           +-- package2.mk
+|
++-- Config.in (if using a br2-external tree)
++-- external.mk (if using a br2-external tree)
++-- external.desc (if using a br2-external tree)</pre><p>Details on the files shown above are given further in this chapter.</p><p>Note: if you choose to place this structure outside of the Buildroot
+tree but in a br2-external tree, the &lt;company&gt; and possibly &lt;boardname&gt;
+components may be superfluous and can be left out.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_implementing_layered_customizations"></a>9.1.1. Implementing layered customizations</h3></div></div></div><p>It is quite common for a user to have several related projects that partly
+need the same customizations. Instead of duplicating these
+customizations for each project, it is recommended to use a layered
+customization approach, as explained in this section.</p><p>Almost all of the customization methods available in Buildroot, like
+post-build scripts and root filesystem overlays, accept a
+space-separated list of items. The specified items are always treated in
+order, from left to right. By creating more than one such item, one for
+the common customizations and another one for the really
+project-specific customizations, you can avoid unnecessary duplication.
+Each layer is typically embodied by a separate directory inside
+<code class="literal">board/&lt;company&gt;/</code>. Depending on your projects, you could even introduce
+more than two layers.</p><p>An example directory structure for where a user has two customization
+layers <span class="emphasis"><em>common</em></span> and <span class="emphasis"><em>fooboard</em></span> is:</p><pre class="screen">+-- board/
+    +-- &lt;company&gt;/
+        +-- common/
+        |   +-- post_build.sh
+        |   +-- rootfs_overlay/
+        |   |   +-- ...
+        |   +-- patches/
+        |       +-- ...
+        |
+        +-- fooboard/
+            +-- linux.config
+            +-- busybox.config
+            +-- &lt;other configuration files&gt;
+            +-- post_build.sh
+            +-- rootfs_overlay/
+            |   +-- ...
+            +-- patches/
+                +-- ...</pre><p>For example, if the user has the <code class="literal">BR2_GLOBAL_PATCH_DIR</code> configuration
+option set as:</p><pre class="screen">BR2_GLOBAL_PATCH_DIR="board/&lt;company&gt;/common/patches board/&lt;company&gt;/fooboard/patches"</pre><p>then first the patches from the <span class="emphasis"><em>common</em></span> layer would be applied,
+followed by the patches from the <span class="emphasis"><em>fooboard</em></span> layer.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="outside-br-custom"></a>9.2. Keeping customizations outside of Buildroot</h2></div></div></div><p>As already briefly mentioned in <a class="xref" href="ch09.html#customize-dir-structure" title="9.1. Recommended directory structure">Section 9.1, “Recommended directory structure”</a>, you can
+place project-specific customizations in two locations:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+directly within the Buildroot tree, typically maintaining them using
+   branches in a version control system so that upgrading to a newer
+   Buildroot release is easy.
+</li><li class="listitem">
+outside of the Buildroot tree, using the <span class="emphasis"><em>br2-external</em></span> mechanism.
+   This mechanism allows to keep package recipes, board support and
+   configuration files outside of the Buildroot tree, while still
+   having them nicely integrated in the build logic. We call this
+   location a <span class="emphasis"><em>br2-external tree</em></span>. This section explains how to use
+   the br2-external mechanism and what to provide in a br2-external
+   tree.
+</li></ul></div><p>One can tell Buildroot to use one or more br2-external trees by setting
+the <code class="literal">BR2_EXTERNAL</code> make variable set to the path(s) of the br2-external
+tree(s) to use. It can be passed to any Buildroot <code class="literal">make</code> invocation. It
+is automatically saved in the hidden <code class="literal">.br2-external.mk</code> file in the output
+directory. Thanks to this, there is no need to pass <code class="literal">BR2_EXTERNAL</code> at
+every <code class="literal">make</code> invocation. It can however be changed at any time by
+passing a new value, and can be removed by passing an empty value.</p><p><strong>Note. </strong>The path to a br2-external tree can be either absolute or relative.
+If it is passed as a relative path, it is important to note that it is
+interpreted relative to the main Buildroot source directory, <span class="strong"><strong>not</strong></span> to
+the Buildroot output directory.</p><p><strong>Note: </strong>If using an br2-external tree from before Buildroot 2016.11, you need to
+convert it before you can use it with Buildroot 2016.11 onward. See
+<a class="xref" href="ch27.html#br2-external-converting" title="27.2. Migrating to 2016.11">Section 27.2, “Migrating to 2016.11”</a> for help on doing so.</p><p>Some examples:</p><pre class="screen">buildroot/ $ make BR2_EXTERNAL=/path/to/foo menuconfig</pre><p>From now on, definitions from the <code class="literal">/path/to/foo</code> br2-external tree
+will be used:</p><pre class="screen">buildroot/ $ make
+buildroot/ $ make legal-info</pre><p>We can switch to another br2-external tree at any time:</p><pre class="screen">buildroot/ $ make BR2_EXTERNAL=/where/we/have/bar xconfig</pre><p>We can also use multiple br2-external trees:</p><pre class="screen">buildroot/ $ make BR2_EXTERNAL=/path/to/foo:/where/we/have/bar menuconfig</pre><p>Or disable the usage of any br2-external tree:</p><pre class="screen">buildroot/ $ make BR2_EXTERNAL= xconfig</pre><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_layout_of_a_br2_external_tree"></a>9.2.1. Layout of a br2-external tree</h3></div></div></div><p>A br2-external tree must contain at least those three files, described
+in the following chapters:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">external.desc</code>
+</li><li class="listitem">
+<code class="literal">external.mk</code>
+</li><li class="listitem">
+<code class="literal">Config.in</code>
+</li></ul></div><p>Apart from those mandatory files, there may be additional and optional
+content that may be present in a br2-external tree, like the <code class="literal">configs/</code>
+or <code class="literal">provides/</code> directories. They are described in the following chapters
+as well.</p><p>A complete example br2-external tree layout is also described later.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_the_literal_external_desc_literal_file"></a>The <code class="literal">external.desc</code> file</h4></div></div></div><p>That file describes the br2-external tree: the <span class="emphasis"><em>name</em></span> and <span class="emphasis"><em>description</em></span>
+for that br2-external tree.</p><p>The format for this file is line based, with each line starting by a
+keyword, followed by a colon and one or more spaces, followed by the
+value assigned to that keyword. There are two keywords currently
+recognised:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+<code class="literal">name</code>, mandatory, defines the name for that br2-external tree. That
+   name must only use ASCII characters in the set <code class="literal">[A-Za-z0-9_]</code>; any
+   other character is forbidden. Buildroot sets the variable
+   <code class="literal">BR2_EXTERNAL_$(NAME)_PATH</code> to the absolute path of the br2-external
+   tree, so that you can use it to refer to your br2-external tree. This
+   variable is available both in Kconfig, so you can use it to source your
+   Kconfig files (see below) and in the Makefile, so that you can use it
+   to include other Makefiles (see below) or refer to other files (like
+   data files) from your br2-external tree.
+</p><p><strong>Note: </strong>Since it is possible to use multiple br2-external trees at once, this
+  name is used by Buildroot to generate variables for each of those trees.
+  That name is used to identify your br2-external tree, so try to come up
+  with a name that really describes your br2-external tree, in order for
+  it to be relatively unique, so that it does not clash with another name
+  from another br2-external tree, especially if you are planning on
+  somehow sharing your br2-external tree with third parties or using
+  br2-external trees from third parties.</p></li><li class="listitem">
+<code class="literal">desc</code>, optional, provides a short description for that br2-external
+   tree. It shall fit on a single line, is mostly free-form (see below),
+   and is used when displaying information about a br2-external tree (e.g.
+   above the list of defconfig files, or as the prompt in the menuconfig);
+   as such, it should relatively brief (40 chars is probably a good upper
+   limit). The description is available in the <code class="literal">BR2_EXTERNAL_$(NAME)_DESC</code>
+   variable.
+</li></ul></div><p>Examples of names and the corresponding <code class="literal">BR2_EXTERNAL_$(NAME)_PATH</code>
+variables:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">FOO</code> → <code class="literal">BR2_EXTERNAL_FOO_PATH</code>
+</li><li class="listitem">
+<code class="literal">BAR_42</code> → <code class="literal">BR2_EXTERNAL_BAR_42_PATH</code>
+</li></ul></div><p>In the following examples, it is assumed the name to be set to <code class="literal">BAR_42</code>.</p><p><strong>Note: </strong>Both <code class="literal">BR2_EXTERNAL_$(NAME)_PATH</code> and <code class="literal">BR2_EXTERNAL_$(NAME)_DESC</code> are
+  available in the Kconfig files and the Makefiles. They are also
+  exported in the environment so are available in post-build, post-image
+  and in-fakeroot scripts.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_the_literal_config_in_literal_and_literal_external_mk_literal_files"></a>The <code class="literal">Config.in</code> and <code class="literal">external.mk</code> files</h4></div></div></div><p>Those files (which may each be empty) can be used to define package
+recipes (i.e. <code class="literal">foo/Config.in</code> and <code class="literal">foo/foo.mk</code> like for packages bundled
+in Buildroot itself) or other custom configuration options or make logic.</p><p>Buildroot automatically includes the <code class="literal">Config.in</code> from each br2-external
+tree to make it appear in the top-level configuration menu, and includes
+the <code class="literal">external.mk</code> from each br2-external tree with the rest of the
+makefile logic.</p><p>The main usage of this is to store package recipes. The recommended way
+to do this is to write a <code class="literal">Config.in</code> file that looks like:</p><pre class="screen">source "$BR2_EXTERNAL_BAR_42_PATH/package/package1/Config.in"
+source "$BR2_EXTERNAL_BAR_42_PATH/package/package2/Config.in"</pre><p>Then, have an <code class="literal">external.mk</code> file that looks like:</p><pre class="screen">include $(sort $(wildcard $(BR2_EXTERNAL_BAR_42_PATH)/package/*/*.mk))</pre><p>And then in <code class="literal">$(BR2_EXTERNAL_BAR_42_PATH)/package/package1</code> and
+<code class="literal">$(BR2_EXTERNAL_BAR_42_PATH)/package/package2</code> create normal
+Buildroot package recipes, as explained in <a class="xref" href="ch18.html" title="Chapter 18. Adding new packages to Buildroot">Chapter 18, <em>Adding new packages to Buildroot</em></a>.
+If you prefer, you can also group the packages in subdirectories
+called &lt;boardname&gt; and adapt the above paths accordingly.</p><p>You can also define custom configuration options in <code class="literal">Config.in</code> and
+custom make logic in <code class="literal">external.mk</code>.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_the_literal_configs_literal_directory"></a>The <code class="literal">configs/</code> directory</h4></div></div></div><p>One can store Buildroot defconfigs in the <code class="literal">configs</code> subdirectory of
+the br2-external tree. Buildroot will automatically show them in the
+output of <code class="literal">make list-defconfigs</code> and allow them to be loaded with the
+normal <code class="literal">make &lt;name&gt;_defconfig</code> command. They will be visible in the
+<span class="emphasis"><em>make list-defconfigs</em></span> output, below an <code class="literal">External configs</code> label that
+contains the name of the br2-external tree they are defined in.</p><p><strong>Note: </strong>If a defconfig file is present in more than one br2-external tree, then
+the one from the last br2-external tree is used. It is thus possible
+to override a defconfig bundled in Buildroot or another br2-external
+tree.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_the_literal_provides_literal_directory"></a>The <code class="literal">provides/</code> directory</h4></div></div></div><p>For some packages, Buildroot provides a choice between two (or more)
+implementations of API-compatible such packages. For example, there is
+a choice to choose either libjpeg ot jpeg-turbo; there is one between
+openssl or libressl; there is one to select one of the known,
+pre-configured toolchains…</p><p>It is possible for a br2-external to extend those choices, by providing
+a set of files that define those alternatives:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">provides/toolchains.in</code> defines the pre-configured toolchains, which
+  will then be listed in the toolchain selection;
+</li><li class="listitem">
+<code class="literal">provides/jpeg.in</code> defines the alternative libjpeg implementations;
+</li><li class="listitem">
+<code class="literal">provides/openssl.in</code> defines the alternative openssl implementations;
+</li><li class="listitem">
+<code class="literal">provides/skeleton.in</code> defines the alternative skeleton implementations;
+</li><li class="listitem">
+<code class="literal">provides/init.in</code> defines the alternative init system implementations, this
+  can be used to select a default skeleton for your init.
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_free_form_content"></a>Free-form content</h4></div></div></div><p>One can store all the board-specific configuration files there, such
+as the kernel configuration, the root filesystem overlay, or any other
+configuration file for which Buildroot allows to set the location (by
+using the <code class="literal">BR2_EXTERNAL_$(NAME)_PATH</code> variable). For example, you
+could set the paths to a global patch directory, to a rootfs overlay
+and to the kernel configuration file as follows (e.g. by running
+<code class="literal">make menuconfig</code> and filling in these options):</p><pre class="screen">BR2_GLOBAL_PATCH_DIR=$(BR2_EXTERNAL_BAR_42_PATH)/patches/
+BR2_ROOTFS_OVERLAY=$(BR2_EXTERNAL_BAR_42_PATH)/board/&lt;boardname&gt;/overlay/
+BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=$(BR2_EXTERNAL_BAR_42_PATH)/board/&lt;boardname&gt;/kernel.config</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_additional_linux_kernel_extensions"></a>Additional Linux kernel extensions</h4></div></div></div><p>Additional Linux kernel extensions (see <a class="xref" href="ch18.html#linux-kernel-ext" title="18.22.2. linux-kernel-extensions">Section 18.22.2, “linux-kernel-extensions”</a>) can
+be added by storing them in the <code class="literal">linux/</code> directory at the root of a
+br2-external tree.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_example_layout"></a>Example layout</h4></div></div></div><p>Here is an example layout using all features of br2-external (the sample
+content is shown for the file above it, when it is relevant to explain
+the br2-external tree; this is all entirely made up just for the sake of
+illustration, of course):</p><pre class="screen">/path/to/br2-ext-tree/
+  |- external.desc
+  |     |name: BAR_42
+  |     |desc: Example br2-external tree
+  |     `----
+  |
+  |- Config.in
+  |     |source "$BR2_EXTERNAL_BAR_42_PATH/toolchain/toolchain-external-mine/Config.in.options"
+  |     |source "$BR2_EXTERNAL_BAR_42_PATH/package/pkg-1/Config.in"
+  |     |source "$BR2_EXTERNAL_BAR_42_PATH/package/pkg-2/Config.in"
+  |     |source "$BR2_EXTERNAL_BAR_42_PATH/package/my-jpeg/Config.in"
+  |     |
+  |     |config BAR_42_FLASH_ADDR
+  |     |    hex "my-board flash address"
+  |     |    default 0x10AD
+  |     `----
+  |
+  |- external.mk
+  |     |include $(sort $(wildcard $(BR2_EXTERNAL_BAR_42_PATH)/package/*/*.mk))
+  |     |include $(sort $(wildcard $(BR2_EXTERNAL_BAR_42_PATH)/toolchain/*/*.mk))
+  |     |
+  |     |flash-my-board:
+  |     |    $(BR2_EXTERNAL_BAR_42_PATH)/board/my-board/flash-image \
+  |     |        --image $(BINARIES_DIR)/image.bin \
+  |     |        --address $(BAR_42_FLASH_ADDR)
+  |     `----
+  |
+  |- package/pkg-1/Config.in
+  |     |config BR2_PACKAGE_PKG_1
+  |     |    bool "pkg-1"
+  |     |    help
+  |     |      Some help about pkg-1
+  |     `----
+  |- package/pkg-1/pkg-1.hash
+  |- package/pkg-1/pkg-1.mk
+  |     |PKG_1_VERSION = 1.2.3
+  |     |PKG_1_SITE = /some/where/to/get/pkg-1
+  |     |PKG_1_LICENSE = blabla
+  |     |
+  |     |define PKG_1_INSTALL_INIT_SYSV
+  |     |    $(INSTALL) -D -m 0755 $(PKG_1_PKGDIR)/S99my-daemon \
+  |     |                          $(TARGET_DIR)/etc/init.d/S99my-daemon
+  |     |endef
+  |     |
+  |     |$(eval $(autotools-package))
+  |     `----
+  |- package/pkg-1/S99my-daemon
+  |
+  |- package/pkg-2/Config.in
+  |- package/pkg-2/pkg-2.hash
+  |- package/pkg-2/pkg-2.mk
+  |
+  |- provides/jpeg.in
+  |     |config BR2_PACKAGE_MY_JPEG
+  |     |    bool "my-jpeg"
+  |     `----
+  |- package/my-jpeg/Config.in
+  |     |config BR2_PACKAGE_PROVIDES_JPEG
+  |     |    default "my-jpeg" if BR2_PACKAGE_MY_JPEG
+  |     `----
+  |- package/my-jpeg/my-jpeg.mk
+  |     |# This is a normal package .mk file
+  |     |MY_JPEG_VERSION = 1.2.3
+  |     |MY_JPEG_SITE = https://example.net/some/place
+  |     |MY_JPEG_PROVIDES = jpeg
+  |     |$(eval $(autotools-package))
+  |     `----
+  |
+  |- provides/init.in
+  |     |config BR2_INIT_MINE
+  |     |    bool "my custom init"
+  |     |    select BR2_PACKAGE_MY_INIT
+  |     |    select BR2_PACKAGE_SKELETON_INIT_MINE if BR2_ROOTFS_SKELETON_DEFAULT
+  |     `----
+  |
+  |- provides/skeleton.in
+  |     |config BR2_ROOTFS_SKELETON_MINE
+  |     |    bool "my custom skeleton"
+  |     |    select BR2_PACKAGE_SKELETON_MINE
+  |     `----
+  |- package/skeleton-mine/Config.in
+  |     |config BR2_PACKAGE_SKELETON_MINE
+  |     |    bool
+  |     |    select BR2_PACKAGE_HAS_SKELETON
+  |     |
+  |     |config BR2_PACKAGE_PROVIDES_SKELETON
+  |     |    default "skeleton-mine" if BR2_PACKAGE_SKELETON_MINE
+  |     `----
+  |- package/skeleton-mine/skeleton-mine.mk
+  |     |SKELETON_MINE_ADD_TOOLCHAIN_DEPENDENCY = NO
+  |     |SKELETON_MINE_ADD_SKELETON_DEPENDENCY = NO
+  |     |SKELETON_MINE_PROVIDES = skeleton
+  |     |SKELETON_MINE_INSTALL_STAGING = YES
+  |     |$(eval $(generic-package))
+  |     `----
+  |
+  |- provides/toolchains.in
+  |     |config BR2_TOOLCHAIN_EXTERNAL_MINE
+  |     |    bool "my custom toolchain"
+  |     |    depends on BR2_some_arch
+  |     |    select BR2_INSTALL_LIBSTDCPP
+  |     `----
+  |- toolchain/toolchain-external-mine/Config.in.options
+  |     |if BR2_TOOLCHAIN_EXTERNAL_MINE
+  |     |config BR2_TOOLCHAIN_EXTERNAL_PREFIX
+  |     |    default "arch-mine-linux-gnu"
+  |     |config BR2_PACKAGE_PROVIDES_TOOLCHAIN_EXTERNAL
+  |     |    default "toolchain-external-mine"
+  |     |endif
+  |     `----
+  |- toolchain/toolchain-external-mine/toolchain-external-mine.mk
+  |     |TOOLCHAIN_EXTERNAL_MINE_SITE = https://example.net/some/place
+  |     |TOOLCHAIN_EXTERNAL_MINE_SOURCE = my-toolchain.tar.gz
+  |     |$(eval $(toolchain-external-package))
+  |     `----
+  |
+  |- linux/Config.ext.in
+  |     |config BR2_LINUX_KERNEL_EXT_EXAMPLE_DRIVER
+  |     |    bool "example-external-driver"
+  |     |    help
+  |     |      Example external driver
+  |     |---
+  |- linux/linux-ext-example-driver.mk
+  |
+  |- configs/my-board_defconfig
+  |     |BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_BAR_42_PATH)/patches/"
+  |     |BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_BAR_42_PATH)/board/my-board/overlay/"
+  |     |BR2_ROOTFS_POST_IMAGE_SCRIPT="$(BR2_EXTERNAL_BAR_42_PATH)/board/my-board/post-image.sh"
+  |     |BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_BAR_42_PATH)/board/my-board/kernel.config"
+  |     `----
+  |
+  |- patches/linux/0001-some-change.patch
+  |- patches/linux/0002-some-other-change.patch
+  |- patches/busybox/0001-fix-something.patch
+  |
+  |- board/my-board/kernel.config
+  |- board/my-board/overlay/var/www/index.html
+  |- board/my-board/overlay/var/www/my.css
+  |- board/my-board/flash-image
+  `- board/my-board/post-image.sh
+        |#!/bin/sh
+        |generate-my-binary-image \
+        |    --root ${BINARIES_DIR}/rootfs.tar \
+        |    --kernel ${BINARIES_DIR}/zImage \
+        |    --dtb ${BINARIES_DIR}/my-board.dtb \
+        |    --output ${BINARIES_DIR}/image.bin
+        `----</pre><p>The br2-external tree will then be visible in the menuconfig (with
+the layout expanded):</p><pre class="screen">External options  ---&gt;
+    *** Example br2-external tree (in /path/to/br2-ext-tree/)
+    [ ] pkg-1
+    [ ] pkg-2
+    (0x10AD) my-board flash address</pre><p>If you are using more than one br2-external tree, it would look like
+(with the layout expanded and the second one with name <code class="literal">FOO_27</code> but no
+<code class="literal">desc:</code> field in <code class="literal">external.desc</code>):</p><pre class="screen">External options  ---&gt;
+    Example br2-external tree  ---&gt;
+        *** Example br2-external tree (in /path/to/br2-ext-tree)
+        [ ] pkg-1
+        [ ] pkg-2
+        (0x10AD) my-board flash address
+    FOO_27  ---&gt;
+        *** FOO_27 (in /path/to/another-br2-ext)
+        [ ] foo
+        [ ] bar</pre><p>Additionally, the jpeg provider will be visible in the jpeg choice:</p><pre class="screen">Target packages  ---&gt;
+    Libraries  ---&gt;
+        Graphics  ---&gt;
+            [*] jpeg support
+                jpeg variant ()  ---&gt;
+                    ( ) jpeg
+                    ( ) jpeg-turbo
+                        *** jpeg from: Example br2-external tree ***
+                    (X) my-jpeg
+                        *** jpeg from: FOO_27 ***
+                    ( ) another-jpeg</pre><p>And similarly for the toolchains:</p><pre class="screen">Toolchain  ---&gt;
+    Toolchain ()  ---&gt;
+        ( ) Custom toolchain
+            *** Toolchains from: Example br2-external tree ***
+        (X) my custom toolchain</pre><p><strong>Note. </strong>The toolchain options in <code class="literal">toolchain/toolchain-external-mine/Config.in.options</code>
+will not appear in the <code class="literal">Toolchain</code> menu. They must be explicitly included
+from within the br2-external’s top-level <code class="literal">Config.in</code> and will thus appear
+in the <code class="literal">External options</code> menu.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="customize-store-buildroot-config"></a>9.3. Storing the Buildroot configuration</h2></div></div></div><p>The Buildroot configuration can be stored using the command
+ <code class="literal">make savedefconfig</code>.</p><p>This strips the Buildroot configuration down by removing configuration
+options that are at their default value. The result is stored in a file
+called <code class="literal">defconfig</code>. If you want to save it in another place, change the
+<code class="literal">BR2_DEFCONFIG</code> option in the Buildroot configuration itself, or call
+make with <code class="literal">make savedefconfig BR2_DEFCONFIG=&lt;path-to-defconfig&gt;</code>.</p><p>The recommended place to store this defconfig is
+<code class="literal">configs/&lt;boardname&gt;_defconfig</code>. If you follow this recommendation, the
+configuration will be listed in <code class="literal">make list-defconfigs</code> and can be set
+again by running <code class="literal">make &lt;boardname&gt;_defconfig</code>.</p><p>Alternatively, you can copy the file to any other place and rebuild with
+<code class="literal">make defconfig BR2_DEFCONFIG=&lt;path-to-defconfig-file&gt;</code>.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="customize-store-package-config"></a>9.4. Storing the configuration of other components</h2></div></div></div><p>The configuration files for BusyBox, the Linux kernel, Barebox, U-Boot
+and uClibc should be stored as well if changed. For each of these
+components, a Buildroot configuration option exists to point to an input
+configuration file, e.g. <code class="literal">BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE</code>. To store
+their configuration, set these configuration options to a path where you
+want to save the configuration files, and then use the helper targets
+described below to actually store the configuration.</p><p>As explained in <a class="xref" href="ch09.html#customize-dir-structure" title="9.1. Recommended directory structure">Section 9.1, “Recommended directory structure”</a>, the recommended path to
+store these configuration files is
+<code class="literal">board/&lt;company&gt;/&lt;boardname&gt;/foo.config</code>.</p><p>Make sure that you create a configuration file <span class="emphasis"><em>before</em></span> changing
+the <code class="literal">BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE</code> etc. options. Otherwise,
+Buildroot will try to access this config file, which doesn’t exist
+yet, and will fail. You can create the configuration file by running
+<code class="literal">make linux-menuconfig</code> etc.</p><p>Buildroot provides a few helper targets to make the saving of
+configuration files easier.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">make linux-update-defconfig</code> saves the linux configuration to the
+  path specified by <code class="literal">BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE</code>. It
+  simplifies the config file by removing default values. However,
+  this only works with kernels starting from 2.6.33. For earlier
+  kernels, use <code class="literal">make linux-update-config</code>.
+</li><li class="listitem">
+<code class="literal">make busybox-update-config</code> saves the busybox configuration to the
+  path specified by <code class="literal">BR2_PACKAGE_BUSYBOX_CONFIG</code>.
+</li><li class="listitem">
+<code class="literal">make uclibc-update-config</code> saves the uClibc configuration to the
+  path specified by <code class="literal">BR2_UCLIBC_CONFIG</code>.
+</li><li class="listitem">
+<code class="literal">make barebox-update-defconfig</code> saves the barebox configuration to the
+  path specified by <code class="literal">BR2_TARGET_BAREBOX_CUSTOM_CONFIG_FILE</code>.
+</li><li class="listitem">
+<code class="literal">make uboot-update-defconfig</code> saves the U-Boot configuration to the
+  path specified by <code class="literal">BR2_TARGET_UBOOT_CUSTOM_CONFIG_FILE</code>.
+</li><li class="listitem">
+For at91bootstrap3, no helper exists so you have to copy the config
+  file manually to <code class="literal">BR2_TARGET_AT91BOOTSTRAP3_CUSTOM_CONFIG_FILE</code>.
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="rootfs-custom"></a>9.5. Customizing the generated target filesystem</h2></div></div></div><p>Besides changing the configuration through <code class="literal">make *config</code>,
+there are a few other ways to customize the resulting target filesystem.</p><p>The two recommended methods, which can co-exist, are root filesystem
+overlay(s) and post build script(s).</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+Root filesystem overlays (<code class="literal">BR2_ROOTFS_OVERLAY</code>)
+</span></dt><dd><p class="simpara">A filesystem overlay is a tree of files that is copied directly
+  over the target filesystem after it has been built. To enable this
+  feature, set config option <code class="literal">BR2_ROOTFS_OVERLAY</code> (in the <code class="literal">System
+  configuration</code> menu) to the root of the overlay. You can even specify
+  multiple overlays, space-separated. If you specify a relative path,
+  it will be relative to the root of the Buildroot tree. Hidden
+  directories of version control systems, like <code class="literal">.git</code>, <code class="literal">.svn</code>, <code class="literal">.hg</code>,
+  etc., files called <code class="literal">.empty</code> and files ending in <code class="literal">~</code> are excluded from
+  the copy.</p><p class="simpara">When <code class="literal">BR2_ROOTFS_MERGED_USR</code> is enabled, then the overlay must not
+  contain the <span class="emphasis"><em>/bin</em></span>, <span class="emphasis"><em>/lib</em></span> or <span class="emphasis"><em>/sbin</em></span> directories, as Buildroot will
+  create them as symbolic links to the relevant folders in <span class="emphasis"><em>/usr</em></span>.  In
+  such a situation, should the overlay have any programs or libraries,
+  they should be placed in <span class="emphasis"><em>/usr/bin</em></span>, <span class="emphasis"><em>/usr/sbin</em></span> and <span class="emphasis"><em>/usr/lib</em></span>.</p><p class="simpara">As shown in <a class="xref" href="ch09.html#customize-dir-structure" title="9.1. Recommended directory structure">Section 9.1, “Recommended directory structure”</a>, the recommended path for
+  this overlay is <code class="literal">board/&lt;company&gt;/&lt;boardname&gt;/rootfs-overlay</code>.</p></dd><dt><span class="term">
+Post-build scripts (<code class="literal">BR2_ROOTFS_POST_BUILD_SCRIPT</code>)
+</span></dt><dd><p class="simpara">Post-build scripts are shell scripts called <span class="emphasis"><em>after</em></span> Buildroot builds
+  all the selected software, but <span class="emphasis"><em>before</em></span> the rootfs images are
+  assembled. To enable this feature, specify a space-separated list of
+  post-build scripts in config option <code class="literal">BR2_ROOTFS_POST_BUILD_SCRIPT</code> (in
+  the <code class="literal">System configuration</code> menu). If you specify a relative path, it
+  will be relative to the root of the Buildroot tree.</p><p class="simpara">Using post-build scripts, you can remove or modify any file in your
+  target filesystem. You should, however, use this feature with care.
+  Whenever you find that a certain package generates wrong or unneeded
+  files, you should fix that package rather than work around it with some
+  post-build cleanup scripts.</p><p class="simpara">As shown in <a class="xref" href="ch09.html#customize-dir-structure" title="9.1. Recommended directory structure">Section 9.1, “Recommended directory structure”</a>, the recommended path for
+  this script is <code class="literal">board/&lt;company&gt;/&lt;boardname&gt;/post_build.sh</code>.</p><p class="simpara">The post-build scripts are run with the main Buildroot tree as current
+  working directory. The path to the target filesystem is passed as the
+  first argument to each script. If the config option
+  <code class="literal">BR2_ROOTFS_POST_SCRIPT_ARGS</code> is not empty, these arguments will be
+  passed to the script too. All the scripts will be passed the exact
+  same set of arguments, it is not possible to pass different sets of
+  arguments to each script.</p><p class="simpara">In addition, you may also use these environment variables:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">BR2_CONFIG</code>: the path to the Buildroot .config file
+</li><li class="listitem">
+<code class="literal">CONFIG_DIR</code>: the directory containing the .config file, and
+    therefore the top-level Buildroot Makefile to use (which is
+    correct for both in-tree and out-of-tree builds)
+</li><li class="listitem">
+<code class="literal">HOST_DIR</code>, <code class="literal">STAGING_DIR</code>, <code class="literal">TARGET_DIR</code>: see
+    <a class="xref" href="ch18.html#generic-package-reference" title="18.6.2. generic-package reference">Section 18.6.2, “<code class="literal">generic-package</code> reference”</a>
+</li><li class="listitem">
+<code class="literal">BUILD_DIR</code>: the directory where packages are extracted and built
+</li><li class="listitem">
+<code class="literal">BINARIES_DIR</code>: the place where all binary files (aka images) are
+    stored
+</li><li class="listitem">
+<code class="literal">BASE_DIR</code>: the base output directory
+</li></ul></div></dd></dl></div><p>Below three more methods of customizing the target filesystem are
+described, but they are not recommended.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+Direct modification of the target filesystem
+</span></dt><dd><p class="simpara">For temporary modifications, you can modify the target filesystem
+  directly and rebuild the image. The target filesystem is available
+  under <code class="literal">output/target/</code>. After making your changes, run <code class="literal">make</code> to
+  rebuild the target filesystem image.</p><p class="simpara">This method allows you to do anything to the target filesystem, but if
+  you need to clean your Buildroot tree using <code class="literal">make clean</code>, these
+  changes will be lost. Such cleaning is necessary in several cases,
+  refer to <a class="xref" href="ch08.html#full-rebuild" title="8.2. Understanding when a full rebuild is necessary">Section 8.2, “Understanding when a full rebuild is necessary”</a> for details. This solution is therefore
+  only useful for quick tests: <span class="emphasis"><em>changes do not survive the <code class="literal">make clean</code>
+  command</em></span>. Once you have validated your changes, you should make sure
+  that they will persist after a <code class="literal">make clean</code>, using a root filesystem
+  overlay or a post-build script.</p></dd><dt><span class="term">
+Custom target skeleton (<code class="literal">BR2_ROOTFS_SKELETON_CUSTOM</code>)
+</span></dt><dd><p class="simpara">The root filesystem image is created from a target skeleton, on top of
+  which all packages install their files. The skeleton is copied to the
+  target directory <code class="literal">output/target</code> before any package is built and
+  installed. The default target skeleton provides the standard Unix
+  filesystem layout and some basic init scripts and configuration files.</p><p class="simpara">If the default skeleton (available under <code class="literal">system/skeleton</code>) does not
+  match your needs, you would typically use a root filesystem overlay or
+  post-build script to adapt it. However, if the default skeleton is
+  entirely different than what you need, using a custom skeleton may be
+  more suitable.</p><p class="simpara">To enable this feature, enable config option
+  <code class="literal">BR2_ROOTFS_SKELETON_CUSTOM</code> and set <code class="literal">BR2_ROOTFS_SKELETON_CUSTOM_PATH</code>
+  to the path of your custom skeleton. Both options are available in the
+  <code class="literal">System configuration</code> menu. If you specify a relative path, it will
+  be relative to the root of the Buildroot tree.</p><p class="simpara">Custom skeletons don’t need to contain the <span class="emphasis"><em>/bin</em></span>, <span class="emphasis"><em>/lib</em></span> or <span class="emphasis"><em>/sbin</em></span>
+  directories, since they are created automatically during the build.
+  When <code class="literal">BR2_ROOTFS_MERGED_USR</code> is enabled, then the custom skeleton must
+  not contain the <span class="emphasis"><em>/bin</em></span>, <span class="emphasis"><em>/lib</em></span> or <span class="emphasis"><em>/sbin</em></span> directories, as Buildroot
+  will create them as symbolic links to the relevant folders in <span class="emphasis"><em>/usr</em></span>.
+  In such a situation, should the skeleton have any programs or
+  libraries, they should be placed in <span class="emphasis"><em>/usr/bin</em></span>, <span class="emphasis"><em>/usr/sbin</em></span> and
+  <span class="emphasis"><em>/usr/lib</em></span>.</p><p class="simpara">This method is not recommended because it duplicates the entire
+  skeleton, which prevents taking advantage of the fixes or improvements
+  brought to the default skeleton in later Buildroot releases.</p></dd><dt><span class="term">
+Post-fakeroot scripts (<code class="literal">BR2_ROOTFS_POST_FAKEROOT_SCRIPT</code>)
+</span></dt><dd><p class="simpara">When aggregating the final images, some parts of the process requires
+  root rights: creating device nodes in <code class="literal">/dev</code>, setting permissions or
+  ownership to files and directories… To avoid requiring actual root
+  rights, Buildroot uses <code class="literal">fakeroot</code> to simulate root rights. This is not
+  a complete substitute for actually being root, but is enough for what
+  Buildroot needs.</p><p class="simpara">Post-fakeroot scripts are shell scripts that are called at the <span class="emphasis"><em>end</em></span> of
+  the fakeroot phase, <span class="emphasis"><em>right before</em></span> the filesystem image generator is
+  called. As such, they are called in the fakeroot context.</p><p class="simpara">Post-fakeroot scripts can be useful in case you need to tweak the
+  filesystem to do modifications that are usually only available to the
+  root user.</p><p><strong>Note: </strong>It is recommended to use the existing mechanisms to set file permissions
+  or create entries in <code class="literal">/dev</code> (see <a class="xref" href="ch09.html#customize-device-permission" title="9.5.1. Setting file permissions and ownership and adding custom devices nodes">Section 9.5.1, “Setting file permissions and ownership and adding custom devices nodes”</a>) or
+  to create users (see <a class="xref" href="ch09.html#customize-users" title="9.6. Adding custom user accounts">Section 9.6, “Adding custom user accounts”</a>)</p><p><strong>Note: </strong>The difference between post-build scripts (above) and fakeroot scripts,
+  is that post-build scripts are not called in the fakeroot context.</p><p><strong>Note: </strong>Using <code class="literal">fakeroot</code> is not an absolute substitute for actually being root.
+  <code class="literal">fakeroot</code> only ever fakes the file access rights and types (regular,
+  block-or-char device…) and uid/gid; these are emulated in-memory.</p></dd></dl></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="customize-device-permission"></a>9.5.1. Setting file permissions and ownership and adding custom devices nodes</h3></div></div></div><p>Sometimes it is needed to set specific permissions or ownership on files
+or device nodes. For example, certain files may need to be owned by
+root. Since the post-build scripts are not run as root, you cannot do
+such changes from there unless you use an explicit fakeroot from the
+post-build script.</p><p>Instead, Buildroot provides support for so-called <span class="emphasis"><em>permission tables</em></span>.
+To use this feature, set config option <code class="literal">BR2_ROOTFS_DEVICE_TABLE</code> to a
+space-separated list of permission tables, regular text files following
+the <a class="link" href="ch25.html" title="Chapter 25. Makedev syntax documentation">makedev syntax</a>.</p><p>If you are using a static device table (i.e. not using <code class="literal">devtmpfs</code>,
+<code class="literal">mdev</code>, or <code class="literal">(e)udev</code>) then you can add device nodes using the same
+syntax, in so-called <span class="emphasis"><em>device tables</em></span>. To use this feature, set config
+option <code class="literal">BR2_ROOTFS_STATIC_DEVICE_TABLE</code> to a space-separated list of
+device tables.</p><p>As shown in <a class="xref" href="ch09.html#customize-dir-structure" title="9.1. Recommended directory structure">Section 9.1, “Recommended directory structure”</a>, the recommended location for
+such files is <code class="literal">board/&lt;company&gt;/&lt;boardname&gt;/</code>.</p><p>It should be noted that if the specific permissions or device nodes are
+related to a specific application, you should set variables
+<code class="literal">FOO_PERMISSIONS</code> and <code class="literal">FOO_DEVICES</code> in the package’s <code class="literal">.mk</code> file instead
+(see <a class="xref" href="ch18.html#generic-package-reference" title="18.6.2. generic-package reference">Section 18.6.2, “<code class="literal">generic-package</code> reference”</a>).</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="customize-users"></a>9.6. Adding custom user accounts</h2></div></div></div><p>Sometimes it is needed to add specific users in the target system.
+To cover this requirement, Buildroot provides support for so-called
+<span class="emphasis"><em>users tables</em></span>. To use this feature, set config option
+<code class="literal">BR2_ROOTFS_USERS_TABLES</code> to a space-separated list of users tables,
+regular text files following the <a class="link" href="ch26.html" title="Chapter 26. Makeusers syntax documentation">makeusers syntax</a>.</p><p>As shown in <a class="xref" href="ch09.html#customize-dir-structure" title="9.1. Recommended directory structure">Section 9.1, “Recommended directory structure”</a>, the recommended location for
+such files is <code class="literal">board/&lt;company&gt;/&lt;boardname&gt;/</code>.</p><p>It should be noted that if the custom users are related to a specific
+application, you should set variable <code class="literal">FOO_USERS</code> in the package’s <code class="literal">.mk</code>
+file instead (see <a class="xref" href="ch18.html#generic-package-reference" title="18.6.2. generic-package reference">Section 18.6.2, “<code class="literal">generic-package</code> reference”</a>).</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_customization_emphasis_after_emphasis_the_images_have_been_created"></a>9.7. Customization <span class="emphasis"><em>after</em></span> the images have been created</h2></div></div></div><p>While post-build scripts (<a class="xref" href="ch09.html#rootfs-custom" title="9.5. Customizing the generated target filesystem">Section 9.5, “Customizing the generated target filesystem”</a>) are run <span class="emphasis"><em>before</em></span>
+building the filesystem image, kernel and bootloader, <span class="strong"><strong>post-image
+scripts</strong></span> can be used to perform some specific actions <span class="emphasis"><em>after</em></span> all images
+have been created.</p><p>Post-image scripts can for example be used to automatically extract your
+root filesystem tarball in a location exported by your NFS server, or
+to create a special firmware image that bundles your root filesystem and
+kernel image, or any other custom action required for your project.</p><p>To enable this feature, specify a space-separated list of post-image
+scripts in config option <code class="literal">BR2_ROOTFS_POST_IMAGE_SCRIPT</code> (in the <code class="literal">System
+configuration</code> menu). If you specify a relative path, it will be
+relative to the root of the Buildroot tree.</p><p>Just like post-build scripts, post-image scripts are run with the main
+Buildroot tree as current working directory. The path to the <code class="literal">images</code>
+output directory is passed as the first argument to each script. If the
+config option <code class="literal">BR2_ROOTFS_POST_SCRIPT_ARGS</code> is not empty, these
+arguments will be passed to the script too. All the scripts will be
+passed the exact same set of arguments, it is not possible to pass
+different sets of arguments to each script.</p><p>Again just like for the post-build scripts, the scripts have access to
+the environment variables <code class="literal">BR2_CONFIG</code>, <code class="literal">HOST_DIR</code>, <code class="literal">STAGING_DIR</code>,
+<code class="literal">TARGET_DIR</code>, <code class="literal">BUILD_DIR</code>, <code class="literal">BINARIES_DIR</code>, <code class="literal">CONFIG_DIR</code> and
+<code class="literal">BASE_DIR</code>.</p><p>The post-image scripts will be executed as the user that executes
+Buildroot, which should normally <span class="emphasis"><em>not</em></span> be the root user. Therefore, any
+action requiring root permissions in one of these scripts will require
+special handling (usage of fakeroot or sudo), which is left to the
+script developer.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="customize-patches"></a>9.8. Adding project-specific patches</h2></div></div></div><p>It is sometimes useful to apply <span class="emphasis"><em>extra</em></span> patches to packages - on top of
+those provided in Buildroot. This might be used to support custom
+features in a project, for example, or when working on a new
+architecture.</p><p>The <code class="literal">BR2_GLOBAL_PATCH_DIR</code> configuration option can be used to specify
+a space separated list of one or more directories containing package
+patches.</p><p>For a specific version <code class="literal">&lt;packageversion&gt;</code> of a specific package
+<code class="literal">&lt;packagename&gt;</code>, patches are applied from <code class="literal">BR2_GLOBAL_PATCH_DIR</code> as
+follows:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p class="simpara">
+For every directory - <code class="literal">&lt;global-patch-dir&gt;</code> - that exists in
+  <code class="literal">BR2_GLOBAL_PATCH_DIR</code>, a <code class="literal">&lt;package-patch-dir&gt;</code> will be determined as
+  follows:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">&lt;global-patch-dir&gt;/&lt;packagename&gt;/&lt;packageversion&gt;/</code> if the
+  directory exists.
+</li><li class="listitem">
+Otherwise, <code class="literal">&lt;global-patch-dir&gt;/&lt;packagename&gt;</code> if the directory
+  exists.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Patches will then be applied from a <code class="literal">&lt;package-patch-dir&gt;</code> as
+  follows:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If a <code class="literal">series</code> file exists in the package directory, then patches are
+  applied according to the <code class="literal">series</code> file;
+</li><li class="listitem">
+Otherwise, patch files matching <code class="literal">*.patch</code> are applied in
+  alphabetical order.  So, to ensure they are applied in the right
+  order, it is highly recommended to name the patch files like this:
+  <code class="literal">&lt;number&gt;-&lt;description&gt;.patch</code>, where <code class="literal">&lt;number&gt;</code> refers to the
+  <span class="emphasis"><em>apply order</em></span>.
+</li></ul></div></li></ol></div><p>For information about how patches are applied for a package, see
+<a class="xref" href="ch19.html#patch-apply-order" title="19.2. How patches are applied">Section 19.2, “How patches are applied”</a></p><p>The <code class="literal">BR2_GLOBAL_PATCH_DIR</code> option is the preferred method for
+specifying a custom patch directory for packages. It can be used to
+specify a patch directory for any package in buildroot. It should also
+be used in place of the custom patch directory options that are
+available for packages such as U-Boot and Barebox. By doing this, it
+will allow a user to manage their patches from one top-level
+directory.</p><p>The exception to <code class="literal">BR2_GLOBAL_PATCH_DIR</code> being the preferred method for
+specifying custom patches is <code class="literal">BR2_LINUX_KERNEL_PATCH</code>.
+<code class="literal">BR2_LINUX_KERNEL_PATCH</code> should be used to specify kernel patches that
+are available at a URL. <span class="strong"><strong>Note:</strong></span> <code class="literal">BR2_LINUX_KERNEL_PATCH</code> specifies kernel
+patches that are applied after patches available in <code class="literal">BR2_GLOBAL_PATCH_DIR</code>,
+as it is done from a post-patch hook of the Linux package.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="customize-packages"></a>9.9. Adding project-specific packages</h2></div></div></div><p>In general, any new package should be added directly in the <code class="literal">package</code>
+directory and submitted to the Buildroot upstream project. How to add
+packages to Buildroot in general is explained in full detail in
+<a class="xref" href="ch18.html" title="Chapter 18. Adding new packages to Buildroot">Chapter 18, <em>Adding new packages to Buildroot</em></a> and will not be repeated here. However, your
+project may need some proprietary packages that cannot be upstreamed.
+This section will explain how you can keep such project-specific
+packages in a project-specific directory.</p><p>As shown in <a class="xref" href="ch09.html#customize-dir-structure" title="9.1. Recommended directory structure">Section 9.1, “Recommended directory structure”</a>, the recommended location for
+project-specific packages is <code class="literal">package/&lt;company&gt;/</code>. If you are using the
+br2-external tree feature (see <a class="xref" href="ch09.html#outside-br-custom" title="9.2. Keeping customizations outside of Buildroot">Section 9.2, “Keeping customizations outside of Buildroot”</a>) the recommended
+location is to put them in a sub-directory named <code class="literal">package/</code> in your
+br2-external tree.</p><p>However, Buildroot will not be aware of the packages in this location,
+unless we perform some additional steps. As explained in
+<a class="xref" href="ch18.html" title="Chapter 18. Adding new packages to Buildroot">Chapter 18, <em>Adding new packages to Buildroot</em></a>, a package in Buildroot basically consists of two
+files: a <code class="literal">.mk</code> file (describing how to build the package) and a
+<code class="literal">Config.in</code> file (describing the configuration options for this
+package).</p><p>Buildroot will automatically include the <code class="literal">.mk</code> files in first-level
+subdirectories of the <code class="literal">package</code> directory (using the pattern
+<code class="literal">package/*/*.mk</code>). If we want Buildroot to include <code class="literal">.mk</code> files from
+deeper subdirectories (like <code class="literal">package/&lt;company&gt;/package1/</code>) then we
+simply have to add a <code class="literal">.mk</code> file in a first-level subdirectory that
+includes these additional <code class="literal">.mk</code> files. Therefore, create a file
+<code class="literal">package/&lt;company&gt;/&lt;company&gt;.mk</code> with following contents (assuming you
+have only one extra directory level below <code class="literal">package/&lt;company&gt;/</code>):</p><pre class="screen">include $(sort $(wildcard package/&lt;company&gt;/*/*.mk))</pre><p>For the <code class="literal">Config.in</code> files, create a file <code class="literal">package/&lt;company&gt;/Config.in</code>
+that includes the <code class="literal">Config.in</code> files of all your packages. An exhaustive
+list has to be provided since wildcards are not supported in the source command of kconfig.
+For example:</p><pre class="screen">source "package/&lt;company&gt;/package1/Config.in"
+source "package/&lt;company&gt;/package2/Config.in"</pre><p>Include this new file <code class="literal">package/&lt;company&gt;/Config.in</code> from
+<code class="literal">package/Config.in</code>, preferably in a company-specific menu to make
+merges with future Buildroot versions easier.</p><p>If using a br2-external tree, refer to <a class="xref" href="ch09.html#outside-br-custom" title="9.2. Keeping customizations outside of Buildroot">Section 9.2, “Keeping customizations outside of Buildroot”</a> for how
+to fill in those files.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_quick_guide_to_storing_your_project_specific_customizations"></a>9.10. Quick guide to storing your project-specific customizations</h2></div></div></div><p>Earlier in this chapter, the different methods for making
+project-specific customizations have been described. This section will
+now summarize all this by providing step-by-step instructions to storing your
+project-specific customizations. Clearly, the steps that are not relevant to
+your project can be skipped.</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+<code class="literal">make menuconfig</code> to configure toolchain, packages and kernel.
+</li><li class="listitem">
+<code class="literal">make linux-menuconfig</code> to update the kernel config, similar for
+   other configuration like busybox, uclibc, …
+</li><li class="listitem">
+<code class="literal">mkdir -p board/&lt;manufacturer&gt;/&lt;boardname&gt;</code>
+</li><li class="listitem"><p class="simpara">
+Set the following options to <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/&lt;package&gt;.config</code>
+   (as far as they are relevant):
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE</code>
+</li><li class="listitem">
+<code class="literal">BR2_PACKAGE_BUSYBOX_CONFIG</code>
+</li><li class="listitem">
+<code class="literal">BR2_UCLIBC_CONFIG</code>
+</li><li class="listitem">
+<code class="literal">BR2_TARGET_AT91BOOTSTRAP3_CUSTOM_CONFIG_FILE</code>
+</li><li class="listitem">
+<code class="literal">BR2_TARGET_BAREBOX_CUSTOM_CONFIG_FILE</code>
+</li><li class="listitem">
+<code class="literal">BR2_TARGET_UBOOT_CUSTOM_CONFIG_FILE</code>
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Write the configuration files:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">make linux-update-defconfig</code>
+</li><li class="listitem">
+<code class="literal">make busybox-update-config</code>
+</li><li class="listitem">
+<code class="literal">make uclibc-update-config</code>
+</li><li class="listitem">
+<code class="literal">cp &lt;output&gt;/build/at91bootstrap3-*/.config
+     board/&lt;manufacturer&gt;/&lt;boardname&gt;/at91bootstrap3.config</code>
+</li><li class="listitem">
+<code class="literal">make barebox-update-defconfig</code>
+</li><li class="listitem">
+<code class="literal">make uboot-update-defconfig</code>
+</li></ul></div></li><li class="listitem">
+Create <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/rootfs-overlay/</code> and fill it
+   with additional files you need on your rootfs, e.g.
+   <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/rootfs-overlay/etc/inittab</code>.
+   Set <code class="literal">BR2_ROOTFS_OVERLAY</code>
+   to <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/rootfs-overlay</code>.
+</li><li class="listitem">
+Create a post-build script
+   <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/post_build.sh</code>. Set
+   <code class="literal">BR2_ROOTFS_POST_BUILD_SCRIPT</code> to
+   <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/post_build.sh</code>
+</li><li class="listitem">
+If additional setuid permissions have to be set or device nodes have
+   to be created, create <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/device_table.txt</code>
+   and add that path to <code class="literal">BR2_ROOTFS_DEVICE_TABLE</code>.
+</li><li class="listitem">
+If additional user accounts have to be created, create
+   <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/users_table.txt</code> and add that path
+   to <code class="literal">BR2_ROOTFS_USERS_TABLES</code>.
+</li><li class="listitem">
+To add custom patches to certain packages, set <code class="literal">BR2_GLOBAL_PATCH_DIR</code>
+   to <code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;/patches/</code> and add your patches
+   for each package in a subdirectory named after the package. Each
+   patch should be called <code class="literal">&lt;packagename&gt;-&lt;num&gt;-&lt;description&gt;.patch</code>.
+</li><li class="listitem">
+Specifically for the Linux kernel, there also exists the option
+   <code class="literal">BR2_LINUX_KERNEL_PATCH</code> with as main advantage that it can also
+   download patches from a URL. If you do not need this,
+   <code class="literal">BR2_GLOBAL_PATCH_DIR</code> is preferred. U-Boot, Barebox, at91bootstrap
+   and at91bootstrap3 also have separate options, but these do not
+   provide any advantage over <code class="literal">BR2_GLOBAL_PATCH_DIR</code> and will likely be
+   removed in the future.
+</li><li class="listitem">
+If you need to add project-specific packages, create
+   <code class="literal">package/&lt;manufacturer&gt;/</code> and place your packages in that
+   directory. Create an overall <code class="literal">&lt;manufacturer&gt;.mk</code> file that
+   includes the <code class="literal">.mk</code> files of all your packages. Create an overall
+   <code class="literal">Config.in</code> file that sources the <code class="literal">Config.in</code> files of all your
+   packages. Include this <code class="literal">Config.in</code> file from Buildroot’s
+   <code class="literal">package/Config.in</code> file.
+</li><li class="listitem">
+<code class="literal">make savedefconfig</code> to save the buildroot configuration.
+</li><li class="listitem">
+<code class="literal">cp defconfig configs/&lt;boardname&gt;_defconfig</code>
+</li></ol></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch10.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

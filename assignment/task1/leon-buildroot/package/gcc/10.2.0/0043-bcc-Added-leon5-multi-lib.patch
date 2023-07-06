@@ -1,0 +1,33 @@
+From 3a298f258a2313b97ed3df83a1b1a6f19ad3e6c7 Mon Sep 17 00:00:00 2001
+From: Julius Barendt <julius.barendt@gaisler.com>
+Date: Tue, 21 Dec 2021 16:23:12 +0100
+Subject: [PATCH 43/50] bcc: Added leon5 multi lib
+
+---
+ gcc/config/sparc/t-bcc | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/config/sparc/t-bcc b/gcc/config/sparc/t-bcc
+index 6c011058e0e..74138cbf439 100644
+--- a/gcc/config/sparc/t-bcc
++++ b/gcc/config/sparc/t-bcc
+@@ -20,8 +20,8 @@
+ MULTILIB_OPTIONS         =
+ MULTILIB_DIRNAMES        =
+ 
+-MULTILIB_OPTIONS        += mcpu=leon/mcpu=leon3/mcpu=leon3v7
+-MULTILIB_DIRNAMES       += leon      leon3      leon3v7
++MULTILIB_OPTIONS        += mcpu=leon/mcpu=leon3/mcpu=leon3v7/mcpu=leon5
++MULTILIB_DIRNAMES       += leon      leon3      leon3v7      leon5
+ 
+ MULTILIB_OPTIONS        += mfix-ut699/mfix-ut700/mfix-gr712rc/mfix-at697f
+ MULTILIB_DIRNAMES       += mfix-ut699 mfix-ut700 mfix-gr712rc mfix-at697f
+@@ -112,3 +112,5 @@ MULTILIB_REQUIRED += mcpu=leon/mfix-at697f/msoft-float
+ MULTILIB_REQUIRED += mcpu=leon/mfix-at697f/mflat
+ MULTILIB_REQUIRED += mcpu=leon/mfix-at697f/msoft-float/mflat
+ 
++MULTILIB_REQUIRED += mcpu=leon5
++MULTILIB_REQUIRED += mcpu=leon5/msoft-float
+-- 
+2.34.1
+

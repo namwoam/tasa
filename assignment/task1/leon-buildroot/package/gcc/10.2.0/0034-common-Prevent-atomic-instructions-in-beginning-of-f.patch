@@ -1,0 +1,42 @@
+From c8becc53ad07f6a43f4d935fae5c3f34c9d907ba Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Mon, 12 Oct 2020 08:50:35 +0200
+Subject: [PATCH 34/50] common: Prevent atomic instructions in beginning of
+ functions for UT700
+
+---
+ gcc/config/sparc/sparc.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/gcc/config/sparc/sparc.c b/gcc/config/sparc/sparc.c
+index 228ceb4aa6c..f568e5852e8 100644
+--- a/gcc/config/sparc/sparc.c
++++ b/gcc/config/sparc/sparc.c
+@@ -1112,6 +1112,7 @@ static unsigned int
+ sparc_do_work_around_errata (void)
+ {
+   rtx_insn *insn, *next;
++  bool find_first_useful = true;
+ 
+   /* Force all instructions to be split into their final form.  */
+   split_all_insns_noflow ();
+@@ -1145,6 +1146,16 @@ sparc_do_work_around_errata (void)
+ 		 GET_CODE(PATTERN(insn)));
+ 	}
+ 
++   /* Do not begin function with atomic instruction.  */
++      if (sparc_fix_ut700
++	  && find_first_useful
++	  && USEFUL_INSN_P(insn))
++	{
++	  find_first_useful = false;
++	  if (atomic_insn_for_leon3_p (insn))
++	    emit_insn_before (gen_nop (), insn);
++	}
++
+       /* Place a NOP at the branch target of an integer branch if it is a
+ 	 floating-point operation or a floating-point branch.  */
+       if (sparc_fix_gr712rc
+-- 
+2.34.1
+

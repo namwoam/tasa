@@ -1,0 +1,74 @@
+From f522e7f8f8ce94c0586aac7965a8339bd89acd88 Mon Sep 17 00:00:00 2001
+From: Eric Botcazou <ebotcazou@adacore.com>
+Date: Fri, 17 Sep 2021 10:12:12 +0200
+Subject: [PATCH 38/50] Fix PR rtl-optimization/102306
+
+This is a duplication of volatile loads introduced during GCC 9 development
+by the 2->2 mechanism of the RTL combiner.  There is already a substantial
+checking for volatile references in can_combine_p but it implicitly assumes
+that the combination reduces the number of instructions, which is of course
+not the case here.  So the fix teaches try_combine to abort the combination
+when it is about to make a copy of volatile references to preserve them.
+
+gcc/
+	PR rtl-optimization/102306
+	* combine.c (try_combine): Abort the combination if we are about to
+	duplicate volatile references.
+
+gcc/testsuite/
+	* gcc.target/sparc/20210917-1.c: New test.
+---
+ gcc/combine.c                               | 10 ++++++++++
+ gcc/testsuite/gcc.target/sparc/20210917-1.c | 19 +++++++++++++++++++
+ 2 files changed, 29 insertions(+)
+ create mode 100644 gcc/testsuite/gcc.target/sparc/20210917-1.c
+
+diff --git a/gcc/combine.c b/gcc/combine.c
+index f69413a34d0..b135546fc4d 100644
+--- a/gcc/combine.c
++++ b/gcc/combine.c
+@@ -3214,6 +3214,16 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
+       return 0;
+     }
+ 
++  /* We cannot safely duplicate volatile references in any case.  */
++
++  if ((added_sets_2 && volatile_refs_p (PATTERN (i2)))
++      || (added_sets_1 && volatile_refs_p (PATTERN (i1)))
++      || (added_sets_0 && volatile_refs_p (PATTERN (i0))))
++    {
++      undo_all ();
++      return 0;
++    }
++
+   /* Count how many auto_inc expressions there were in the original insns;
+      we need to have the same number in the resulting patterns.  */
+ 
+diff --git a/gcc/testsuite/gcc.target/sparc/20210917-1.c b/gcc/testsuite/gcc.target/sparc/20210917-1.c
+new file mode 100644
+index 00000000000..03e8bc58db9
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/sparc/20210917-1.c
+@@ -0,0 +1,19 @@
++/* PR rtl-optimization/102306 */
++/* Reported by Daniel Cederman <cederman@gaisler.com> */
++
++/* { dg-do compile } */
++/* { dg-require-effective-target ilp32 } */
++/* { dg-options "-O -mcpu=v8" } */
++
++extern void foo (void);
++
++void test (volatile unsigned char *a) 
++{ 
++  char b = *a;
++  if (!b)
++    return;
++  if (b & 2)
++    foo ();
++}
++
++/* { dg-final { scan-assembler-times "ldub" 1 } } */
+-- 
+2.34.1
+

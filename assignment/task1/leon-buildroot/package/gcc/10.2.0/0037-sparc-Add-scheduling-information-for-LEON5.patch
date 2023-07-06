@@ -1,0 +1,433 @@
+From 7944f421e0a9d434eac135ba291e7181bef1d38e Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Mon, 25 Mar 2019 09:12:17 +0100
+Subject: [PATCH 37/50] sparc: Add scheduling information for LEON5
+
+The LEON5 can often dual issue instructions from the same 64-bit aligned
+double word if there are no data dependencies. Add scheduling information
+to avoid scheduling unpairable instructions back-to-back.
+
+gcc/ChangeLog:
+
+	* config/sparc/sparc-opts.h (enum sparc_processor_type): Add LEON5
+	* config/sparc/sparc.c (struct processor_costs): Add LEON5 costs
+	(leon5_adjust_cost): Increase cost of store with data dependency
+	on ALU instruction and FPU anti-dependencies.
+	(sparc_option_override): Add LEON5 costs
+	(sparc_adjust_cost): Add LEON5 cost adjustments
+	* config/sparc/sparc.h: Add LEON5
+	* config/sparc/sparc.md: Include LEON5 scheduling information
+	* config/sparc/sparc.opt: Add LEON5
+	* doc/invoke.texi: Add LEON5
+	* config/sparc/leon5.md: New file.
+---
+ gcc/config/sparc/leon5.md     | 103 ++++++++++++++++++++++++++++++++++
+ gcc/config/sparc/sparc-opts.h |   1 +
+ gcc/config/sparc/sparc.c      |  84 +++++++++++++++++++++++++++
+ gcc/config/sparc/sparc.h      |  36 ++++++------
+ gcc/config/sparc/sparc.md     |   2 +
+ gcc/config/sparc/sparc.opt    |   3 +
+ gcc/doc/invoke.texi           |  13 +++--
+ 7 files changed, 220 insertions(+), 22 deletions(-)
+ create mode 100644 gcc/config/sparc/leon5.md
+
+diff --git a/gcc/config/sparc/leon5.md b/gcc/config/sparc/leon5.md
+new file mode 100644
+index 00000000000..6a065b1a974
+--- /dev/null
++++ b/gcc/config/sparc/leon5.md
+@@ -0,0 +1,103 @@
++;; Scheduling description for LEON5.
++;;   Copyright (C) 2021 Free Software Foundation, Inc.
++;;
++;; This file is part of GCC.
++;;
++;; GCC is free software; you can redistribute it and/or modify
++;; it under the terms of the GNU General Public License as published by
++;; the Free Software Foundation; either version 3, or (at your option)
++;; any later version.
++;;
++;; GCC is distributed in the hope that it will be useful,
++;; but WITHOUT ANY WARRANTY; without even the implied warranty of
++;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++;; GNU General Public License for more details.
++;;
++;; You should have received a copy of the GNU General Public License
++;; along with GCC; see the file COPYING3.  If not see
++;; <http://www.gnu.org/licenses/>.
++
++
++;; The LEON5 can often dual issue instructions from the same 64-bit aligned
++;; double word if there are no data dependencies.
++;;
++;; Avoid scheduling load/store, FPU, and multiply instructions back to
++;; back, regardless of data dependencies.
++;;
++;; Push comparisons away from the associated branch instruction.
++;;
++;; Avoid scheduling ALU instructions with data dependencies back to back.
++;;
++;; Schedule three instructions between load and dependent instruction.
++
++(define_automaton "leon5")
++
++(define_cpu_unit "leon5_memory" "leon5")
++(define_cpu_unit "leon5_mul" "leon5")
++(define_cpu_unit "grfpu_d" "grfpu")
++(define_cpu_unit "grfpu_s" "grfpu")
++
++(define_insn_reservation "leon5_load" 4
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "load,sload"))
++  "leon5_memory * 2, nothing * 2")
++
++(define_insn_reservation "leon5_fpload" 2
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "fpload"))
++  "leon5_memory * 2 + grfpu_alu * 2")
++
++(define_insn_reservation "leon5_store" 2
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "store"))
++  "leon5_memory * 2")
++
++(define_insn_reservation "leon5_fpstore" 2
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "fpstore"))
++  "leon5_memory * 2 + grfpu_alu * 2")
++
++(define_insn_reservation "leon5_ialu" 2
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "ialu, shift, ialuX"))
++  "nothing * 2")
++
++(define_insn_reservation "leon5_compare" 5
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "compare"))
++  "nothing * 5")
++
++(define_insn_reservation "leon5_imul" 4
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "imul"))
++  "leon5_mul * 2, nothing * 2")
++
++(define_insn_reservation "leon5_idiv" 35
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "imul"))
++  "nothing * 35")
++
++(define_insn_reservation "leon5_fp_alu" 5
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "fp,fpcmp,fpmul,fpmove"))
++  "grfpu_alu * 2, nothing*3")
++
++(define_insn_reservation "leon5_fp_divs" 17
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "fpdivs"))
++  "grfpu_alu * 2 + grfpu_d*16, nothing")
++
++(define_insn_reservation "leon5_fp_divd" 18
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "fpdivd"))
++  "grfpu_alu * 2 + grfpu_d*17, nothing")
++
++(define_insn_reservation "leon5_fp_sqrts" 25
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "fpsqrts"))
++  "grfpu_alu * 2 + grfpu_s*24, nothing")
++
++(define_insn_reservation "leon5_fp_sqrtd" 26
++  (and (eq_attr "cpu" "leon5")
++  (eq_attr "type" "fpsqrtd"))
++  "grfpu_alu * 2 + grfpu_s*25, nothing")
+diff --git a/gcc/config/sparc/sparc-opts.h b/gcc/config/sparc/sparc-opts.h
+index 5bda749ee38..59ad06e491f 100644
+--- a/gcc/config/sparc/sparc-opts.h
++++ b/gcc/config/sparc/sparc-opts.h
+@@ -31,6 +31,7 @@ enum sparc_processor_type {
+   PROCESSOR_HYPERSPARC,
+   PROCESSOR_LEON,
+   PROCESSOR_LEON3,
++  PROCESSOR_LEON5,
+   PROCESSOR_LEON3V7,
+   PROCESSOR_SPARCLITE,
+   PROCESSOR_F930,
+diff --git a/gcc/config/sparc/sparc.c b/gcc/config/sparc/sparc.c
+index f568e5852e8..a5c97ce474b 100644
+--- a/gcc/config/sparc/sparc.c
++++ b/gcc/config/sparc/sparc.c
+@@ -271,6 +271,31 @@ struct processor_costs leon3_costs = {
+   3 /* branch cost */
+ };
+ 
++static const
++struct processor_costs leon5_costs = {
++  COSTS_N_INSNS (1), /* int load */
++  COSTS_N_INSNS (1), /* int signed load */
++  COSTS_N_INSNS (1), /* int zeroed load */
++  COSTS_N_INSNS (1), /* float load */
++  COSTS_N_INSNS (1), /* fmov, fneg, fabs */
++  COSTS_N_INSNS (1), /* fadd, fsub */
++  COSTS_N_INSNS (1), /* fcmp */
++  COSTS_N_INSNS (1), /* fmov, fmovr */
++  COSTS_N_INSNS (1), /* fmul */
++  COSTS_N_INSNS (17), /* fdivs */
++  COSTS_N_INSNS (18), /* fdivd */
++  COSTS_N_INSNS (25), /* fsqrts */
++  COSTS_N_INSNS (26), /* fsqrtd */
++  COSTS_N_INSNS (4), /* imul */
++  COSTS_N_INSNS (4), /* imulX */
++  0, /* imul bit factor */
++  COSTS_N_INSNS (35), /* idiv */
++  COSTS_N_INSNS (35), /* idivX */
++  COSTS_N_INSNS (1), /* movcc/movr */
++  0, /* shift penalty */
++  3 /* branch cost */
++};
++
+ static const
+ struct processor_costs sparclet_costs = {
+   COSTS_N_INSNS (3), /* int load */
+@@ -596,6 +621,7 @@ static int function_arg_slotno (const CUMULATIVE_ARGS *, machine_mode,
+ 
+ static int supersparc_adjust_cost (rtx_insn *, int, rtx_insn *, int);
+ static int hypersparc_adjust_cost (rtx_insn *, int, rtx_insn *, int);
++static int leon5_adjust_cost (rtx_insn *, int, rtx_insn *, int);
+ 
+ static void sparc_emit_set_const32 (rtx, rtx);
+ static void sparc_emit_set_const64 (rtx, rtx);
+@@ -1691,6 +1717,7 @@ sparc_option_override (void)
+     { TARGET_CPU_hypersparc, PROCESSOR_HYPERSPARC },
+     { TARGET_CPU_leon, PROCESSOR_LEON },
+     { TARGET_CPU_leon3, PROCESSOR_LEON3 },
++    { TARGET_CPU_leon5, PROCESSOR_LEON5 },
+     { TARGET_CPU_leon3v7, PROCESSOR_LEON3V7 },
+     { TARGET_CPU_sparclite, PROCESSOR_F930 },
+     { TARGET_CPU_sparclite86x, PROCESSOR_SPARCLITE86X },
+@@ -1722,6 +1749,7 @@ sparc_option_override (void)
+     { "hypersparc",	MASK_ISA, MASK_V8 },
+     { "leon",		MASK_ISA|MASK_FSMULD, MASK_V8|MASK_LEON },
+     { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3 },
++    { "leon5",		MASK_ISA, MASK_V8|MASK_LEON3 },
+     { "leon3v7",	MASK_ISA, MASK_LEON3 },
+     { "sparclite",	MASK_ISA, MASK_SPARCLITE },
+     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
+@@ -2032,6 +2060,9 @@ sparc_option_override (void)
+     case PROCESSOR_LEON3V7:
+       sparc_costs = &leon3_costs;
+       break;
++    case PROCESSOR_LEON5:
++      sparc_costs = &leon5_costs;
++      break;
+     case PROCESSOR_SPARCLET:
+     case PROCESSOR_TSC701:
+       sparc_costs = &sparclet_costs;
+@@ -10247,12 +10278,65 @@ hypersparc_adjust_cost (rtx_insn *insn, int dtype, rtx_insn *dep_insn,
+   return cost;
+ }
+ 
++static int
++leon5_adjust_cost (rtx_insn *insn, int dtype, rtx_insn *dep_insn,
++		   int cost)
++{
++  enum attr_type insn_type, dep_type;
++  rtx pat = PATTERN (insn);
++  rtx dep_pat = PATTERN (dep_insn);
++
++  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
++    return cost;
++
++  insn_type = get_attr_type (insn);
++  dep_type = get_attr_type (dep_insn);
++
++  switch (dtype)
++    {
++    case REG_DEP_TRUE:
++      /* Data dependency; DEP_INSN writes a register that INSN reads some
++	 cycles later.  */
++
++      switch (insn_type)
++	{
++	case TYPE_STORE:
++	  /* Try to schedule three instructions between the store and
++	     the ALU instruction that generated the data.  */
++	  if (dep_type == TYPE_IALU || dep_type == TYPE_SHIFT)
++	    {
++	      if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
++		break;
++
++	      if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
++		return 4;
++	    }
++	  break;
++	default:
++	  break;
++	}
++      break;
++    case REG_DEP_ANTI:
++      /* Penalize anti-dependencies for FPU instructions.  */
++      if (fpop_insn_p (insn) || insn_type == TYPE_FPLOAD)
++	return 4;
++      break;
++    default:
++      break;
++    }
++
++  return cost;
++}
++
+ static int
+ sparc_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep, int cost,
+ 		   unsigned int)
+ {
+   switch (sparc_cpu)
+     {
++    case PROCESSOR_LEON5:
++      cost = leon5_adjust_cost (insn, dep_type, dep, cost);
++      break;
+     case PROCESSOR_SUPERSPARC:
+       cost = supersparc_adjust_cost (insn, dep_type, dep, cost);
+       break;
+diff --git a/gcc/config/sparc/sparc.h b/gcc/config/sparc/sparc.h
+index c5f098ed971..82df0f79b80 100644
+--- a/gcc/config/sparc/sparc.h
++++ b/gcc/config/sparc/sparc.h
+@@ -119,21 +119,22 @@ along with GCC; see the file COPYING3.  If not see
+ #define TARGET_CPU_leon		4
+ #define TARGET_CPU_leon3	5
+ #define TARGET_CPU_leon3v7	6
+-#define TARGET_CPU_sparclite	7
+-#define TARGET_CPU_f930		7       /* alias */
+-#define TARGET_CPU_f934		7       /* alias */
+-#define TARGET_CPU_sparclite86x	8
+-#define TARGET_CPU_sparclet	9
+-#define TARGET_CPU_tsc701	9       /* alias */
+-#define TARGET_CPU_v9		10	/* generic v9 implementation */
+-#define TARGET_CPU_sparcv9	10	/* alias */
+-#define TARGET_CPU_sparc64	10	/* alias */
+-#define TARGET_CPU_ultrasparc	11
+-#define TARGET_CPU_ultrasparc3	12
+-#define TARGET_CPU_niagara	13
+-#define TARGET_CPU_niagara2	14
+-#define TARGET_CPU_niagara3	15
+-#define TARGET_CPU_niagara4	16
++#define TARGET_CPU_leon5	7
++#define TARGET_CPU_sparclite	8
++#define TARGET_CPU_f930		8       /* alias */
++#define TARGET_CPU_f934		8       /* alias */
++#define TARGET_CPU_sparclite86x	9
++#define TARGET_CPU_sparclet	10
++#define TARGET_CPU_tsc701	10       /* alias */
++#define TARGET_CPU_v9		11	/* generic v9 implementation */
++#define TARGET_CPU_sparcv9	11	/* alias */
++#define TARGET_CPU_sparc64	11	/* alias */
++#define TARGET_CPU_ultrasparc	12
++#define TARGET_CPU_ultrasparc3	13
++#define TARGET_CPU_niagara	14
++#define TARGET_CPU_niagara2	15
++#define TARGET_CPU_niagara3	16
++#define TARGET_CPU_niagara4	17
+ #define TARGET_CPU_niagara7	19
+ #define TARGET_CPU_m8		20
+ 
+@@ -228,7 +229,8 @@ along with GCC; see the file COPYING3.  If not see
+ #endif
+ 
+ #if TARGET_CPU_DEFAULT == TARGET_CPU_leon \
+- || TARGET_CPU_DEFAULT == TARGET_CPU_leon3
++ || TARGET_CPU_DEFAULT == TARGET_CPU_leon3 \
++ || TARGET_CPU_DEFAULT == TARGET_CPU_leon5
+ #define CPP_CPU32_DEFAULT_SPEC "-D__leon__ -D__sparc_v8__"
+ #define ASM_CPU32_DEFAULT_SPEC AS_LEON_FLAG
+ #endif
+@@ -284,6 +286,7 @@ along with GCC; see the file COPYING3.  If not see
+ %{mcpu=hypersparc:-D__hypersparc__ -D__sparc_v8__} \
+ %{mcpu=leon:-D__leon__ -D__sparc_v8__} \
+ %{mcpu=leon3:-D__leon__ -D__sparc_v8__} \
++%{mcpu=leon5:-D__leon__ -D__sparc_v8__} \
+ %{mcpu=leon3v7:-D__leon__} \
+ %{mcpu=v9:-D__sparc_v9__} \
+ %{mcpu=ultrasparc:-D__sparc_v9__} \
+@@ -336,6 +339,7 @@ along with GCC; see the file COPYING3.  If not see
+ %{mcpu=hypersparc:-Av8} \
+ %{mcpu=leon:" AS_LEON_FLAG "} \
+ %{mcpu=leon3:" AS_LEON_FLAG "} \
++%{mcpu=leon5:" AS_LEON_FLAG "} \
+ %{mcpu=leon3v7:" AS_LEONV7_FLAG "} \
+ %{mv8plus:-Av8plus} \
+ %{mcpu=v9:-Av9} \
+diff --git a/gcc/config/sparc/sparc.md b/gcc/config/sparc/sparc.md
+index 8d2db23cbcc..49bc9fb11cf 100644
+--- a/gcc/config/sparc/sparc.md
++++ b/gcc/config/sparc/sparc.md
+@@ -233,6 +233,7 @@
+    hypersparc,
+    leon,
+    leon3,
++   leon5,
+    leon3v7,
+    sparclite,
+    f930,
+@@ -641,6 +642,7 @@
+ (include "supersparc.md")
+ (include "hypersparc.md")
+ (include "leon.md")
++(include "leon5.md")
+ (include "sparclet.md")
+ (include "ultra1_2.md")
+ (include "ultra3.md")
+diff --git a/gcc/config/sparc/sparc.opt b/gcc/config/sparc/sparc.opt
+index 50fedbbd012..0151012a39f 100644
+--- a/gcc/config/sparc/sparc.opt
++++ b/gcc/config/sparc/sparc.opt
+@@ -175,6 +175,9 @@ Enum(sparc_processor) String(leon3) Value(PROCESSOR_LEON3)
+ EnumValue
+ Enum(sparc_processor) String(leon3v7) Value(PROCESSOR_LEON3V7)
+ 
++EnumValue
++Enum(sparc_processor) String(leon5) Value(PROCESSOR_LEON5)
++
+ EnumValue
+ Enum(sparc_processor) String(sparclite) Value(PROCESSOR_SPARCLITE)
+ 
+diff --git a/gcc/doc/invoke.texi b/gcc/doc/invoke.texi
+index a2794a67d1e..4b32d0e18c9 100644
+--- a/gcc/doc/invoke.texi
++++ b/gcc/doc/invoke.texi
+@@ -27771,10 +27771,11 @@ so @option{-mno-lra} needs to be passed to get old Reload.
+ Set the instruction set, register set, and instruction scheduling parameters
+ for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
+ @samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{hypersparc},
+-@samp{leon}, @samp{leon3}, @samp{leon3v7}, @samp{sparclite}, @samp{f930},
+-@samp{f934}, @samp{sparclite86x}, @samp{sparclet}, @samp{tsc701}, @samp{v9},
+-@samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
+-@samp{niagara3}, @samp{niagara4}, @samp{niagara7} and @samp{m8}.
++@samp{leon}, @samp{leon3}, @samp{leon3v7}, @samp{leon5}, @samp{sparclite},
++@samp{f930}, @samp{f934}, @samp{sparclite86x}, @samp{sparclet}, @samp{tsc701},
++@samp{v9}, @samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara},
++@samp{niagara2}, @samp{niagara3}, @samp{niagara4}, @samp{niagara7} and
++@samp{m8}.
+ 
+ Native Solaris and GNU/Linux toolchains also support the value @samp{native},
+ which selects the best architecture option for the host processor.
+@@ -27793,7 +27794,7 @@ implementations.
+ cypress, leon3v7
+ 
+ @item v8
+-supersparc, hypersparc, leon, leon3
++supersparc, hypersparc, leon, leon3, leon5
+ 
+ @item sparclite
+ f930, f934, sparclite86x
+@@ -27860,7 +27861,7 @@ The same values for @option{-mcpu=@var{cpu_type}} can be used for
+ @option{-mtune=@var{cpu_type}}, but the only useful values are those
+ that select a particular CPU implementation.  Those are
+ @samp{cypress}, @samp{supersparc}, @samp{hypersparc}, @samp{leon},
+-@samp{leon3}, @samp{leon3v7}, @samp{f930}, @samp{f934},
++@samp{leon3}, @samp{leon3v7}, @samp{leon5}, @samp{f930}, @samp{f934},
+ @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc},
+ @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3},
+ @samp{niagara4}, @samp{niagara7} and @samp{m8}.  With native Solaris
+-- 
+2.34.1
+

@@ -1,0 +1,30 @@
+From ba1370d000ddb1ebe7448b168eb4aab19aa8f658 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Thu, 17 Nov 2022 12:45:01 +0100
+Subject: [PATCH 09/14] sparc: Treat the version field in the FPU control word
+ as reserved
+
+The FSR version field is read-only and might be non-zero.
+
+This allows math/test-fpucw* to correctly pass when the version is
+non-zero.
+---
+ sysdeps/sparc/fpu/fpu_control.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sysdeps/sparc/fpu/fpu_control.h b/sysdeps/sparc/fpu/fpu_control.h
+index bd9cc5711e..aacba37e8d 100644
+--- a/sysdeps/sparc/fpu/fpu_control.h
++++ b/sysdeps/sparc/fpu/fpu_control.h
+@@ -43,7 +43,7 @@
+ #define _FPU_RC_ZERO    0x40000000
+ #define _FPU_RC_NEAREST 0x0        /* RECOMMENDED */
+ 
+-#define _FPU_RESERVED   0x30300000  /* Reserved bits in cw */
++#define _FPU_RESERVED   0x303e0000  /* Reserved bits in cw */
+ 
+ 
+ /* Now two recommended cw */
+-- 
+2.34.1
+

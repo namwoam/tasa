@@ -1,0 +1,29 @@
+From 61d9814f8215e73df88b39ccdf1515c688e62395 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Thu, 23 Feb 2023 08:12:56 +0100
+Subject: [PATCH 30/32] sparc32,leon: Call install_leon_pmc early to enable
+ power down early
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/kernel/leon_pmc.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/sparc/kernel/leon_pmc.c b/arch/sparc/kernel/leon_pmc.c
+index 396f46bca52e..338edf4e2f80 100644
+--- a/arch/sparc/kernel/leon_pmc.c
++++ b/arch/sparc/kernel/leon_pmc.c
+@@ -88,7 +88,7 @@ static int __init leon_pmc_install(void)
+ 	return 0;
+ }
+ 
+-/* This driver is not critical to the boot process, don't care
+- * if initialized late.
++/* This driver is not critical to the boot process, but it can speed up
++ * simulation when in place early.
+  */
+-late_initcall(leon_pmc_install);
++early_initcall(leon_pmc_install);
+-- 
+2.34.1
+

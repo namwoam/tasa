@@ -1,0 +1,20 @@
+From c59617d90368945cf3a2399ec3d567713dee62ec Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 15 Jun 2022 09:49:45 +0200
+Subject: [PATCH 28/28] Set version suffix for LEON Linux 5.10-1.3 release
+
+---
+ localversion-leon | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 localversion-leon
+
+diff --git a/localversion-leon b/localversion-leon
+new file mode 100644
+index 000000000000..9fef743a7585
+--- /dev/null
++++ b/localversion-leon
+@@ -0,0 +1 @@
++-leon1.3
+-- 
+2.17.1
+

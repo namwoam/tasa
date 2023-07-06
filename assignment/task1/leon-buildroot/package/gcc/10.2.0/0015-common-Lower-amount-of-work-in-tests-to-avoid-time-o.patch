@@ -1,0 +1,123 @@
+From 9ff898d35134c5553e5a6a5abc682e354f527468 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Mon, 15 Jun 2020 09:08:17 +0200
+Subject: [PATCH 15/50] common: Lower amount of work in tests to avoid time out
+
+---
+ gcc/testsuite/gcc.dg/tree-prof/cold_partition_label.c          | 2 +-
+ gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c | 2 +-
+ gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c | 2 +-
+ gcc/testsuite/gcc.dg/tree-prof/indir-call-prof-topn.c          | 2 +-
+ gcc/testsuite/gcc.dg/tree-prof/inliner-1.c                     | 2 +-
+ gcc/testsuite/gcc.dg/tree-prof/section-attr-1.c                | 2 +-
+ gcc/testsuite/gcc.dg/tree-prof/section-attr-2.c                | 2 +-
+ gcc/testsuite/gcc.dg/tree-prof/section-attr-3.c                | 2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/gcc/testsuite/gcc.dg/tree-prof/cold_partition_label.c b/gcc/testsuite/gcc.dg/tree-prof/cold_partition_label.c
+index 450308d6407..1ca465fcc16 100644
+--- a/gcc/testsuite/gcc.dg/tree-prof/cold_partition_label.c
++++ b/gcc/testsuite/gcc.dg/tree-prof/cold_partition_label.c
+@@ -32,7 +32,7 @@ main (int argc, char *argv[])
+   int i;
+   buf_hot =  "hello";
+   buf_cold = "world";
+-  for (i = 0; i < 1000000; i++)
++  for (i = 0; i < 1000; i++)
+     foo (argc);
+   return 0;
+ }
+diff --git a/gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c b/gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c
+index a13b08cd60e..11acc24faf7 100644
+--- a/gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c
++++ b/gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-1.c
+@@ -22,7 +22,7 @@ main()
+ 
+   x = one (3);
+ 
+-  for (i = 0; i < 350000000; i++)
++  for (i = 0; i < 350000; i++)
+     {
+       x = (*p) (3);
+       p = table[x];
+diff --git a/gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c b/gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c
+index 9b996fcf0ed..2a6c0979884 100644
+--- a/gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c
++++ b/gcc/testsuite/gcc.dg/tree-prof/crossmodule-indir-call-topn-2.c
+@@ -21,7 +21,7 @@ int foo ()
+ 
+   x = one (3);
+ 
+-  for (i = 0; i < 350000000; i++)
++  for (i = 0; i < 350000; i++)
+     {
+       x = (*p) (3);
+       p = table[x];
+diff --git a/gcc/testsuite/gcc.dg/tree-prof/indir-call-prof-topn.c b/gcc/testsuite/gcc.dg/tree-prof/indir-call-prof-topn.c
+index 063996c71df..3e300a58d74 100644
+--- a/gcc/testsuite/gcc.dg/tree-prof/indir-call-prof-topn.c
++++ b/gcc/testsuite/gcc.dg/tree-prof/indir-call-prof-topn.c
+@@ -26,7 +26,7 @@ main()
+ 
+   one (3);
+ 
+-  for (i = 0; i < 350000000; i++)
++  for (i = 0; i < 350000; i++)
+     {
+       x = (*p) (3);
+       p = table[x];
+diff --git a/gcc/testsuite/gcc.dg/tree-prof/inliner-1.c b/gcc/testsuite/gcc.dg/tree-prof/inliner-1.c
+index 78f73e0fcfd..1d88349bd44 100644
+--- a/gcc/testsuite/gcc.dg/tree-prof/inliner-1.c
++++ b/gcc/testsuite/gcc.dg/tree-prof/inliner-1.c
+@@ -25,7 +25,7 @@ int
+ main ()
+ {
+   int i;
+-  for (i = 0; i < 1000000; i++)
++  for (i = 0; i < 1000; i++)
+     {
+       if (a)
+         cold_function ();   /* Should not be inlined.  */
+diff --git a/gcc/testsuite/gcc.dg/tree-prof/section-attr-1.c b/gcc/testsuite/gcc.dg/tree-prof/section-attr-1.c
+index 89ecc1c4693..5fe05cf1a02 100644
+--- a/gcc/testsuite/gcc.dg/tree-prof/section-attr-1.c
++++ b/gcc/testsuite/gcc.dg/tree-prof/section-attr-1.c
+@@ -24,7 +24,7 @@ main (int argc, char *argv[])
+   int i;
+   buf_hot =  "hello";
+   buf_cold = "world";
+-  for (i = 0; i < 1000000; i++)
++  for (i = 0; i < 1000; i++)
+     foo (argc);
+   return 0;
+ }
+diff --git a/gcc/testsuite/gcc.dg/tree-prof/section-attr-2.c b/gcc/testsuite/gcc.dg/tree-prof/section-attr-2.c
+index b856457b559..211c4db4088 100644
+--- a/gcc/testsuite/gcc.dg/tree-prof/section-attr-2.c
++++ b/gcc/testsuite/gcc.dg/tree-prof/section-attr-2.c
+@@ -20,7 +20,7 @@ main (int argc, char *argv[])
+   int i;
+   buf_hot =  "hello";
+   buf_cold = "world";
+-  for (i = 0; i < 1000000; i++)
++  for (i = 0; i < 1000; i++)
+     foo (argc);
+   return 0;
+ }
+diff --git a/gcc/testsuite/gcc.dg/tree-prof/section-attr-3.c b/gcc/testsuite/gcc.dg/tree-prof/section-attr-3.c
+index 8d85cf39f6c..91c38c204f6 100644
+--- a/gcc/testsuite/gcc.dg/tree-prof/section-attr-3.c
++++ b/gcc/testsuite/gcc.dg/tree-prof/section-attr-3.c
+@@ -24,7 +24,7 @@ main (int argc, char *argv[])
+   int i;
+   buf_hot =  "hello";
+   buf_cold = "world";
+-  for (i = 0; i < 1000000; i++)
++  for (i = 0; i < 10000; i++)
+     foo (argc);
+   return 0;
+ }
+-- 
+2.34.1
+

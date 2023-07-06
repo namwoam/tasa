@@ -1,0 +1,28 @@
+From b6ef822ef14448e4ca207d89a005c3369a1f670b Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Thu, 20 Aug 2020 15:58:01 +0200
+Subject: [PATCH 22/28] sparc32: leon: Remove optimization giving b2bst false
+ positives for the paranoid
+
+The -fno-jump-tables removes a lot of false positives, but is not known
+to actually be needed.
+---
+ arch/sparc/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
+index b63401ecbfbf..aa9d12c54e4b 100644
+--- a/arch/sparc/Makefile
++++ b/arch/sparc/Makefile
+@@ -41,7 +41,7 @@ KBUILD_CFLAGS  += -Wa,-Av8
+ KBUILD_AFLAGS  += -m32 -mcpu=$(SPARC_MCPU) -Wa,-Av8
+ 
+ ifeq ($(CONFIG_SPARC_LEON_FIX_UT700),y)
+-KBUILD_CFLAGS  += -mfix-ut700
++KBUILD_CFLAGS  += -mfix-ut700 -fno-jump-tables
+ KBUILD_AFLAGS  += -mfix-ut700
+ endif
+ 
+-- 
+2.17.1
+

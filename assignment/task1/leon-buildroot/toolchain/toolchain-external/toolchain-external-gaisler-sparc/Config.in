@@ -1,0 +1,4 @@
+config BR2_TOOLCHAIN_EXTERNAL_GAISLER_SPARC
+	bool "Gaisler SPARC/LEON toolchains"
+	help
+	   Gaisler SPARC/LEON toolchains

@@ -1,0 +1,96 @@
+From d71d7e1d60c841b1d8fc574f5be03af2936ee5ea Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 9 Jun 2021 14:40:01 +0200
+Subject: [PATCH 09/32] sparc32: Synchronize user stack on fork and clone
+
+Without doing this, an irq 15 IPI during kernel can catch a user space
+framepointer, put a register window in in the thread_info register
+window array leading to the KERNEL_WINDOW_FLUSH is
+sys_clone/sys_fork/sys_vfork not completely flushing all windows to the
+stack, thereby leading to a failed clone/fork/vfork.
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/kernel/process.c | 40 +++++++++++++++++++++++--------------
+ 1 file changed, 25 insertions(+), 15 deletions(-)
+
+diff --git a/arch/sparc/kernel/process.c b/arch/sparc/kernel/process.c
+index 0442ab00518d..af1d66124485 100644
+--- a/arch/sparc/kernel/process.c
++++ b/arch/sparc/kernel/process.c
+@@ -17,14 +17,18 @@
+ 
+ asmlinkage long sparc_fork(struct pt_regs *regs)
+ {
+-	unsigned long orig_i1 = regs->u_regs[UREG_I1];
++	unsigned long orig_i1;
+ 	long ret;
+ 	struct kernel_clone_args args = {
+ 		.exit_signal	= SIGCHLD,
+-		/* Reuse the parent's stack for the child. */
+-		.stack		= regs->u_regs[UREG_FP],
+ 	};
+ 
++	synchronize_user_stack();
++
++	orig_i1 = regs->u_regs[UREG_I1];
++	/* Reuse the parent's stack for the child. */
++	args.stack = regs->u_regs[UREG_FP];
++
+ 	ret = kernel_clone(&args);
+ 
+ 	/* If we get an error and potentially restart the system
+@@ -40,16 +44,19 @@ asmlinkage long sparc_fork(struct pt_regs *regs)
+ 
+ asmlinkage long sparc_vfork(struct pt_regs *regs)
+ {
+-	unsigned long orig_i1 = regs->u_regs[UREG_I1];
++	unsigned long orig_i1;
+ 	long ret;
+-
+-	struct kernel_clone_args args = {
++	struct kernel_clone_args args= {
+ 		.flags		= CLONE_VFORK | CLONE_VM,
+ 		.exit_signal	= SIGCHLD,
+-		/* Reuse the parent's stack for the child. */
+-		.stack		= regs->u_regs[UREG_FP],
+ 	};
+ 
++	synchronize_user_stack();
++
++	orig_i1 = regs->u_regs[UREG_I1];
++	/* Reuse the parent's stack for the child. */
++	args.stack = regs->u_regs[UREG_FP];
++
+ 	ret = kernel_clone(&args);
+ 
+ 	/* If we get an error and potentially restart the system
+@@ -65,15 +72,18 @@ asmlinkage long sparc_vfork(struct pt_regs *regs)
+ 
+ asmlinkage long sparc_clone(struct pt_regs *regs)
+ {
+-	unsigned long orig_i1 = regs->u_regs[UREG_I1];
+-	unsigned int flags = lower_32_bits(regs->u_regs[UREG_I0]);
++	unsigned long orig_i1;
++	unsigned int flags;
+ 	long ret;
++	struct kernel_clone_args args = {0};
+ 
+-	struct kernel_clone_args args = {
+-		.flags		= (flags & ~CSIGNAL),
+-		.exit_signal	= (flags & CSIGNAL),
+-		.tls		= regs->u_regs[UREG_I3],
+-	};
++	synchronize_user_stack();
++
++	orig_i1 = regs->u_regs[UREG_I1];
++	flags = lower_32_bits(regs->u_regs[UREG_I0]);
++	args.flags		= (flags & ~CSIGNAL);
++	args.exit_signal	= (flags & CSIGNAL);
++	args.tls		= regs->u_regs[UREG_I3];
+ 
+ #ifdef CONFIG_COMPAT
+ 	if (test_thread_flag(TIF_32BIT)) {
+-- 
+2.34.1
+

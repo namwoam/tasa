@@ -1,0 +1,24 @@
+From 14a43c641f8817997b23c2cc823657a3461d57db Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Tue, 3 Jan 2023 11:36:59 +0100
+Subject: [PATCH 49/50] linux: Use leon5 target for native LEON5 on Linux.
+
+---
+ gcc/config/sparc/driver-sparc.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/config/sparc/driver-sparc.c b/gcc/config/sparc/driver-sparc.c
+index ebb397d04af..037aa2ad3b4 100644
+--- a/gcc/config/sparc/driver-sparc.c
++++ b/gcc/config/sparc/driver-sparc.c
+@@ -78,6 +78,7 @@ static const struct cpu_names {
+   { "UltraSparc T4",	"niagara4" },
+   { "UltraSparc T5",	"niagara4" },
+   { "LEON",		"leon3" },
++  { "LEON5",		"leon5" },
+ #endif
+   { "SPARC-M7",		"niagara7" },
+   { "SPARC-S7",		"niagara7" },
+-- 
+2.34.1
+

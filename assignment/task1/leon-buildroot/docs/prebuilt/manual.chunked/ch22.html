@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 22. Contributing to Buildroot</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt03.html" title="Part III. Developer guide" /><link rel="prev" href="ch21.html" title="Chapter 21. Debugging Buildroot" /><link rel="next" href="ch23.html" title="Chapter 23. DEVELOPERS file and get-developers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch21.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch23.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="_contributing_to_buildroot"></a>Chapter 22. Contributing to Buildroot</h2></div></div></div><p>There are many ways in which you can contribute to Buildroot: analyzing
+and fixing bugs, analyzing and fixing package build failures detected by
+the autobuilders, testing and reviewing patches sent by other
+developers, working on the items in our TODO list and sending your own
+improvements to Buildroot or its manual. The following sections give a
+little more detail on each of these items.</p><p>If you are interested in contributing to Buildroot, the first thing you
+should do is to subscribe to the Buildroot mailing list. This list is
+the main way of interacting with other Buildroot developers and to send
+contributions to. If you aren’t subscribed yet, then refer to
+<a class="xref" href="ch05.html" title="Chapter 5. Community resources">Chapter 5, <em>Community resources</em></a> for the subscription link.</p><p>If you are going to touch the code, it is highly recommended to use a
+git repository of Buildroot, rather than starting from an extracted
+source code tarball. Git is the easiest way to develop from and directly
+send your patches to the mailing list. Refer to <a class="xref" href="ch03.html" title="Chapter 3. Getting Buildroot">Chapter 3, <em>Getting Buildroot</em></a>
+for more information on obtaining a Buildroot git tree.</p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_reproducing_analyzing_and_fixing_bugs"></a>22.1. Reproducing, analyzing and fixing bugs</h2></div></div></div><p>A first way of contributing is to have a look at the open bug reports in
+the <a class="ulink" href="https://bugs.buildroot.org/buglist.cgi?product=buildroot" target="_top">Buildroot bug
+tracker</a>. As we strive to keep the bug count as small as possible, all
+help in reproducing, analyzing and fixing reported bugs is more than
+welcome. Don’t hesitate to add a comment to bug reports reporting your
+findings, even if you don’t yet see the full picture.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_analyzing_and_fixing_autobuild_failures"></a>22.2. Analyzing and fixing autobuild failures</h2></div></div></div><p>The Buildroot autobuilders are a set of build machines that continuously
+run Buildroot builds based on random configurations. This is done for
+all architectures supported by Buildroot, with various toolchains, and
+with a random selection of packages. With the large commit activity on
+Buildroot, these autobuilders are a great help in detecting problems
+very early after commit.</p><p>All build results are available at <a class="ulink" href="http://autobuild.buildroot.org" target="_top">http://autobuild.buildroot.org</a>,
+statistics are at <a class="ulink" href="http://autobuild.buildroot.org/stats.php" target="_top">http://autobuild.buildroot.org/stats.php</a>. Every day,
+an overview of all failed packages is sent to the mailing list.</p><p>Detecting problems is great, but obviously these problems have to be
+fixed as well. Your contribution is very welcome here! There are
+basically two things that can be done:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Analyzing the problems. The daily summary mails do not contain details
+  about the actual failures: in order to see what’s going on you have to
+  open the build log and check the last output. Having someone doing
+  this for all packages in the mail is very useful for other developers,
+  as they can make a quick initial analysis based on this output alone.
+</li><li class="listitem"><p class="simpara">
+Fixing a problem. When fixing autobuild failures, you should follow
+  these steps:
+</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Check if you can reproduce the problem by building with the same
+    configuration. You can do this manually, or use the
+    <a class="ulink" href="http://git.buildroot.org/buildroot-test/tree/utils/br-reproduce-build" target="_top">br-reproduce-build</a>
+    script that will automatically clone a Buildroot git repository,
+    checkout the correct revision, download and set the right
+    configuration, and start the build.
+</li><li class="listitem">
+Analyze the problem and create a fix.
+</li><li class="listitem">
+Verify that the problem is really fixed by starting from a clean
+    Buildroot tree and only applying your fix.
+</li><li class="listitem">
+Send the fix to the Buildroot mailing list (see
+    <a class="xref" href="ch22.html#submitting-patches" title="22.5. Submitting patches">Section 22.5, “Submitting patches”</a>). In case you created a patch against the
+    package sources, you should also send the patch upstream so that the
+    problem will be fixed in a later release, and the patch in Buildroot
+    can be removed.
+    In the commit message of a patch fixing an autobuild failure, add a
+    reference to the build result directory, as follows:
+</li></ol></div></li></ul></div><pre class="screen">Fixes: http://autobuild.buildroot.org/results/51000a9d4656afe9e0ea6f07b9f8ed374c2e4069</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_reviewing_and_testing_patches"></a>22.3. Reviewing and testing patches</h2></div></div></div><p>With the amount of patches sent to the mailing list each day, the
+maintainer has a very hard job to judge which patches are ready to apply
+and which ones aren’t. Contributors can greatly help here by reviewing
+and testing these patches.</p><p>In the review process, do not hesitate to respond to patch submissions
+for remarks, suggestions or anything that will help everyone to
+understand the patches and make them better. Please use internet
+style replies in plain text emails when responding to patch
+submissions.</p><p>To indicate approval of a patch, there are three formal tags that keep
+track of this approval. To add your tag to a patch, reply to it with the
+approval tag below the original author’s Signed-off-by line. These tags
+will be picked up automatically by patchwork (see
+<a class="xref" href="ch22.html#apply-patches-patchwork" title="22.3.1. Applying Patches from Patchwork">Section 22.3.1, “Applying Patches from Patchwork”</a>) and will be part of the commit log when
+the patch is accepted.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+Tested-by
+</span></dt><dd>
+Indicates that the patch has been tested successfully.
+  You are encouraged to specify what kind of testing you performed
+  (compile-test on architecture X and Y, runtime test on target A,
+  …). This additional information helps other testers and the
+  maintainer.
+</dd><dt><span class="term">
+Reviewed-by
+</span></dt><dd>
+Indicates that you code-reviewed the patch and did your
+  best in spotting problems, but you are not sufficiently familiar with
+  the area touched to provide an Acked-by tag. This means that there
+  may be remaining problems in the patch that would be spotted by
+  someone with more experience in that area. Should such problems be
+  detected, your Reviewed-by tag remains appropriate and you cannot
+  be blamed.
+</dd><dt><span class="term">
+Acked-by
+</span></dt><dd>
+Indicates that you code-reviewed the patch and you are
+  familiar enough with the area touched to feel that the patch can be
+  committed as-is (no additional changes required). In case it later
+  turns out that something is wrong with the patch, your Acked-by could
+  be considered inappropriate. The difference between Acked-by and
+  Reviewed-by is thus mainly that you are prepared to take the blame on
+  Acked patches, but not on Reviewed ones.
+</dd></dl></div><p>If you reviewed a patch and have comments on it, you should simply reply
+to the patch stating these comments, without providing a Reviewed-by or
+Acked-by tag. These tags should only be provided if you judge the patch
+to be good as it is.</p><p>It is important to note that neither Reviewed-by nor Acked-by imply
+that testing has been performed. To indicate that you both reviewed and
+tested the patch, provide two separate tags (Reviewed/Acked-by and
+Tested-by).</p><p>Note also that <span class="emphasis"><em>any developer</em></span> can provide Tested/Reviewed/Acked-by
+tags, without exception, and we encourage everyone to do this. Buildroot
+does not have a defined group of <span class="emphasis"><em>core</em></span> developers, it just so happens
+that some developers are more active than others. The maintainer will
+value tags according to the track record of their submitter. Tags
+provided by a regular contributor will naturally be trusted more than
+tags provided by a newcomer. As you provide tags more regularly, your
+<span class="emphasis"><em>trustworthiness</em></span> (in the eyes of the maintainer) will go up, but <span class="emphasis"><em>any</em></span>
+tag provided is valuable.</p><p>Buildroot’s Patchwork website can be used to pull in patches for testing
+purposes. Please see <a class="xref" href="ch22.html#apply-patches-patchwork" title="22.3.1. Applying Patches from Patchwork">Section 22.3.1, “Applying Patches from Patchwork”</a> for more
+information on using Buildroot’s Patchwork website to apply patches.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="apply-patches-patchwork"></a>22.3.1. Applying Patches from Patchwork</h3></div></div></div><p>The main use of Buildroot’s Patchwork website for a developer is for
+pulling in patches into their local git repository for testing
+purposes.</p><p>When browsing patches in the patchwork management interface, an <code class="literal">mbox</code>
+link is provided at the top of the page. Copy this link address and
+run the following commands:</p><pre class="screen">$ git checkout -b &lt;test-branch-name&gt;
+$ wget -O - &lt;mbox-url&gt; | git am</pre><p>Another option for applying patches is to create a bundle. A bundle is
+a set of patches that you can group together using the patchwork
+interface. Once the bundle is created and the bundle is made public,
+you can copy the <code class="literal">mbox</code> link for the bundle and apply the bundle
+using the above commands.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_work_on_items_from_the_todo_list"></a>22.4. Work on items from the TODO list</h2></div></div></div><p>If you want to contribute to Buildroot but don’t know where to start,
+and you don’t like any of the above topics, you can always work on items
+from the <a class="ulink" href="http://elinux.org/Buildroot#Todo_list" target="_top">Buildroot TODO list</a>.
+Don’t hesitate to discuss an item first on the mailing list or on IRC.
+Do edit the wiki to indicate when you start working on an item, so we
+avoid duplicate efforts.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="submitting-patches"></a>22.5. Submitting patches</h2></div></div></div><div class="note" style="margin-left: 0; margin-right: 10%;"><h3 class="title">Note</h3><p><span class="emphasis"><em>Please, do not attach patches to bugs, send them to the mailing list
+instead</em></span>.</p></div><p>If you made some changes to Buildroot and you would like to contribute
+them to the Buildroot project, proceed as follows.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_the_formatting_of_a_patch"></a>22.5.1. The formatting of a patch</h3></div></div></div><p>We expect patches to be formatted in a specific way. This is necessary
+to make it easy to review patches, to be able to apply them easily to
+the git repository, to make it easy to find back in the history how
+and why things have changed, and to make it possible to use <code class="literal">git
+bisect</code> to locate the origin of a problem.</p><p>First of all, it is essential that the patch has a good commit
+message. The commit message should start with a separate line with a
+brief summary of the change, prefixed by the area touched by the
+patch. A few examples of good commit titles:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="literal">package/linuxptp: bump version to 2.0</code>
+</li><li class="listitem">
+<code class="literal">configs/imx23evk: bump Linux version to 4.19</code>
+</li><li class="listitem">
+<code class="literal">package/pkg-generic: postpone evaluation of dependency conditions</code>
+</li><li class="listitem">
+<code class="literal">boot/uboot: needs host-{flex,bison}</code>
+</li><li class="listitem">
+<code class="literal">support/testing: add python-ubjson tests</code>
+</li></ul></div><p>The description that follows the prefix should start with a lower case
+letter (i.e "bump", "needs", "postpone", "add" in the above examples).</p><p>Second, the body of the commit message should describe <span class="emphasis"><em>why</em></span> this
+change is needed, and if necessary also give details about <span class="emphasis"><em>how</em></span> it
+was done. When writing the commit message, think of how the reviewers
+will read it, but also think about how you will read it when you look
+at this change again a few years down the line.</p><p>Third, the patch itself should do only one change, but do it
+completely. Two unrelated or weakly related changes should usually be
+done in two separate patches. This usually means that a patch affects
+only a single package. If several changes are related, it is often
+still possible to split them up in small patches and apply them in a
+specific order. Small patches make it easier to review, and often
+make it easier to understand afterwards why a change was done.
+However, each patch must be complete. It is not allowed that the
+build is broken when only the first but not the second patch is
+applied. This is necessary to be able to use <code class="literal">git bisect</code> afterwards.</p><p>Of course, while you’re doing your development, you’re probably going
+back and forth between packages, and certainly not committing things
+immediately in a way that is clean enough for submission. So most
+developers rewrite the history of commits to produce a clean set of
+commits that is appropriate for submission. To do this, you need to
+use <span class="emphasis"><em>interactive rebasing</em></span>. You can learn about it
+<a class="ulink" href="https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History" target="_top">in the Pro
+Git book</a>. Sometimes, it is even easier to discard you history with
+<code class="literal">git reset --soft origin/master</code> and select individual changes with
+<code class="literal">git add -i</code> or <code class="literal">git add -p</code>.</p><p>Finally, the patch should be signed off. This is done by adding
+<code class="literal">Signed-off-by: Your Real Name &lt;<a class="ulink" href="mailto:your@email.address" target="_top">your@email.address</a>&gt;</code> at the end of the
+commit message. <code class="literal">git commit -s</code> does that for you, if configured
+properly. The <code class="literal">Signed-off-by</code> tag means that you publish the patch
+under the Buildroot license (i.e. GPL-2.0+, except for package patches,
+which have the upstream license), and that you are allowed to do so.
+See <a class="ulink" href="http://developercertificate.org/" target="_top">the Developer Certificate of
+Origin</a> for details.</p><p>When adding new packages, you should submit every package in a
+separate patch. This patch should have the update to
+<code class="literal">package/Config.in</code>, the package <code class="literal">Config.in</code> file, the <code class="literal">.mk</code> file, the
+<code class="literal">.hash</code> file, any init script, and all package patches. If the package
+has many sub-options, these are sometimes better added as separate
+follow-up patches. The summary line should be something like
+<code class="literal">&lt;packagename&gt;: new package</code>. The body of the commit message can be
+empty for simple packages, or it can contain the description of the
+package (like the Config.in help text). If anything special has to be
+done to build the package, this should also be explained explicitly in
+the commit message body.</p><p>When you bump a package to a new version, you should also submit a
+separate patch for each package. Don’t forget to update the <code class="literal">.hash</code>
+file, or add it if it doesn’t exist yet. Also don’t forget to check if
+the <code class="literal">_LICENSE</code> and <code class="literal">_LICENSE_FILES</code> are still valid. The summary line
+should be something like <code class="literal">&lt;packagename&gt;: bump to version &lt;new
+version&gt;</code>. If the new version only contains security updates compared
+to the existing one, the summary should be <code class="literal">&lt;packagename&gt;: security
+bump to version &lt;new version&gt;</code> and the commit message body should show
+the CVE numbers that are fixed. If some package patches can be removed
+in the new version, it should be explained explicitly why they can be
+removed, preferably with the upstream commit ID. Also any other
+required changes should be explained explicitly, like configure
+options that no longer exist or are no longer needed.</p><p>If you are interested in getting notified of build failures and of
+further changes in the packages you added or modified, please add
+yourself to the DEVELOPERS file. This should be done in the same patch
+creating or modifying the package. See <a class="link" href="ch23.html" title="Chapter 23. DEVELOPERS file and get-developers">the DEVELOPERS file</a>
+for more information.</p><p>Buildroot provides a handy tool to check for common coding style
+mistakes on files you created or modified, called <code class="literal">check-package</code> (see
+<a class="xref" href="ch18.html#check-package" title="18.25.2. How to check the coding style">Section 18.25.2, “How to check the coding style”</a> for more information).</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_preparing_a_patch_series"></a>22.5.2. Preparing a patch series</h3></div></div></div><p>Starting from the changes committed in your local git view, <span class="emphasis"><em>rebase</em></span>
+your development branch on top of the upstream tree before generating
+a patch set. To do so, run:</p><pre class="screen">$ git fetch --all --tags
+$ git rebase origin/master</pre><p>Now, you are ready to generate then submit your patch set.</p><p>To generate it, run:</p><pre class="screen">$ git format-patch -M -n -s -o outgoing origin/master</pre><p>This will generate patch files in the <code class="literal">outgoing</code> subdirectory,
+automatically adding the <code class="literal">Signed-off-by</code> line.</p><p>Once patch files are generated, you can review/edit the commit message
+before submitting them, using your favorite text editor.</p><p>Buildroot provides a handy tool to know to whom your patches should be
+sent, called <code class="literal">get-developers</code> (see <a class="xref" href="ch23.html" title="Chapter 23. DEVELOPERS file and get-developers">Chapter 23, <em>DEVELOPERS file and get-developers</em></a> for more
+information). This tool reads your patches and outputs the appropriate
+<code class="literal">git send-email</code> command to use:</p><pre class="screen">$ ./utils/get-developers outgoing/*</pre><p>Use the output of <code class="literal">get-developers</code> to send your patches:</p><pre class="screen">$ git send-email --to buildroot@buildroot.org --cc bob --cc alice outgoing/*</pre><p>Alternatively, <code class="literal">get-developers -e</code> can be used directly with the
+<code class="literal">--cc-cmd</code> argument to <code class="literal">git send-email</code> to automatically CC the
+affected developers:</p><pre class="screen">$ git send-email --to buildroot@buildroot.org \
+      --cc-cmd './utils/get-developers -e' origin/master</pre><p><code class="literal">git</code> can be configured to automatically do this out of the box with:</p><pre class="screen">$ git config sendemail.to buildroot@buildroot.org
+$ git config sendemail.ccCmd "$(pwd)/utils/get-developers -e"</pre><p>And then just do:</p><pre class="screen">$ git send-email origin/master</pre><p>Note that <code class="literal">git</code> should be configured to use your mail account.
+To configure <code class="literal">git</code>, see <code class="literal">man git-send-email</code> or google it.</p><p>If you do not use <code class="literal">git send-email</code>, make sure posted <span class="strong"><strong>patches are not
+line-wrapped</strong></span>, otherwise they cannot easily be applied. In such a case,
+fix your e-mail client, or better yet, learn to use <code class="literal">git send-email</code>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_cover_letter"></a>22.5.3. Cover letter</h3></div></div></div><p>If you want to present the whole patch set in a separate mail, add
+<code class="literal">--cover-letter</code> to the <code class="literal">git format-patch</code> command (see <code class="literal">man
+git-format-patch</code> for further information). This will generate a
+template for an introduction e-mail to your patch series.</p><p>A <span class="emphasis"><em>cover letter</em></span> may be useful to introduce the changes you propose
+in the following cases:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+large number of commits in the series;
+</li><li class="listitem">
+deep impact of the changes in the rest of the project;
+</li><li class="listitem">
+RFC <a href="#ftn.idm5884" class="footnote" id="idm5884"><sup class="footnote">[4]</sup></a>;
+</li><li class="listitem">
+whenever you feel it will help presenting your work, your choices,
+  the review process, etc.
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_patches_for_maintenance_branches"></a>22.5.4. Patches for maintenance branches</h3></div></div></div><p>When fixing bugs on a maintenance branch, bugs should be fixed on the
+master branch first. The commit log for such a patch may then contain a
+post-commit note specifying what branches are affected:</p><pre class="screen">package/foo: fix stuff
+
+Signed-off-by: Your Real Name &lt;your@email.address&gt;
+---
+Backport to: 2020.02.x, 2020.05.x
+(2020.08.x not affected as the version was bumped)</pre><p>Those changes will then be backported by a maintainer to the affected
+branches.</p><p>However, some bugs may apply only to a specific release, for example
+because it is using an older version of a package. In that case, patches
+should be based off the maintenance branch, and the patch subject prefix
+must include the maintenance branch name (for example "[PATCH 2020.02.x]").
+This can be done with the <code class="literal">git format-patch</code> flag <code class="literal">--subject-prefix</code>:</p><pre class="screen">$ git format-patch --subject-prefix "PATCH 2020.02.x" \
+    -M -s -o outgoing origin/2020.02.x</pre><p>Then send the patches with <code class="literal">git send-email</code>, as described above.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_patch_revision_changelog"></a>22.5.5. Patch revision changelog</h3></div></div></div><p>When improvements are requested, the new revision of each commit
+should include a changelog of the modifications between each
+submission. Note that when your patch series is introduced by a cover
+letter, an overall changelog may be added to the cover letter in
+addition to the changelog in the individual commits.
+The best thing to rework a patch series is by interactive rebasing:
+<code class="literal">git rebase -i origin/master</code>. Consult the git manual for more
+information.</p><p>When added to the individual commits, this changelog is added when
+editing the commit message. Below the <code class="literal">Signed-off-by</code> section, add
+<code class="literal">---</code> and your changelog.</p><p>Although the changelog will be visible for the reviewers in the mail
+thread, as well as in
+<a class="ulink" href="https://patchwork.ozlabs.org/project/buildroot/list/" target="_top">patchwork</a>, <code class="literal">git</code>
+will automatically ignores lines below <code class="literal">---</code> when the patch will be
+merged. This is the intended behavior: the changelog is not meant to
+be preserved forever in the <code class="literal">git</code> history of the project.</p><p>Hereafter the recommended layout:</p><pre class="screen">Patch title: short explanation, max 72 chars
+
+A paragraph that explains the problem, and how it manifests itself. If
+the problem is complex, it is OK to add more paragraphs. All paragraphs
+should be wrapped at 72 characters.
+
+A paragraph that explains the root cause of the problem. Again, more
+than one paragraph is OK.
+
+Finally, one or more paragraphs that explain how the problem is solved.
+Don't hesitate to explain complex solutions in detail.
+
+Signed-off-by: John DOE &lt;john.doe@example.net&gt;
+
+---
+Changes v2 -&gt; v3:
+  - foo bar  (suggested by Jane)
+  - bar buz
+
+Changes v1 -&gt; v2:
+  - alpha bravo  (suggested by John)
+  - charly delta</pre><p>Any patch revision should include the version number. The version number
+is simply composed of the letter <code class="literal">v</code> followed by an <code class="literal">integer</code> greater or
+equal to two (i.e. "PATCH v2", "PATCH v3" …).</p><p>This can be easily handled with <code class="literal">git format-patch</code> by using the option
+<code class="literal">--subject-prefix</code>:</p><pre class="screen">$ git format-patch --subject-prefix "PATCH v4" \
+    -M -s -o outgoing origin/master</pre><p>Since git version 1.8.1, you can also use <code class="literal">-v &lt;n&gt;</code> (where &lt;n&gt; is the
+version number):</p><pre class="screen">$ git format-patch -v4 -M -s -o outgoing origin/master</pre><p>When you provide a new version of a patch, please mark the old one as
+superseded in
+<a class="ulink" href="https://patchwork.ozlabs.org/project/buildroot/list/" target="_top">patchwork</a>. You
+need to create an account on
+<a class="ulink" href="https://patchwork.ozlabs.org/project/buildroot/list/" target="_top">patchwork</a> to be
+able to modify the status of your patches. Note that you can only change
+the status of patches you submitted yourself, which means the email
+address you register in
+<a class="ulink" href="https://patchwork.ozlabs.org/project/buildroot/list/" target="_top">patchwork</a> should
+match the one you use for sending patches to the mailing list.</p><p>You can also add the <code class="literal">--in-reply-to &lt;message-id&gt;</code> option when
+submitting a patch to the mailing list. The id of the mail to reply to
+can be found under the "Message Id" tag on
+<a class="ulink" href="https://patchwork.ozlabs.org/project/buildroot/list/" target="_top">patchwork</a>. The
+advantage of <span class="strong"><strong>in-reply-to</strong></span> is that patchwork will automatically mark
+the previous version of the patch as superseded.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="reporting-bugs"></a>22.6. Reporting issues/bugs or getting help</h2></div></div></div><p>Before reporting any issue, please check in
+<a class="link" href="ch05.html" title="Chapter 5. Community resources">the mailing list archive</a> whether someone has
+already reported and/or fixed a similar problem.</p><p>However you choose to report bugs or get help, either by
+opening a bug in the <a class="link" href="ch05.html" title="Chapter 5. Community resources">bug tracker</a> or by
+<a class="link" href="ch05.html" title="Chapter 5. Community resources">sending a mail to the mailing list</a>, there are
+a number of details to provide in order to help people reproduce and
+find a solution to the issue.</p><p>Try to think as if you were trying to help someone else; in
+that case, what would you need?</p><p>Here is a short list of details to provide in such case:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+host machine (OS/release)
+</li><li class="listitem">
+version of Buildroot
+</li><li class="listitem">
+target for which the build fails
+</li><li class="listitem">
+package(s) for which the build fails
+</li><li class="listitem">
+the command that fails and its output
+</li><li class="listitem">
+any information you think that may be relevant
+</li></ul></div><p>Additionally, you should add the <code class="literal">.config</code> file (or if you know how, a
+<code class="literal">defconfig</code>; see <a class="xref" href="ch09.html#customize-store-buildroot-config" title="9.3. Storing the Buildroot configuration">Section 9.3, “Storing the Buildroot configuration”</a>).</p><p>If some of these details are too large, do not hesitate to use a
+pastebin service. Note that not all available pastebin services will
+preserve Unix-style line terminators when downloading raw pastes.
+Following pastebin services are known to work correctly:
+- <a class="ulink" href="https://gist.github.com/" target="_top">https://gist.github.com/</a>
+- <a class="ulink" href="http://code.bulix.org/" target="_top">http://code.bulix.org/</a></p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_using_the_runtime_tests_framework"></a>22.7. Using the runtime tests framework</h2></div></div></div><p>Buildroot includes a run-time testing framework built upon Python
+scripting and QEMU runtime execution. The goals of the framework are
+the following:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+build a well defined Buildroot configuration
+</li><li class="listitem">
+optionally, verify some properties of the build output
+</li><li class="listitem">
+optionally, boot the build results under Qemu, and verify that a
+  given feature is working as expected
+</li></ul></div><p>The entry point to use the runtime tests framework is the
+<code class="literal">support/testing/run-tests</code> tool, which has a series of options
+documented in the tool’s help <span class="emphasis"><em>-h</em></span> description. Some common options
+include setting the download folder, the output folder, keeping build
+output, and for multiple test cases, you can set the JLEVEL for each.</p><p>Here is an example walk through of running a test case.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+For a first step, let us see what all the test case options are. The test
+cases can be listed by executing <code class="literal">support/testing/run-tests -l</code>. These tests
+can all be run individually during test development from the console. Both
+one at a time and selectively as a group of a subset of tests.
+</li></ul></div><pre class="screen">$ support/testing/run-tests -l
+List of tests
+test_run (tests.utils.test_check_package.TestCheckPackage)
+test_run (tests.toolchain.test_external.TestExternalToolchainBuildrootMusl) ... ok
+test_run (tests.toolchain.test_external.TestExternalToolchainBuildrootuClibc) ... ok
+test_run (tests.toolchain.test_external.TestExternalToolchainCCache) ... ok
+test_run (tests.toolchain.test_external.TestExternalToolchainCtngMusl) ... ok
+test_run (tests.toolchain.test_external.TestExternalToolchainLinaroArm) ... ok
+test_run (tests.toolchain.test_external.TestExternalToolchainSourceryArmv4) ... ok
+test_run (tests.toolchain.test_external.TestExternalToolchainSourceryArmv5) ... ok
+test_run (tests.toolchain.test_external.TestExternalToolchainSourceryArmv7) ... ok
+[snip]
+test_run (tests.init.test_systemd.TestInitSystemSystemdRoFull) ... ok
+test_run (tests.init.test_systemd.TestInitSystemSystemdRoIfupdown) ... ok
+test_run (tests.init.test_systemd.TestInitSystemSystemdRoNetworkd) ... ok
+test_run (tests.init.test_systemd.TestInitSystemSystemdRwFull) ... ok
+test_run (tests.init.test_systemd.TestInitSystemSystemdRwIfupdown) ... ok
+test_run (tests.init.test_systemd.TestInitSystemSystemdRwNetworkd) ... ok
+test_run (tests.init.test_busybox.TestInitSystemBusyboxRo) ... ok
+test_run (tests.init.test_busybox.TestInitSystemBusyboxRoNet) ... ok
+test_run (tests.init.test_busybox.TestInitSystemBusyboxRw) ... ok
+test_run (tests.init.test_busybox.TestInitSystemBusyboxRwNet) ... ok
+
+Ran 157 tests in 0.021s
+
+OK</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Then, to run one test case:
+</li></ul></div><pre class="screen">$ support/testing/run-tests -d dl -o output_folder -k tests.init.test_busybox.TestInitSystemBusyboxRw
+15:03:26 TestInitSystemBusyboxRw                  Starting
+15:03:28 TestInitSystemBusyboxRw                  Building
+15:08:18 TestInitSystemBusyboxRw                  Building done
+15:08:27 TestInitSystemBusyboxRw                  Cleaning up
+.
+Ran 1 test in 301.140s
+
+OK</pre><p>The standard output indicates if the test is successful or not. By
+default, the output folder for the test is deleted automatically
+unless the option <code class="literal">-k</code> is passed to <span class="strong"><strong>keep</strong></span> the output directory.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_creating_a_test_case"></a>22.7.1. Creating a test case</h3></div></div></div><p>Within the Buildroot repository, the testing framework is organized at the
+top level in <code class="literal">support/testing/</code> by folders of <code class="literal">conf</code>, <code class="literal">infra</code> and <code class="literal">tests</code>.
+All the test cases live under the <code class="literal">tests</code> folder and are organized in various
+folders representing the category of test.</p><p>The best way to get familiar with how to create a test case is to look
+at a few of the basic file system <code class="literal">support/testing/tests/fs/</code> and init
+<code class="literal">support/testing/tests/init/</code> test scripts. Those tests give good
+examples of a basic tests that include both checking the build
+results, and doing runtime tests. There are other more advanced cases
+that use things like nested <code class="literal">br2-external</code> folders to provide
+skeletons and additional packages.</p><p>Creating a basic test case involves:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Defining a test class that inherits from <code class="literal">infra.basetest.BRTest</code>
+</li><li class="listitem">
+Defining the <code class="literal">config</code> member of the test class, to the Buildroot
+  configuration to build for this test case. It can optionally rely on
+  configuration snippets provided by the runtime test infrastructure:
+  <code class="literal">infra.basetest.BASIC_TOOLCHAIN_CONFIG</code> to get a basic
+  architecture/toolchain configuration, and
+  <code class="literal">infra.basetest.MINIMAL_CONFIG</code> to not build any filesystem. The
+  advantage of using <code class="literal">infra.basetest.BASIC_TOOLCHAIN_CONFIG</code> is that a
+  matching Linux kernel image is provided, which allows to boot the
+  resulting image in Qemu without having to build a Linux kernel image
+  as part of the test case, therefore significant decreasing the build
+  time required for the test case.
+</li><li class="listitem">
+Implementing a <code class="literal">def test_run(self):</code> function to implement the
+  actual tests to run after the build has completed. They may be tests
+  that verify the build output, by running command on the host using
+  the <code class="literal">run_cmd_on_host()</code> helper function. Or they may boot the
+  generated system in Qemu using the <code class="literal">Emulator</code> object available as
+  <code class="literal">self.emulator</code> in the test case. For example <code class="literal">self.emulator.boot()</code>
+  allows to boot the system in Qemu, <code class="literal">self.emulator.login()</code> allows to
+  login, <code class="literal">self.emulator.run()</code> allows to run shell commands inside
+  Qemu.
+</li></ul></div><p>After creating the test script, add yourself to the <code class="literal">DEVELOPERS</code> file to
+be the maintainer of that test case.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_debugging_a_test_case"></a>22.7.2. Debugging a test case</h3></div></div></div><p>When a test case runs, the <code class="literal">output_folder</code> will contain the following:</p><pre class="screen">$ ls output_folder/
+TestInitSystemBusyboxRw/
+TestInitSystemBusyboxRw-build.log
+TestInitSystemBusyboxRw-run.log</pre><p><code class="literal">TestInitSystemBusyboxRw/</code> is the Buildroot output directory, and it
+is preserved only if the <code class="literal">-k</code> option is passed.</p><p><code class="literal">TestInitSystemBusyboxRw-build.log</code> is the log of the Buildroot build.</p><p><code class="literal">TestInitSystemBusyboxRw-run.log</code> is the log of the Qemu boot and
+test. This file will only exist if the build was successful and the
+test case involves booting under Qemu.</p><p>If you want to manually run Qemu to do manual tests of the build
+result, the first few lines of <code class="literal">TestInitSystemBusyboxRw-run.log</code>
+contain the Qemu command line to use.</p><p>You can also make modifications to the current sources inside the
+<code class="literal">output_folder</code> (e.g. for debug purposes) and rerun the standard
+Buildroot make targets (in order to regenerate the complete image with
+the new modifications) and then rerun the test.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_runtime_tests_and_gitlab_ci"></a>22.7.3. Runtime tests and Gitlab CI</h3></div></div></div><p>All runtime tests are regularly executed by Buildroot Gitlab CI
+infrastructure, see .gitlab.yml and
+<a class="ulink" href="https://gitlab.com/buildroot.org/buildroot/-/jobs" target="_top">https://gitlab.com/buildroot.org/buildroot/-/jobs</a>.</p><p>You can also use Gitlab CI to test your new test cases, or verify that
+existing tests continue to work after making changes in Buildroot.</p><p>In order to achieve this, you need to create a fork of the Buildroot
+project on Gitlab, and be able to push branches to your Buildroot fork
+on Gitlab.</p><p>The name of the branch that you push will determine if a Gitlab CI
+pipeline will be triggered or not, and for which test cases.</p><p>In the examples below, the &lt;name&gt; component of the branch name is an
+arbitrary string you choose.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+To trigger all run-test test case jobs, push a branch that ends with
+  <code class="literal">-runtime-tests</code>:
+</li></ul></div><pre class="screen"> $ git push gitlab HEAD:&lt;name&gt;-runtime-tests</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+To trigger one or several test case jobs, push a branch that ends
+  with the complete test case name
+  (<code class="literal">tests.init.test_busybox.TestInitSystemBusyboxRo</code>) or with the name
+  of a category of tests (<code class="literal">tests.init.test_busybox</code>):
+</li></ul></div><pre class="screen"> $ git push gitlab HEAD:&lt;name&gt;-&lt;test case name&gt;</pre><p>Example to run one test:</p><pre class="screen"> $ git push gitlab HEAD:foo-tests.init.test_busybox.TestInitSystemBusyboxRo</pre><p>Examples to run several tests part of the same group:</p><pre class="screen"> $ git push gitlab HEAD:foo-tests.init.test_busybox
+ $ git push gitlab HEAD:foo-tests.init</pre></div></div><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.idm5884" class="footnote"><p><a href="#idm5884" class="simpara"><sup class="simpara">[4] </sup></a>RFC: (Request for comments) change proposal</p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch21.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt03.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch23.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

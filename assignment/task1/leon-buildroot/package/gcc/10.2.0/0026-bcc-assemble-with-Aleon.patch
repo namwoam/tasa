@@ -1,0 +1,24 @@
+From d7d674ca1e396a0c18c8227994c5c0383b60a545 Mon Sep 17 00:00:00 2001
+From: Martin Aberg <maberg@gaisler.com>
+Date: Fri, 4 Sep 2020 12:46:07 +0200
+Subject: [PATCH 26/50] bcc: assemble with -Aleon
+
+---
+ gcc/config/sparc/bcc.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/gcc/config/sparc/bcc.h b/gcc/config/sparc/bcc.h
+index 0e5ed36746b..06891bc6f74 100644
+--- a/gcc/config/sparc/bcc.h
++++ b/gcc/config/sparc/bcc.h
+@@ -68,3 +68,7 @@ crt0.S.o%s crti.o%s crtbegin.o%s \
+ %G %L %G \
+ "
+ 
++/* Always allow leon instructions */
++#undef  ASM_CPU_SPEC
++#define ASM_CPU_SPEC "-Aleon"
++
+-- 
+2.34.1
+

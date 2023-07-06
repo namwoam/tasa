@@ -1,0 +1,47 @@
+From 053349cb0bfd6d53583d269363a476836536bf8a Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Thu, 17 Nov 2022 12:29:48 +0100
+Subject: [PATCH 04/14] sparc: Prevent stfsr from directly following
+ floating-point instruction
+
+If the stfsr instruction is immediately following after a floating-point
+operation instruction in a running program, with no other instruction in
+between the two, the stfsr might behave as if the order was reversed
+between the two instructions and the stfsr occurred before the
+floating-point operation.
+
+See GRLIB-TN-0016.pdf
+---
+ sysdeps/sparc/fpu/bits/fenv.h   | 2 +-
+ sysdeps/sparc/fpu/fpu_control.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sysdeps/sparc/fpu/bits/fenv.h b/sysdeps/sparc/fpu/bits/fenv.h
+index 4935208a41..8da89637f7 100644
+--- a/sysdeps/sparc/fpu/bits/fenv.h
++++ b/sysdeps/sparc/fpu/bits/fenv.h
+@@ -88,7 +88,7 @@ typedef unsigned long int fenv_t;
+ # define __fenv_stfsr(X)   __asm__ __volatile__ ("stx %%fsr,%0" : "=m" (X))
+ # define __fenv_ldfsr(X)   __asm__ __volatile__ ("ldx %0,%%fsr" : : "m" (X))
+ #else
+-# define __fenv_stfsr(X)   __asm__ __volatile__ ("st %%fsr,%0" : "=m" (X))
++# define __fenv_stfsr(X)   __asm__ __volatile__ ("nop; st %%fsr,%0" : "=m" (X))
+ # define __fenv_ldfsr(X)   __asm__ __volatile__ ("ld %0,%%fsr" : : "m" (X))
+ #endif
+ 
+diff --git a/sysdeps/sparc/fpu/fpu_control.h b/sysdeps/sparc/fpu/fpu_control.h
+index ec490fee1f..d53910be74 100644
+--- a/sysdeps/sparc/fpu/fpu_control.h
++++ b/sysdeps/sparc/fpu/fpu_control.h
+@@ -62,7 +62,7 @@ typedef unsigned long int fpu_control_t;
+ # define _FPU_GETCW(cw) __asm__ __volatile__ ("stx %%fsr,%0" : "=m" (*&cw))
+ # define _FPU_SETCW(cw) __asm__ __volatile__ ("ldx %0,%%fsr" : : "m" (*&cw))
+ #else
+-# define _FPU_GETCW(cw) __asm__ __volatile__ ("st %%fsr,%0" : "=m" (*&cw))
++# define _FPU_GETCW(cw) __asm__ __volatile__ ("nop; st %%fsr,%0" : "=m" (*&cw))
+ # define _FPU_SETCW(cw) __asm__ __volatile__ ("ld %0,%%fsr" : : "m" (*&cw))
+ #endif
+ 
+-- 
+2.34.1
+

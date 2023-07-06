@@ -1,0 +1,28 @@
+From fb3763ae94806aa930f7ba893cf0a3b4e9630a98 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 5 Jul 2017 13:36:31 +0200
+Subject: [PATCH 13/50] common: Print out bit names for LEON and LEON3 with
+ -mdebug
+
+---
+ gcc/config/sparc/sparc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/gcc/config/sparc/sparc.c b/gcc/config/sparc/sparc.c
+index aefced85fe1..e394a87e575 100644
+--- a/gcc/config/sparc/sparc.c
++++ b/gcc/config/sparc/sparc.c
+@@ -1600,6 +1600,10 @@ dump_target_flag_bits (const int flags)
+     fprintf (stderr, "CBCOND ");
+   if (flags & MASK_DEPRECATED_V8_INSNS)
+     fprintf (stderr, "DEPRECATED_V8_INSNS ");
++  if (flags & MASK_LEON)
++    fprintf (stderr, "LEON ");
++  if (flags & MASK_LEON3)
++    fprintf (stderr, "LEON3 ");
+   if (flags & MASK_SPARCLET)
+     fprintf (stderr, "SPARCLET ");
+   if (flags & MASK_SPARCLITE)
+-- 
+2.34.1
+

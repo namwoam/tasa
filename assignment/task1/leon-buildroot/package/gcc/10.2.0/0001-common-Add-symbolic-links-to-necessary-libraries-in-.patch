@@ -1,0 +1,52 @@
+From 395f268d31d53576554477ab710cdd9e61aa2659 Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Mon, 4 May 2020 11:08:08 +0200
+Subject: [PATCH 01/50] common: Add symbolic links to necessary libraries in
+ gcc-extras
+
+---
+ gmp  | 1 +
+ isl  | 1 +
+ mpc  | 1 +
+ mpfr | 1 +
+ 4 files changed, 4 insertions(+)
+ create mode 120000 gmp
+ create mode 120000 isl
+ create mode 120000 mpc
+ create mode 120000 mpfr
+
+diff --git a/gmp b/gmp
+new file mode 120000
+index 00000000000..f08b85612b3
+--- /dev/null
++++ b/gmp
+@@ -0,0 +1 @@
++../gcc-extras/gmp-6.1.0/
+\ No newline at end of file
+diff --git a/isl b/isl
+new file mode 120000
+index 00000000000..90818e8d59e
+--- /dev/null
++++ b/isl
+@@ -0,0 +1 @@
++../gcc-extras/isl-0.18/
+\ No newline at end of file
+diff --git a/mpc b/mpc
+new file mode 120000
+index 00000000000..504632a4ab2
+--- /dev/null
++++ b/mpc
+@@ -0,0 +1 @@
++../gcc-extras/mpc-1.0.3/
+\ No newline at end of file
+diff --git a/mpfr b/mpfr
+new file mode 120000
+index 00000000000..8a7b929253d
+--- /dev/null
++++ b/mpfr
+@@ -0,0 +1 @@
++../gcc-extras/mpfr-3.1.4/
+\ No newline at end of file
+-- 
+2.34.1
+

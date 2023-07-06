@@ -1,0 +1,1028 @@
+From e3848e4e1e8a57462b0b2990e1a6ef96d55306bf Mon Sep 17 00:00:00 2001
+From: Eneli Elbing <eneli.elbing@gaisler.com>
+Date: Wed, 11 Jan 2023 10:53:33 +0100
+Subject: [PATCH 29/32] drivers/perf: Add driver for L4STAT in GR740
+ configuration
+
+The LEON4 Statistics Unit (L4STAT) is used to count events in the LEON4
+processors and on the processor AHB bus. The driver supports L4STAT on
+GR740. Performance statistics can be gathered using the perf stat
+command.
+
+Signed-off-by: Eneli Elbing <eneli.elbing@gaisler.com>
+---
+ Documentation/admin-guide/perf/index.rst      |   1 +
+ Documentation/admin-guide/perf/l4stat_pmu.rst | 118 +++
+ MAINTAINERS                                   |   6 +
+ arch/sparc/Kconfig                            |   2 +-
+ arch/sparc/include/asm/perf_event.h           |  28 +-
+ arch/sparc/include/asm/perf_event_32.h        |  25 +
+ .../asm/{perf_event.h => perf_event_64.h}     |   4 +-
+ drivers/perf/Kconfig                          |  10 +
+ drivers/perf/Makefile                         |   1 +
+ drivers/perf/l4stat_pmu.c                     | 705 ++++++++++++++++++
+ 10 files changed, 873 insertions(+), 27 deletions(-)
+ create mode 100644 Documentation/admin-guide/perf/l4stat_pmu.rst
+ create mode 100644 arch/sparc/include/asm/perf_event_32.h
+ copy arch/sparc/include/asm/{perf_event.h => perf_event_64.h} (91%)
+ create mode 100644 drivers/perf/l4stat_pmu.c
+
+diff --git a/Documentation/admin-guide/perf/index.rst b/Documentation/admin-guide/perf/index.rst
+index 5a8f2529a033..e4487442b463 100644
+--- a/Documentation/admin-guide/perf/index.rst
++++ b/Documentation/admin-guide/perf/index.rst
+@@ -16,3 +16,4 @@ Performance monitor support
+    xgene-pmu
+    arm_dsu_pmu
+    thunderx2-pmu
++   l4stat_pmu
+diff --git a/Documentation/admin-guide/perf/l4stat_pmu.rst b/Documentation/admin-guide/perf/l4stat_pmu.rst
+new file mode 100644
+index 000000000000..acdf87435842
+--- /dev/null
++++ b/Documentation/admin-guide/perf/l4stat_pmu.rst
+@@ -0,0 +1,118 @@
++.. SPDX-License-Identifier: GPL-2.0+
++
++==================================
++LEON4 Statistics Unit - L4STAT PMU
++==================================
++
++The LEON4 Statistics Unit (L4STAT) is used to count events in the LEON4
++processors and on the processor AHB bus. The statistics unit has 16 hardware
++counters. In its current form, the driver supports L4STAT on GR740. The
++documentation of the L4STAT core on GR740 can be found in the GR740 Data Sheet
++and User’s Manual at https://www.gaisler.com/gr740
++
++PMU (perf) driver
++-----------------
++
++The L4STAT driver registers a single PMU device, see
++/sys/bus/event_source/devices/l4stat. Events are listed in the events/ directory
++and available configurations in the format/ directory. An event can be referred
++to either by its symbolic name or its numeric, hexadecimal value with the
++config/event parameter. The config1/ahbm parameter is used to set the CPU/AHBM
++field in the control register. The config2/su parameter is used to set the SU
++field. Both are 0 by default.
++
++Task-specific vs system-wide mode
++---------------------------------
++
++In task-specific mode, the counters only run on the CPUs that the task is
++currently scheduled on. In system-wide mode (-a), the counters run on all CPUs,
++regardless of which CPUs the task is scheduled on. The -A flag can be used for a
++per-CPU breakdown in system-wide mode. Per-CPU breakdown in task-specific mode
++is not supported.
++
++Processor events
++----------------
++
++The default behaviour is to count processor events on all CPUs. Non-CPU AHBMs
++can be specified with the config1/ahbm parameter. The config1/ahbm parameter is
++ignored for config1/ahbm <= 3, i.e. AHBMs that correspond to the CPUs, since
++they are measured by default.
++
++When specifying config1/ahbm > 3 and using the -a flag, it should be done in
++conjunction with specifying a single CPU with the -C option, otherwise a counter
++is started on every CPU and the result will be a multiple of the number of CPUs.
++The same result can be achieved by omitting the -a flag, i.e. using
++task-specific mode instead.
++
++AHB and device-specific (external/user-defined) events
++------------------------------------------------------
++
++Filtering AHB and device-specific events is activated with the config2/su
++parameter. It is 0 by default, meaning that filtering is off, so the resulting
++counts are for all AHB masters in total, and the config1/ahbm parameter is
++ignored. Setting the config2/su parameter to 2 will result in behaviour similar
++to processor events, where config1/ahbm <= 3 is ignored and config1/ahbm > 3 is
++filtered. The config1/ahbm parameter is ignored in case of events that do not
++support CPU/AHBM filtering (0x63-0x6E). Setting config2/su to 3 will filter on
++any config1/ahbm, both CPU and non-CPU.
++
++Events generated from REQ/GNT signals
++-------------------------------------
++These events are active when an AHB master has request (REQ) asserted, while
++another AHB master has grant (GNT) asserted/deasserted. The REQ AHBM is set
++with the config1/ahbm parameter, while the GNT AHBM is set by the event ID.
++
++The MSB of the event ID specifies whether GNT is asserted (8) or deasserted (9).
++The LSB of the event ID specifies the GNT AHBM according to the following
++mapping:
++8:6 - Masters 2, 1, 0 on memory AHB bus
++5:0 - Masters on Processor AHB bus
++
++Limitations
++-----------
++
++* Sampling is not supported.
++This means that "perf record" and related commands will not work. Events can be
++counted with "perf stat" (see example usage below).
++* Scaling is not supported.
++This means that the number of events for a single run is limited by the number
++of hardware counters, i.e. 16. When measuring events on CPU AHBMs, each CPU
++takes up one counter each, limiting the number of CPU events that can be counted
++in parallel to four.
++
++Example usage
++-------------
++
++  List all available events
++  $# perf list
++
++  Some command formatting examples for counting the total number of instructions
++  $# perf stat -e proc_total_instructions sleep 1
++  $# perf stat -e l4stat/proc_total_instructions/ sleep 1
++  $# perf stat -e l4stat/event=0x11/ sleep 1
++  $# perf stat -e l4stat/config=0x11/ sleep 1
++
++  Some command formatting examples for specifying user and/or kernel space
++  (u/k/uk)
++  $# perf stat -e proc_total_instructions:u sleep 1
++  $# perf stat -e l4stat/proc_total_instructions/u sleep 1
++  $# perf stat -e l4stat/event=0x11,su=2/ sleep 1
++
++  Count L2 cache misses for CPU3 (AHB master 3)
++  $# perf stat -e l4stat/ext_l2cache_miss,ahbm=3/ sleep 1
++
++  Count AHB BUSY cycles for all AHB masters in total (SU is 0 by default)
++  $# perf stat -e l4stat/ahb_busy_cycles/ sleep 1
++
++  Count AHB BUSY cycles for AHB master 4 (IO Memory Management Unit)
++  $# perf stat -e l4stat/ahb_busy_cycles,ahbm=4,su=1/ sleep 1
++
++  Count events where master 1 on the processor AHB has REQ asserted and master 2
++  on the processor AHB has GNT asserted
++  $# perf stat -e l4stat/reqgnt_ahbm1_proc,ahbm=2/ sleep 1
++  $# perf stat -e l4stat/event=0x81,ahbm=2/ sleep 1
++
++  Count events where master 1 on the processor AHB has REQ asserted and master 2
++  on the processor AHB has GNT deasserted
++  $# perf stat -e l4stat/req_ahbm1_proc,ahbm=2/ sleep 1
++  $# perf stat -e l4stat/event=0x91,ahbm=2/ sleep 1
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6c5efc4013ab..69a9bfa14bc2 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -9822,6 +9822,12 @@ S:	Maintained
+ F:	include/net/l3mdev.h
+ F:	net/l3mdev
+ 
++L4STAT LEON4 STATISTICS UNIT DRIVER FOR GR740
++M:	Eneli Elbing <eneli.elbing@gaisler.com>
++S:	Maintained
++F:	Documentation/admin-guide/perf/l4stat_pmu.rst
++F:	drivers/perf/l4stat_pmu.c
++
+ L7 BPF FRAMEWORK
+ M:	John Fastabend <john.fastabend@gmail.com>
+ M:	Daniel Borkmann <daniel@iogearbox.net>
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 8188cae9786f..b38222ba3ae7 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -52,6 +52,7 @@ config SPARC
+ 	select NEED_DMA_MAP_STATE
+ 	select NEED_SG_DMA_LENGTH
+ 	select SET_FS
++	select HAVE_PERF_EVENTS
+ 
+ config SPARC32
+ 	def_bool !64BIT
+@@ -82,7 +83,6 @@ config SPARC64
+ 	select RTC_DRV_BQ4802
+ 	select RTC_DRV_SUN4V
+ 	select RTC_DRV_STARFIRE
+-	select HAVE_PERF_EVENTS
+ 	select PERF_USE_VMALLOC
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select HAVE_C_RECORDMCOUNT
+diff --git a/arch/sparc/include/asm/perf_event.h b/arch/sparc/include/asm/perf_event.h
+index c2aec0c7f4f5..083d34c1189f 100644
+--- a/arch/sparc/include/asm/perf_event.h
++++ b/arch/sparc/include/asm/perf_event.h
+@@ -2,29 +2,9 @@
+ #ifndef __ASM_SPARC_PERF_EVENT_H
+ #define __ASM_SPARC_PERF_EVENT_H
+ 
+-#ifdef CONFIG_PERF_EVENTS
+-#include <asm/ptrace.h>
+-
+-#define perf_arch_fetch_caller_regs(regs, ip)		\
+-do {							\
+-	unsigned long _pstate, _asi, _pil, _i7, _fp;	\
+-	__asm__ __volatile__("rdpr %%pstate, %0\n\t"	\
+-			     "rd %%asi, %1\n\t"		\
+-			     "rdpr %%pil, %2\n\t"	\
+-			     "mov %%i7, %3\n\t"		\
+-			     "mov %%i6, %4\n\t"		\
+-			     : "=r" (_pstate),		\
+-			       "=r" (_asi),		\
+-			       "=r" (_pil),		\
+-			       "=r" (_i7),		\
+-			       "=r" (_fp));		\
+-	(regs)->tstate = (_pstate << 8) |		\
+-		(_asi << 24) | (_pil << 20);		\
+-	(regs)->tpc = (ip);				\
+-	(regs)->tnpc = (regs)->tpc + 4;			\
+-	(regs)->u_regs[UREG_I6] = _fp;			\
+-	(regs)->u_regs[UREG_I7] = _i7;			\
+-} while (0)
++#if defined(__sparc__) && defined(__arch64__)
++#include <asm/perf_event_64.h>
++#else
++#include <asm/perf_event_32.h>
+ #endif
+-
+ #endif
+diff --git a/arch/sparc/include/asm/perf_event_32.h b/arch/sparc/include/asm/perf_event_32.h
+new file mode 100644
+index 000000000000..b300e05ba6eb
+--- /dev/null
++++ b/arch/sparc/include/asm/perf_event_32.h
+@@ -0,0 +1,25 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef SPARC_PERF_EVENT_H
++#define SPARC_PERF_EVENT_H
++
++#ifdef CONFIG_PERF_EVENTS
++#include <asm/ptrace.h>
++
++#define perf_arch_fetch_caller_regs(regs, ip)		\
++do {							\
++	unsigned long _psr, _i7, _fp;	\
++	__asm__ __volatile__("rd %%psr, %0\n\t"	\
++			     "mov %%i7, %1\n\t"		\
++			     "mov %%i6, %2\n\t"		\
++			     : "=r" (_psr),		\
++			       "=r" (_i7),		\
++			       "=r" (_fp));		\
++	(regs)->psr = _psr;				\
++	(regs)->pc = (ip);				\
++	(regs)->npc = (regs)->pc + 4;	\
++	(regs)->u_regs[UREG_I6] = _fp;	\
++	(regs)->u_regs[UREG_I7] = _i7;	\
++} while (0)
++#endif
++
++#endif
+diff --git a/arch/sparc/include/asm/perf_event.h b/arch/sparc/include/asm/perf_event_64.h
+similarity index 91%
+copy from arch/sparc/include/asm/perf_event.h
+copy to arch/sparc/include/asm/perf_event_64.h
+index c2aec0c7f4f5..a6bbfe73d23c 100644
+--- a/arch/sparc/include/asm/perf_event.h
++++ b/arch/sparc/include/asm/perf_event_64.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef __ASM_SPARC_PERF_EVENT_H
+-#define __ASM_SPARC_PERF_EVENT_H
++#ifndef SPARC64_PERF_EVENT_H
++#define SPARC64_PERF_EVENT_H
+ 
+ #ifdef CONFIG_PERF_EVENTS
+ #include <asm/ptrace.h>
+diff --git a/drivers/perf/Kconfig b/drivers/perf/Kconfig
+index 130327ff0b0e..a53ca336c434 100644
+--- a/drivers/perf/Kconfig
++++ b/drivers/perf/Kconfig
+@@ -130,6 +130,16 @@ config ARM_SPE_PMU
+ 	  Extension, which provides periodic sampling of operations in
+ 	  the CPU pipeline and reports this via the perf AUX interface.
+ 
++config L4STAT_PMU
++	bool "Gaisler L4STAT statistics unit support for GR740"
++	depends on SPARC
++	help
++	  Enable perf driver for Gaisler LEON4 Statistics Unit (L4STAT).
++
++	  Adds support for counting events in the LEON4 processor
++	  and on the AHB bus, in order to create performance statistics
++	  for the GR740 SoC.
++
+ source "drivers/perf/hisilicon/Kconfig"
+ 
+ endmenu
+diff --git a/drivers/perf/Makefile b/drivers/perf/Makefile
+index 5365fd56f88f..b64542c520ef 100644
+--- a/drivers/perf/Makefile
++++ b/drivers/perf/Makefile
+@@ -13,3 +13,4 @@ obj-$(CONFIG_QCOM_L3_PMU) += qcom_l3_pmu.o
+ obj-$(CONFIG_THUNDERX2_PMU) += thunderx2_pmu.o
+ obj-$(CONFIG_XGENE_PMU) += xgene_pmu.o
+ obj-$(CONFIG_ARM_SPE_PMU) += arm_spe_pmu.o
++obj-$(CONFIG_L4STAT_PMU) += l4stat_pmu.o
+diff --git a/drivers/perf/l4stat_pmu.c b/drivers/perf/l4stat_pmu.c
+new file mode 100644
+index 000000000000..07ee732752cb
+--- /dev/null
++++ b/drivers/perf/l4stat_pmu.c
+@@ -0,0 +1,705 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * PMU driver for Cobham Gaisler L4STAT on GR740.
++ *
++ * 2022 (c) Cobham Gaisler AB
++ *
++ * This driver supports L4STAT Statistical Unit cores available in the
++ * GRLIB VHDL IP core library.
++ *
++ * Full documentation of the L4STAT core on GR740 can be found in the GR740 Data
++ * Sheet and User’s Manual at https://www.gaisler.com/gr740
++ *
++ * Contributors:
++ * - Eneli Elbing <eneli.elbing@gaisler.com>
++ */
++
++#include <linux/kernel.h>
++#include <linux/perf_event.h>
++#include <linux/platform_device.h>
++
++#define DRV_NAME "l4stat"
++#define GR740_MAX_CPUID	3
++#define L4STAT_NUM_CNTRS 16
++
++#define SU_OPT1		0x2
++#define SU_OPT2		0x3
++
++#define CCTRL_SU_USER	(0x2 << CCTRL_SU_BIT)
++#define CCTRL_SU_KERNEL	(0x1 << CCTRL_SU_BIT)
++#define CCTRL_EN	(0x1 << CCTRL_EN_BIT)
++
++#define CCTRL_SU_BIT		14
++#define CCTRL_EN_BIT		12
++#define CCTRL_EVENTID_BIT	4
++#define CCTRL_CPUAHBM_BIT	0
++
++#define L4STAT_CVAL		0x000
++#define L4STAT_CCTRL		0x080
++
++#define APB_ADDR_OFFSET(cntr_idx) (4*cntr_idx)
++
++#define PROC_EVENT_RANGE_START	L4STAT_EVENT_ICACHE_MISS
++#define PROC_EVENT_RANGE_END	L4STAT_EVENT_STORE_INSTRUCTIONS
++
++/*
++ * L4STAT processor events
++ */
++#define L4STAT_EVENT_ICACHE_MISS			0x00
++#define L4STAT_EVENT_IMMU_TLB_MISS			0x01
++#define L4STAT_EVENT_ICACHE_HOLD			0x02
++#define L4STAT_EVENT_IMMU_HOLD				0x03
++#define L4STAT_EVENT_DCACHE_MISS			0x08
++#define L4STAT_EVENT_DMMU_TLB_MISS			0x09
++#define L4STAT_EVENT_DCACHE_HOLD			0x0a
++#define L4STAT_EVENT_DMMU_HOLD				0x0b
++#define L4STAT_EVENT_DATA_WRITE_BUFFER_HOLD		0x10
++#define L4STAT_EVENT_TOTAL_INSTRUCTIONS			0x11
++#define L4STAT_EVENT_INT_INSTRUCTIONS			0x12
++#define L4STAT_EVENT_FPU_INSTRUCTIONS			0x13
++#define L4STAT_EVENT_BRANCH_PREDICTION_MISS		0x14
++#define L4STAT_EVENT_EXECUTION_TIME			0x15
++#define L4STAT_EVENT_AHB_UTILIZATION			0x17
++#define L4STAT_EVENT_AHB_TOTAL_UTILIZATION		0x18
++#define L4STAT_EVENT_INT_BRANCHES			0x22
++#define L4STAT_EVENT_CALL_INSTRUCTIONS			0x28
++#define L4STAT_EVENT_REGULAR_TYPE2_INSTRUCTIONS		0x30
++#define L4STAT_EVENT_LOAD_AND_STORE_INSTRUCTIONS	0x38
++#define L4STAT_EVENT_LOAD_INSTRUCTIONS			0x39
++#define L4STAT_EVENT_STORE_INSTRUCTIONS			0x3a
++
++/*
++ * L4STAT AHB events
++ * (counted via LEON4 Debug Support Unit)
++ */
++#define L4STAT_EVENT_AHB_IDLE_CYCLES			0x40
++#define L4STAT_EVENT_AHB_BUSY_CYCLES			0x41
++#define L4STAT_EVENT_AHB_NON_SEQ_TRANSFERS		0x42
++#define L4STAT_EVENT_AHB_SEQ_TRANSFERS			0x43
++#define L4STAT_EVENT_AHB_READ_ACCESSES			0x44
++#define L4STAT_EVENT_AHB_WRITE_ACCESSES			0x45
++#define L4STAT_EVENT_AHB_BYTE_ACCESSES			0x46
++#define L4STAT_EVENT_AHB_HALF_WORD_ACCESSES		0x47
++#define L4STAT_EVENT_AHB_WORD_ACCESSES			0x48
++#define L4STAT_EVENT_AHB_DOUBLE_WORD_ACCESSES		0x49
++#define L4STAT_EVENT_AHB_QUAD_WORD_ACCESSES		0x4a
++#define L4STAT_EVENT_AHB_EIGHT_WORD_ACCESSES		0x4b
++#define L4STAT_EVENT_AHB_WAITSTATES			0x4c
++#define L4STAT_EVENT_AHB_RETRY_RESPONSES		0x4d
++#define L4STAT_EVENT_AHB_SPLIT_RESPONSES		0x4e
++#define L4STAT_EVENT_AHB_SPLIT_DELAY			0x4f
++#define L4STAT_EVENT_AHB_BUS_LOCKED			0x50
++
++/*
++ * L4STAT device specific events
++ * (may be marked as user defined events in generic software drivers)
++ */
++#define L4STAT_EVENT_L2CACHE_HIT			0x60
++#define L4STAT_EVENT_L2CACHE_MISS			0x61
++#define L4STAT_EVENT_L2CACHE_BUS_ACCESS			0x62
++#define L4STAT_EVENT_L2CACHE_TAG_CORRECTABLE_ERROR	0x63
++#define L4STAT_EVENT_L2CACHE_TAG_UNCORRECTABLE_ERROR	0x64
++#define L4STAT_EVENT_L2CACHE_DATA_CORRECTABLE_ERROR	0x65
++#define L4STAT_EVENT_L2CACHE_DATA_UNCORRECTABLE_ERROR	0x66
++#define L4STAT_EVENT_IOMMU_CACHE_LOOKUP			0x67
++#define L4STAT_EVENT_IOMMU_TABLE_WALK			0x68
++#define L4STAT_EVENT_IOMMU_ACCESS_DENIED		0x69
++#define L4STAT_EVENT_IOMMU_ACCESS_OK			0x6a
++#define L4STAT_EVENT_IOMMU_ACCESS_PASSTHROUGH		0x6b
++#define L4STAT_EVENT_IOMMU_CACHE_TLB_MISS		0x6c
++#define L4STAT_EVENT_IOMMU_CACHE_TLB_HIT		0x6d
++#define L4STAT_EVENT_IOMMU_CACHE_TLB_PARITY_ERROR	0x6e
++
++/*
++ * L4STAT AHB events
++ * (only available if core is connected to a standalone AHB trace buffer):
++ */
++#define L4STAT_EVENT_AHB_TRACE_IDLE_CYCLES		0x70
++#define L4STAT_EVENT_AHB_TRACE_BUSY_CYCLES		0x71
++#define L4STAT_EVENT_AHB_TRACE_NON_SEQ_TRANSFERS	0x72
++#define L4STAT_EVENT_AHB_TRACE_SEQ_TRANSFERS		0x73
++#define L4STAT_EVENT_AHB_TRACE_READ_ACCESSES		0x74
++#define L4STAT_EVENT_AHB_TRACE_WRITE_ACCESSES		0x75
++#define L4STAT_EVENT_AHB_TRACE_BYTE_ACCESSES		0x76
++#define L4STAT_EVENT_AHB_TRACE_HALF_WORD_ACCESSES	0x77
++#define L4STAT_EVENT_AHB_TRACE_WORD_ACCESSES		0x78
++#define L4STAT_EVENT_AHB_TRACE_DOUBLE_WORD_ACCESSES	0x79
++#define L4STAT_EVENT_AHB_TRACE_QUAD_WORD_ACCESSES	0x7a
++#define L4STAT_EVENT_AHB_TRACE_EIGHT_WORD_ACCESSES	0x7b
++#define L4STAT_EVENT_AHB_TRACE_WAITSTATES		0x7c
++#define L4STAT_EVENT_AHB_TRACE_RETRY_RESPONSES		0x7d
++#define L4STAT_EVENT_AHB_TRACE_SPLIT_RESPONSES		0x7e
++#define L4STAT_EVENT_AHB_TRACE_SPLIT_DELAY		0x7f
++
++/*
++ * L4STAT events generated from REQ/GNT signals
++ */
++# define L4STAT_EVENT_REQ_GNT_AHBM0_PROC		0x80
++# define L4STAT_EVENT_REQ_GNT_AHBM1_PROC		0x81
++# define L4STAT_EVENT_REQ_GNT_AHBM2_PROC		0x82
++# define L4STAT_EVENT_REQ_GNT_AHBM3_PROC		0x83
++# define L4STAT_EVENT_REQ_GNT_AHBM4_PROC		0x84
++# define L4STAT_EVENT_REQ_GNT_AHBM5_PROC		0x85
++# define L4STAT_EVENT_REQ_GNT_AHBM0_MEM			0x86
++# define L4STAT_EVENT_REQ_GNT_AHBM1_MEM			0x87
++# define L4STAT_EVENT_REQ_GNT_AHBM2_MEM			0x88
++# define L4STAT_EVENT_REQ_AHBM0_PROC			0x90
++# define L4STAT_EVENT_REQ_AHBM1_PROC			0x91
++# define L4STAT_EVENT_REQ_AHBM2_PROC			0x92
++# define L4STAT_EVENT_REQ_AHBM3_PROC			0x93
++# define L4STAT_EVENT_REQ_AHBM4_PROC			0x94
++# define L4STAT_EVENT_REQ_AHBM5_PROC			0x95
++# define L4STAT_EVENT_REQ_AHBM0_MEM			0x96
++# define L4STAT_EVENT_REQ_AHBM1_MEM			0x97
++# define L4STAT_EVENT_REQ_AHBM2_MEM			0x98
++
++#define to_l4stat_pmu(c) (container_of(c, struct l4stat_pmu, pmu))
++
++ssize_t l4stat_format_sysfs_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	struct dev_ext_attribute *eattr;
++
++	eattr = container_of(attr, struct dev_ext_attribute, attr);
++
++	return sprintf(buf, "%s\n", (char *)eattr->var);
++}
++
++ssize_t l4stat_event_sysfs_show(struct device *dev,
++			      struct device_attribute *attr, char *page)
++{
++	struct dev_ext_attribute *eattr;
++
++	eattr = container_of(attr, struct dev_ext_attribute, attr);
++
++	return sprintf(page, "config=0x%lx\n",
++			       (unsigned long)eattr->var);
++}
++
++#define L4STAT_ATTR(_name, _func, _config)				\
++	(&((struct dev_ext_attribute[]) {				\
++		{ __ATTR(_name, 0444, _func, NULL), (void *)_config }   \
++	})[0].attr.attr)
++
++#define L4STAT_FORMAT_ATTR(_name, _config)		\
++	L4STAT_ATTR(_name, l4stat_format_sysfs_show, (void *)_config)
++
++#define L4STAT_EVENT_ATTR(_name, _config)		\
++	L4STAT_ATTR(_name, l4stat_event_sysfs_show, (unsigned long)_config)
++
++/*
++ * Kernel PMU event attributes
++ */
++static struct attribute *l4stat_pmu_events[] = {
++	/*
++	 * Processor events
++	 */
++	L4STAT_EVENT_ATTR(proc_icache_miss, L4STAT_EVENT_ICACHE_MISS),
++	L4STAT_EVENT_ATTR(proc_immu_tlb_miss, L4STAT_EVENT_IMMU_TLB_MISS),
++	L4STAT_EVENT_ATTR(proc_icache_hold, L4STAT_EVENT_ICACHE_HOLD),
++	L4STAT_EVENT_ATTR(proc_immu_hold, L4STAT_EVENT_IMMU_HOLD),
++	L4STAT_EVENT_ATTR(proc_dcache_miss, L4STAT_EVENT_DCACHE_MISS),
++	L4STAT_EVENT_ATTR(proc_dmmu_tlb_miss, L4STAT_EVENT_DMMU_TLB_MISS),
++	L4STAT_EVENT_ATTR(proc_dcache_hold, L4STAT_EVENT_DCACHE_HOLD),
++	L4STAT_EVENT_ATTR(proc_dmmu_hold, L4STAT_EVENT_DMMU_HOLD),
++	L4STAT_EVENT_ATTR(proc_data_write_buffer_hold,
++			  L4STAT_EVENT_DATA_WRITE_BUFFER_HOLD),
++	L4STAT_EVENT_ATTR(proc_total_instructions,
++			  L4STAT_EVENT_TOTAL_INSTRUCTIONS),
++	L4STAT_EVENT_ATTR(proc_int_instructions, L4STAT_EVENT_INT_INSTRUCTIONS),
++	L4STAT_EVENT_ATTR(proc_fpu_instructions, L4STAT_EVENT_FPU_INSTRUCTIONS),
++	L4STAT_EVENT_ATTR(proc_branch_prediction_miss,
++			  L4STAT_EVENT_BRANCH_PREDICTION_MISS),
++	L4STAT_EVENT_ATTR(proc_execution_time, L4STAT_EVENT_EXECUTION_TIME),
++	L4STAT_EVENT_ATTR(proc_ahb_utilization, L4STAT_EVENT_AHB_UTILIZATION),
++	L4STAT_EVENT_ATTR(proc_ahb_total_utilization,
++			  L4STAT_EVENT_AHB_TOTAL_UTILIZATION),
++	L4STAT_EVENT_ATTR(proc_int_branches, L4STAT_EVENT_INT_BRANCHES),
++	L4STAT_EVENT_ATTR(proc_call_instructions,
++			  L4STAT_EVENT_CALL_INSTRUCTIONS),
++	L4STAT_EVENT_ATTR(proc_regular_type2_instructions,
++			  L4STAT_EVENT_REGULAR_TYPE2_INSTRUCTIONS),
++	L4STAT_EVENT_ATTR(proc_load_and_store_instructions,
++			  L4STAT_EVENT_LOAD_AND_STORE_INSTRUCTIONS),
++	L4STAT_EVENT_ATTR(proc_load_instructions,
++			  L4STAT_EVENT_LOAD_INSTRUCTIONS),
++	L4STAT_EVENT_ATTR(proc_store_instructions,
++			  L4STAT_EVENT_STORE_INSTRUCTIONS),
++	/*
++	 * AHB Events (LEON4 Debug Support Unit)
++	 */
++	L4STAT_EVENT_ATTR(ahb_busy_cycles, L4STAT_EVENT_AHB_BUSY_CYCLES),
++	L4STAT_EVENT_ATTR(ahb_non_seq_transfers,
++			  L4STAT_EVENT_AHB_NON_SEQ_TRANSFERS),
++	L4STAT_EVENT_ATTR(ahb_seq_transfers, L4STAT_EVENT_AHB_SEQ_TRANSFERS),
++	L4STAT_EVENT_ATTR(ahb_idle_cycles, L4STAT_EVENT_AHB_IDLE_CYCLES),
++	L4STAT_EVENT_ATTR(ahb_read_accesses, L4STAT_EVENT_AHB_READ_ACCESSES),
++	L4STAT_EVENT_ATTR(ahb_write_accesses, L4STAT_EVENT_AHB_WRITE_ACCESSES),
++	L4STAT_EVENT_ATTR(ahb_byte_accesses, L4STAT_EVENT_AHB_BYTE_ACCESSES),
++	L4STAT_EVENT_ATTR(ahb_half_word_accesses,
++			  L4STAT_EVENT_AHB_HALF_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahb_word_accesses, L4STAT_EVENT_AHB_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahb_double_word_accesses,
++			  L4STAT_EVENT_AHB_DOUBLE_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahb_quad_word_accesses,
++			  L4STAT_EVENT_AHB_QUAD_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahb_eight_word_accesses,
++			  L4STAT_EVENT_AHB_EIGHT_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahb_waitstates, L4STAT_EVENT_AHB_WAITSTATES),
++	L4STAT_EVENT_ATTR(ahb_retry_responses,
++			  L4STAT_EVENT_AHB_RETRY_RESPONSES),
++	L4STAT_EVENT_ATTR(ahb_split_responses,
++			  L4STAT_EVENT_AHB_SPLIT_RESPONSES),
++	L4STAT_EVENT_ATTR(ahb_split_delay, L4STAT_EVENT_AHB_SPLIT_DELAY),
++	L4STAT_EVENT_ATTR(ahb_bus_locked, L4STAT_EVENT_AHB_BUS_LOCKED),
++	/*
++	 * Device specific events
++	 */
++	L4STAT_EVENT_ATTR(ext_l2cache_hit, L4STAT_EVENT_L2CACHE_HIT),
++	L4STAT_EVENT_ATTR(ext_l2cache_miss, L4STAT_EVENT_L2CACHE_MISS),
++	L4STAT_EVENT_ATTR(ext_l2cache_bus_access,
++			  L4STAT_EVENT_L2CACHE_BUS_ACCESS),
++	L4STAT_EVENT_ATTR(ext_l2cache_tag_correctable_error,
++			  L4STAT_EVENT_L2CACHE_TAG_CORRECTABLE_ERROR),
++	L4STAT_EVENT_ATTR(ext_l2cache_tag_uncorrectable_error,
++			  L4STAT_EVENT_L2CACHE_TAG_UNCORRECTABLE_ERROR),
++	L4STAT_EVENT_ATTR(ext_l2cache_data_correctable_error,
++			  L4STAT_EVENT_L2CACHE_DATA_CORRECTABLE_ERROR),
++	L4STAT_EVENT_ATTR(ext_l2cache_data_uncorrectable_error,
++			  L4STAT_EVENT_L2CACHE_DATA_UNCORRECTABLE_ERROR),
++	L4STAT_EVENT_ATTR(ext_iommu_cache_lookup,
++			  L4STAT_EVENT_IOMMU_CACHE_LOOKUP),
++	L4STAT_EVENT_ATTR(ext_iommu_table_walk, L4STAT_EVENT_IOMMU_TABLE_WALK),
++	L4STAT_EVENT_ATTR(ext_iommu_access_denied,
++			  L4STAT_EVENT_IOMMU_ACCESS_DENIED),
++	L4STAT_EVENT_ATTR(ext_iommu_access_ok, L4STAT_EVENT_IOMMU_ACCESS_OK),
++	L4STAT_EVENT_ATTR(ext_iommu_access_passthrough,
++			  L4STAT_EVENT_IOMMU_ACCESS_PASSTHROUGH),
++	L4STAT_EVENT_ATTR(ext_iommu_cache_tlb_miss,
++			  L4STAT_EVENT_IOMMU_CACHE_TLB_MISS),
++	L4STAT_EVENT_ATTR(ext_iommu_cache_tlb_hit,
++			  L4STAT_EVENT_IOMMU_CACHE_TLB_HIT),
++	L4STAT_EVENT_ATTR(ext_iommu_cache_tlb_parity_error,
++			  L4STAT_EVENT_IOMMU_CACHE_TLB_PARITY_ERROR),
++	/*
++	 * AHB events (standalone AHB trace buffer)
++	 */
++	L4STAT_EVENT_ATTR(ahbtrace_busy_cycles,
++			  L4STAT_EVENT_AHB_TRACE_BUSY_CYCLES),
++	L4STAT_EVENT_ATTR(ahbtrace_non_seq_transfers,
++			  L4STAT_EVENT_AHB_TRACE_NON_SEQ_TRANSFERS),
++	L4STAT_EVENT_ATTR(ahbtrace_seq_transfers,
++			  L4STAT_EVENT_AHB_TRACE_SEQ_TRANSFERS),
++	L4STAT_EVENT_ATTR(ahbtrace_idle_cycles,
++			  L4STAT_EVENT_AHB_TRACE_IDLE_CYCLES),
++	L4STAT_EVENT_ATTR(ahbtrace_read_accesses,
++			  L4STAT_EVENT_AHB_TRACE_READ_ACCESSES),
++	L4STAT_EVENT_ATTR(ahbtrace_write_accesses,
++			  L4STAT_EVENT_AHB_TRACE_WRITE_ACCESSES),
++	L4STAT_EVENT_ATTR(ahbtrace_byte_accesses,
++			  L4STAT_EVENT_AHB_TRACE_BYTE_ACCESSES),
++	L4STAT_EVENT_ATTR(ahbtrace_half_word_accesses,
++			  L4STAT_EVENT_AHB_TRACE_HALF_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahbtrace_word_accesses,
++			  L4STAT_EVENT_AHB_TRACE_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahbtrace_double_word_accesses,
++			  L4STAT_EVENT_AHB_TRACE_DOUBLE_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahbtrace_quad_word_accesses,
++			  L4STAT_EVENT_AHB_TRACE_QUAD_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahbtrace_eight_word_accesses,
++			  L4STAT_EVENT_AHB_TRACE_EIGHT_WORD_ACCESSES),
++	L4STAT_EVENT_ATTR(ahbtrace_waitstates,
++			  L4STAT_EVENT_AHB_TRACE_WAITSTATES),
++	L4STAT_EVENT_ATTR(ahbtrace_retry_responses,
++			  L4STAT_EVENT_AHB_TRACE_RETRY_RESPONSES),
++	L4STAT_EVENT_ATTR(ahbtrace_split_responses,
++			  L4STAT_EVENT_AHB_TRACE_SPLIT_RESPONSES),
++	L4STAT_EVENT_ATTR(ahbtrace_split_delay,
++			  L4STAT_EVENT_AHB_TRACE_SPLIT_DELAY),
++	/*
++	 * Events generated from REQ/GNT signals
++	 */
++	L4STAT_EVENT_ATTR(reqgnt_ahbm0_proc, L4STAT_EVENT_REQ_GNT_AHBM0_PROC),
++	L4STAT_EVENT_ATTR(reqgnt_ahbm1_proc, L4STAT_EVENT_REQ_GNT_AHBM1_PROC),
++	L4STAT_EVENT_ATTR(reqgnt_ahbm2_proc, L4STAT_EVENT_REQ_GNT_AHBM2_PROC),
++	L4STAT_EVENT_ATTR(reqgnt_ahbm3_proc, L4STAT_EVENT_REQ_GNT_AHBM3_PROC),
++	L4STAT_EVENT_ATTR(reqgnt_ahbm4_proc, L4STAT_EVENT_REQ_GNT_AHBM4_PROC),
++	L4STAT_EVENT_ATTR(reqgnt_ahbm5_proc, L4STAT_EVENT_REQ_GNT_AHBM5_PROC),
++	L4STAT_EVENT_ATTR(reqgnt_ahbm0_mem, L4STAT_EVENT_REQ_GNT_AHBM0_MEM),
++	L4STAT_EVENT_ATTR(reqgnt_ahbm1_mem, L4STAT_EVENT_REQ_GNT_AHBM1_MEM),
++	L4STAT_EVENT_ATTR(reqgnt_ahbm2_mem, L4STAT_EVENT_REQ_GNT_AHBM2_MEM),
++	L4STAT_EVENT_ATTR(req_ahbm0_proc, L4STAT_EVENT_REQ_AHBM0_PROC),
++	L4STAT_EVENT_ATTR(req_ahbm1_proc, L4STAT_EVENT_REQ_AHBM1_PROC),
++	L4STAT_EVENT_ATTR(req_ahbm2_proc, L4STAT_EVENT_REQ_AHBM2_PROC),
++	L4STAT_EVENT_ATTR(req_ahbm3_proc, L4STAT_EVENT_REQ_AHBM3_PROC),
++	L4STAT_EVENT_ATTR(req_ahbm4_proc, L4STAT_EVENT_REQ_AHBM4_PROC),
++	L4STAT_EVENT_ATTR(req_ahbm5_proc, L4STAT_EVENT_REQ_AHBM5_PROC),
++	L4STAT_EVENT_ATTR(req_ahbm0_mem, L4STAT_EVENT_REQ_AHBM0_MEM),
++	L4STAT_EVENT_ATTR(req_ahbm1_mem, L4STAT_EVENT_REQ_AHBM1_MEM),
++	L4STAT_EVENT_ATTR(req_ahbm2_mem, L4STAT_EVENT_REQ_AHBM2_MEM),
++	NULL,
++};
++
++static struct attribute *l4stat_pmu_format[] = {
++	L4STAT_FORMAT_ATTR(event, "config:0-7"),	// EID is 8 bits
++	L4STAT_FORMAT_ATTR(ahbm, "config1:0-3"),	// AHBM is 4 bits
++	L4STAT_FORMAT_ATTR(su, "config2:0-1"),		// SU is 2 bits
++	NULL,
++};
++
++static const struct attribute_group l4stat_pmu_format_group = {
++	.name	= "format",
++	.attrs	= l4stat_pmu_format,
++};
++
++static const struct attribute_group l4stat_pmu_events_group = {
++	.name	= "events",
++	.attrs	= l4stat_pmu_events,
++};
++
++static const struct attribute_group *l4stat_pmu_attr_groups[] = {
++	&l4stat_pmu_format_group,
++	&l4stat_pmu_events_group,
++	NULL,
++};
++
++struct l4stat_pmu_hw_events {
++	struct perf_event **events;
++	unsigned long *used_mask;
++};
++
++struct l4stat_pmu {
++	void __iomem *regs;
++	struct pmu pmu;
++	struct l4stat_pmu_hw_events hw_events;
++	struct platform_device *platform_dev;
++};
++
++static inline u32 l4stat_pmu_read_register(struct l4stat_pmu *l4stat_pmu,
++					   int idx, unsigned int reg)
++{
++	unsigned int offset = APB_ADDR_OFFSET(idx) + reg;
++
++	return ioread32be(l4stat_pmu->regs + offset);
++}
++
++static inline void l4stat_pmu_write_register(struct l4stat_pmu *l4stat_pmu,
++					     u32 val, int idx, unsigned int reg)
++{
++	int offset = APB_ADDR_OFFSET(idx) + reg;
++
++	iowrite32be(val, l4stat_pmu->regs + offset);
++}
++
++static u32 l4stat_pmu_read_counter(struct perf_event *event)
++{
++	struct l4stat_pmu *l4stat_pmu = to_l4stat_pmu(event->pmu);
++	struct hw_perf_event *hw_counter = &event->hw;
++	int idx = hw_counter->idx;
++	unsigned int reg = L4STAT_CVAL;
++	u32 value;
++
++	value = l4stat_pmu_read_register(l4stat_pmu, idx, reg);
++
++	return value;
++}
++
++static void l4stat_pmu_clear_counter(struct l4stat_pmu *l4stat_pmu, int idx)
++{
++	l4stat_pmu_write_register(l4stat_pmu, 0, idx, L4STAT_CVAL);
++}
++
++static int l4stat_get_event_idx(struct l4stat_pmu_hw_events *hw)
++{
++	int idx;
++
++	/* Generic code to find an unused idx from the mask */
++	for (idx = 0; idx < L4STAT_NUM_CNTRS; ++idx)
++		if (!test_and_set_bit(idx, hw->used_mask))
++			return idx;
++
++	/* No counters available */
++	return -EAGAIN;
++}
++
++static int l4stat_map_raw_event(u64 config)
++{
++	int mapping = (int)(config);
++	return mapping;
++}
++
++int l4stat_map_event(struct perf_event *event)
++{
++	u64 config = event->attr.config;
++	int type = event->attr.type;
++
++	if (type == event->pmu->type)
++		return l4stat_map_raw_event(config);
++
++	return -ENOENT;
++}
++
++static int l4stat_pmu_event_init(struct perf_event *event)
++{
++	struct hw_perf_event *hwc = &event->hw;
++	int mapping;
++
++	mapping = l4stat_map_event(event);
++
++	if (mapping < 0) {
++		pr_debug("Invalid event %x:%llx\n", event->attr.type,
++			 event->attr.config);
++		return mapping;
++	}
++
++	/*
++	 * We don't assign an index until we actually place the event onto
++	 * hardware. Use -1 to signify that we haven't decided where to put it
++	 * yet.
++	 */
++	hwc->idx = -1;
++	hwc->config_base = 0;
++	hwc->config = 0;
++	hwc->event_base = 0;
++
++	/*
++	 * Store the event encoding into the config_base field.
++	 */
++	hwc->config_base |= (unsigned long)mapping;
++
++	return 0;
++}
++
++static void l4stat_pmu_start(struct perf_event *event, int pmu_flags)
++{
++	struct l4stat_pmu *l4stat_pmu = to_l4stat_pmu(event->pmu);
++	struct hw_perf_event *hwc = &event->hw;
++	int idx = hwc->idx;
++	u32 ctrl;
++
++	hwc->state = 0;
++	ctrl = 0;
++
++	if (event->attr.exclude_user)
++		ctrl |= CCTRL_SU_KERNEL;
++	else if (event->attr.exclude_kernel)
++		ctrl |= CCTRL_SU_USER;
++
++	ctrl |= event->attr.config2 << CCTRL_SU_BIT;
++
++	ctrl |= event->attr.config << CCTRL_EVENTID_BIT;
++
++	// Processor events (except processor AHB events)
++	if ((event->attr.config >= PROC_EVENT_RANGE_START &&
++	     event->attr.config < L4STAT_EVENT_AHB_UTILIZATION) ||
++	    (event->attr.config > L4STAT_EVENT_AHB_TOTAL_UTILIZATION &&
++	     event->attr.config <= PROC_EVENT_RANGE_END))
++		// CPU AHBM
++		if (event->attr.config1 <= GR740_MAX_CPUID)
++			ctrl |= event->oncpu << CCTRL_CPUAHBM_BIT;
++		// Non-CPU AHBM
++		else
++			ctrl |= event->attr.config1 << CCTRL_CPUAHBM_BIT;
++	// Remaining events (proc AHB, external, AHB, AHB trace, REQ/GNT)
++	else
++		// Filter only on non-CPU AHBM
++		if (event->attr.config2 == SU_OPT1)
++			// CPU AHBM
++			if (event->attr.config1 <= GR740_MAX_CPUID)
++				ctrl |= event->oncpu << CCTRL_CPUAHBM_BIT;
++			// Non-CPU AHBM
++			else
++				ctrl |= event->attr.config1 << CCTRL_CPUAHBM_BIT;
++		// Filter on any AHBM
++		else if (event->attr.config2 == SU_OPT2)
++			ctrl |= event->attr.config1 << CCTRL_CPUAHBM_BIT;
++
++	ctrl |= CCTRL_EN;
++
++	l4stat_pmu_write_register(l4stat_pmu, ctrl, idx, L4STAT_CCTRL);
++}
++
++static int l4stat_pmu_add(struct perf_event *event, int flags)
++{
++	struct l4stat_pmu *l4stat_pmu = to_l4stat_pmu(event->pmu);
++	struct l4stat_pmu_hw_events *hw_events = &l4stat_pmu->hw_events;
++	struct hw_perf_event *hwc = &event->hw;
++	int idx;
++
++	/* If we don't have a space for the counter then finish early. */
++	idx = l4stat_get_event_idx(hw_events);
++	if (idx < 0)
++		return idx;
++
++	event->hw.idx = idx;
++	hw_events->events[idx] = event;
++
++	hwc->state = PERF_HES_STOPPED | PERF_HES_UPTODATE;
++	if (flags & PERF_EF_START)
++		l4stat_pmu_start(event, PERF_EF_RELOAD);
++
++	/* Propagate our changes to the userspace mapping. */
++	perf_event_update_userpage(event);
++
++	return 0;
++}
++
++static void l4stat_pmu_disable_counter(struct l4stat_pmu *l4stat_pmu, int idx)
++{
++	u32 ctrl;
++
++	ctrl = l4stat_pmu_read_register(l4stat_pmu, idx, L4STAT_CCTRL);
++	ctrl &= ~(CCTRL_EN);
++	l4stat_pmu_write_register(l4stat_pmu, ctrl, idx, L4STAT_CCTRL);
++}
++
++static u32 l4stat_pmu_event_update(struct perf_event *event)
++{
++	struct hw_perf_event *hwc = &event->hw;
++	u64 prev_raw_count, new_raw_count;
++
++	do {
++		prev_raw_count = local64_read(&hwc->prev_count);
++		new_raw_count = l4stat_pmu_read_counter(event);
++	} while (local64_cmpxchg(&hwc->prev_count, prev_raw_count,
++				 new_raw_count) != prev_raw_count);
++
++	local64_add(new_raw_count, &event->count);
++
++	return new_raw_count;
++}
++
++static void l4stat_pmu_stop(struct perf_event *event, int pmu_flags)
++{
++	struct l4stat_pmu *l4stat_pmu = to_l4stat_pmu(event->pmu);
++	struct hw_perf_event *hwc = &event->hw;
++	int idx = hwc->idx;
++	u64 counter_val;
++
++	if (hwc->state & PERF_HES_STOPPED)
++		return;
++
++	l4stat_pmu_disable_counter(l4stat_pmu, idx);
++
++	counter_val = l4stat_pmu_event_update(event);
++
++	l4stat_pmu_clear_counter(l4stat_pmu, idx);
++
++	hwc->state |= PERF_HES_STOPPED | PERF_HES_UPTODATE;
++}
++
++static void l4stat_pmu_del(struct perf_event *event, int flags)
++{
++	struct l4stat_pmu *l4stat_pmu = to_l4stat_pmu(event->pmu);
++	struct l4stat_pmu_hw_events *hw_events = &l4stat_pmu->hw_events;
++	struct hw_perf_event *hwc = &event->hw;
++	int idx = hwc->idx;
++
++	l4stat_pmu_stop(event, PERF_EF_UPDATE);
++	hw_events->events[idx] = NULL;
++	clear_bit(idx, hw_events->used_mask);
++
++	perf_event_update_userpage(event);
++}
++
++static int l4stat_pmu_init(struct l4stat_pmu *l4stat_pmu,
++			   struct platform_device *pdev)
++{
++	platform_set_drvdata(pdev, l4stat_pmu);
++
++	l4stat_pmu->pmu = (struct pmu){
++		.module		= THIS_MODULE,
++		.name		= DRV_NAME,
++		.task_ctx_nr	= perf_hw_context,
++		.event_init	= l4stat_pmu_event_init,
++		.add		= l4stat_pmu_add,
++		.del		= l4stat_pmu_del,
++		.start		= l4stat_pmu_start,
++		.stop		= l4stat_pmu_stop,
++		.attr_groups	= l4stat_pmu_attr_groups,
++		.capabilities	= PERF_PMU_CAP_NO_INTERRUPT,
++	};
++
++	l4stat_pmu->platform_dev = pdev;
++
++	return perf_pmu_register(&l4stat_pmu->pmu, DRV_NAME, -1);
++}
++
++static struct l4stat_pmu *l4stat_pmu_alloc(struct device *dev)
++{
++	struct l4stat_pmu *l4stat_pmu;
++
++	l4stat_pmu = devm_kzalloc(dev, sizeof(*l4stat_pmu), GFP_KERNEL);
++	if (!l4stat_pmu)
++		return ERR_PTR(-ENOMEM);
++
++	l4stat_pmu->hw_events.events =
++		devm_kcalloc(dev, L4STAT_NUM_CNTRS,
++			     sizeof(*l4stat_pmu->hw_events.events), GFP_KERNEL);
++	if (!l4stat_pmu->hw_events.events)
++		return ERR_PTR(-ENOMEM);
++
++	l4stat_pmu->hw_events.used_mask =
++		devm_kcalloc(dev, BITS_TO_LONGS(L4STAT_NUM_CNTRS),
++			     sizeof(*l4stat_pmu->hw_events.used_mask),
++			     GFP_KERNEL);
++	if (!l4stat_pmu->hw_events.used_mask)
++		return ERR_PTR(-ENOMEM);
++
++	return l4stat_pmu;
++}
++
++static int l4stat_pmu_probe(struct platform_device *pdev)
++{
++	struct l4stat_pmu *l4stat_pmu;
++	int err;
++
++	l4stat_pmu = l4stat_pmu_alloc(&pdev->dev);
++	if (IS_ERR(l4stat_pmu))
++		return PTR_ERR(l4stat_pmu);
++
++	l4stat_pmu->regs = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(l4stat_pmu->regs)) {
++		err = PTR_ERR(l4stat_pmu->regs);
++		goto exit_error;
++	}
++
++	err = l4stat_pmu_init(l4stat_pmu, pdev);
++	if (err)
++		goto exit_error;
++
++	return 0;
++
++exit_error:
++	dev_err(&pdev->dev, "%s driver initialization failed with error %d\n",
++		DRV_NAME, err);
++	return err;
++}
++
++static int l4stat_pmu_remove(struct platform_device *pdev)
++{
++	struct l4stat_pmu *l4stat_pmu = platform_get_drvdata(pdev);
++
++	perf_pmu_unregister(&l4stat_pmu->pmu);
++
++	return 0;
++}
++
++static const struct of_device_id l4stat_match[] = {
++	{ .name = "GAISLER_L4STAT" },
++	{ .name = "01_047" },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, l4stat_match);
++
++static struct platform_driver l4stat_pmu_driver = {
++	.driver = {
++		.name		= DRV_NAME,
++		.of_match_table	= l4stat_match,
++	},
++	.probe	= l4stat_pmu_probe,
++	.remove	= l4stat_pmu_remove,
++};
++
++module_platform_driver(l4stat_pmu_driver);
+-- 
+2.34.1
+

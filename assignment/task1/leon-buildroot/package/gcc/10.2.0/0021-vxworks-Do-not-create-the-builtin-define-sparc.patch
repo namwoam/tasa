@@ -1,0 +1,32 @@
+From bc21a1c5c93026fd318555c23b13b6d2376f84ed Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Fri, 4 Sep 2020 09:53:57 +0200
+Subject: [PATCH 21/50] vxworks: Do not create the builtin define "sparc"
+
+"__sparc" and "__sparc__" are OK.
+---
+ gcc/config/sparc/sparc-c.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/gcc/config/sparc/sparc-c.c b/gcc/config/sparc/sparc-c.c
+index b957223ee08..ec6cb29b049 100644
+--- a/gcc/config/sparc/sparc-c.c
++++ b/gcc/config/sparc/sparc-c.c
+@@ -29,7 +29,14 @@ along with GCC; see the file COPYING3.  If not see
+ void
+ sparc_target_macros (void)
+ {
++#ifdef TARGET_GAISLER_VXWORKS
++  /* Do not define sparc */
++  builtin_define_std ("__sparc");
++  builtin_define_std ("__sparc__");
++#else
++  /* Defines sparc, __sparc, and __sparc__ */
+   builtin_define_std ("sparc");
++#endif
+ 
+   cpp_define (parse_in, "__BIG_ENDIAN__");
+ 
+-- 
+2.34.1
+

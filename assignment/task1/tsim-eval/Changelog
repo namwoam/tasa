@@ -1,0 +1,248 @@
+
+---------------- 3.1.9 -----------------------------------------
+
+Released 2023-05-31
+
+- Add SpaceWire router model for GR740 and update model for
+  GR716B. Previous TSIM configuration for GR740 with 4 GRSPW2 cores
+  instead of router can be instatiated by using -gr740_no_spwrtr.
+
+- Add support for overriding internal TSIM models from user modules.
+
+- Fix bug where TSIM could hang in certain situations after hitting a
+  breakpoint.
+
+- Add support accessing cache and mmu register to the reg command. Add
+  tab completion for the reg command.
+
+- Add support for CPUs in info reg command.
+
+- Add wmems and vwmems Tcl command for writing C strings to memory.
+
+- Add Tcl variables for changing -nb, -bz and -ni options after TSIM
+  start.
+
+- Add -batch option for non-interactive use of standalone TSIM.
+
+- Added support for libtinfo version 6 in addition to the previously
+  only supported version 5.
+
+- Various bug fixes, documentation improvements and tab completion
+  improvements.
+
+---------------- 3.1.8 -----------------------------------------
+
+Released 2022-12-12
+
+- Add initial simulator configuration for GR716B. This includes a new GRCANFD
+  model and a prototype GRSPWROUTER model. Real-Time Accelerator (RTA)
+  simulation is supported through user module and example module is included.
+
+- Default GR716A/B bootstrap register value set for SRAM continuation.
+
+- Various bug fixes and documentation improvements.
+
+---------------- 3.1.7 -----------------------------------------
+
+Released 2022-09-08
+
+- Add mmu table command.
+
+- Improve grethX_ping command, its feedback and documentation.
+
+- Make Ctrl-W in the command line interface delete word backwards.
+
+- Fix GRIOMMU bug where a group flush did not always start properly.
+
+- Fix incorrect address range for the SpaceWire core representing the
+  fourth AMBA port for GR740.
+
+- Increased resilience to temporary network disturbances for floating
+  licenses.
+
+---------------- 3.1.6 -----------------------------------------
+
+Released 2022-05-17
+
+- Document usage constraints for TLIB regarding threads and processes. Add
+  -tclwt option for TLIB that allows multiple threads to interface with TLIB,
+  as long as they never do concurrent accesses.
+
+- Add tracing of SPI transfers to spiX_dbg command.
+
+- Various manual updates and fixes.
+
+---------------- 3.1.5 -----------------------------------------
+
+Released 2022-04-21
+
+- Fix bugs for checkpointing under TLIB.
+
+- Fix partially missing bootloading when running through GDB.
+
+- Fix bug for profiling.
+
+- For GR740, remove master plug&play for the standin grspw2 cores on the
+  processor bus and let the masters be seen in the IOMMU registers. This matches
+  how the AMBA ports of the Spacewire router appears in plug&play and IOMMU in
+  HW, but with GRSPW2 device ID.
+
+- Adjust order of server and connect startup taking effect so that AHB and IO
+  modules in their init funtions can connect to such option started servers
+  and/or set up servers that is connected to by such option triggered
+  connections.
+
+---------------- 3.1.4 -----------------------------------------
+
+Released 2021-12-16
+
+- Add checkpointing support, i.e. saving and restoring simulator state.
+  Currently, checkpointing is supported by all built-in models apart
+  from SpaceWire, CAN, Ethernet, PCI and DAC. Checkpointing is supported
+  for user modules via user API.
+
+- Support UART forwarding together with the TLIB tsim_cont function. This adds a
+  setup and restore function supporting tight tsim_cont based simulation loops
+  with UART forwarding preparation and teardown outside of that loop.
+
+- Fix problem with adding user models behind L2 cache.
+
+- Fix problem with tsim::interrupt Tcl variable not being updated on Windows.
+
+- Add sim_interrupt function to struct sim_interface that emulates a full
+  Ctrl-C. This is in contrast to sim_stop that merely stops simulation without
+  any effects on e.g. the tsim::interrupt variable.
+
+- Disable sys_reset function, that is currently not supported, in struct
+  sim_inferface.
+
+- Earlier access to functions struct sim_interface
+
+- Improved error propagation where errors during simulator initialization stops
+  TSIM from starting. Improved error propagation from commands and module API
+  for AMBA plug&play.
+
+- Support proper modelling of different cores driving the same level interrupt.
+
+- GRCAN: Make main interrupt a proper level interrupt. Improve modelling for
+  some error cases and sync interrupts. Have info reg not clear any
+  read-to-clear register fields.
+
+- Fix incorrect function signature for stop_revent
+
+- Fixes for a case where GDB and TSIM did not agree on current selected thread.
+
+- Fix bug when using the inst command after having disabled instruction trace.
+
+---------------- 3.1.3 -----------------------------------------
+
+Released 2021-09-10
+
+- Add -uout flag for UART forwarding to stdout only, with not input and without
+  setting up terminal or console in raw mode. Make normal -u cope better with
+  stdin not being a console on Windows.
+
+- Fix gptimer interrupt latching problem when interrupts were remapped. Add
+  documentation on some current limitations on timer models for GR716 and GR740.
+
+- Add support for getting a callback on events on the interrupt bus for AHB
+  modules. Remove the broken intpend callback.
+
+- Limit diagnostic L2 cache accesses from having excessive effects on timing.
+
+---------------- 3.1.2 -----------------------------------------
+
+Released 2021-07-07
+
+- Make default settings more capable. Make SRAM and ROM 8 MiB by default. Enable
+  MMU and CASA by default for LEON3. Set number of cache ways to 4 and enabled
+  APBUART FIFO with FIFO size 8 by default for LEON3.
+
+- Fix bug where different rounding modes and/or non-standard modes in FPUs of
+  different CPUs could spill over from one FPU to another.
+
+- Make the two GRCAN cores connect to the same two CAN buses on GR740.
+
+- Change GRETH PHY ID to be all zeroes.
+
+- Fixes for GRGPIO on GR716. Fix incorrect input enable register reset value.
+  Fix bug for logical or/and/xor direction registers. Make data register input
+  be zero for bits where directions is set to 1.
+
+- Fix incorrect slave select register reset value and spurious callback on mode
+  change for SPICTRL.
+
+- Add missing UART FIFO on GR740.
+
+- Fix problem where GDB could get wrong view on current thread under TSIM thread
+  support.
+
+- Fix documentation and example code for mask in AMBA p&p for APB, and expand
+  documentation on modules.
+
+---------------- 3.1.1 -----------------------------------------
+
+Released 2021-04-21
+
+- Add TLIB tsim_gdb function for having the TSIM GDB server data stream go via
+  user defined functions.
+
+- Make it possible to add AMBA plug&play entries to buses other than the
+  processor bus. Fine tune plug&play entries for the various systems.
+
+- Fix -uartX option that was broken in 3.1.0.
+
+- Fix incorrect irq assignment for dac1, dac2 and dac3 on GR716.
+
+---------------- 3.1.0 -----------------------------------------
+
+Released 2021-03-31
+
+- Initial release of TLIB for TSIM3. This is TSIM3 that can be used as a library
+  and that can be built into larger simulator frameworks. TLIB has a dedicated C
+  API for driving and interacting with the simulation, as well as all the Tcl
+  possibilities of standalone TSIM, and support for both loadable and built in
+  user modules.
+
+- Support for generating coverage output in the LCOV coverage format.
+
+- Support for custom instructions.
+
+- Support for loading of additional elf section types and better error printouts
+  for malformed srec files.
+
+- Improved breakpoint listing and Tcl returns for better scriptability.
+
+- Support for stepping for multiple instructions or for a given amount of time.
+
+- Fix where GDB did always switch to CPU that caused execution halt. Cleanup of
+  GDB breakpoints that could be left after a non-extended remote session.
+
+- Made event removal API more intuitive and clear.
+
+---------------- 3.0.2 -----------------------------------------
+
+Released 2020-09-17
+
+- Add symbols clear command and handle implicit symbol clearing better.
+
+- Fix problem with disassembling given address.
+
+---------------- 3.0.1 -----------------------------------------
+
+Released 2020-09-04
+
+- Fix race condition in AT697 PCI example.
+
+- Make disassemble without any arguments properly disassemble from current PC.
+
+- Make inst cope better with negative lengths.
+
+- Fix bug with grethX_dbg all not properly turning on debug output. Add
+  grspwX_dbg all for GRSPW cores (UT699).
+
+---------------- 3.0.0 -----------------------------------------
+
+Released 2020-07-02
+
+- Initial release

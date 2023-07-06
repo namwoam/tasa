@@ -1,0 +1,1709 @@
+From 42a65418382690b7199ab23fbe72071da3f6a12d Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Thu, 22 Sep 2016 15:52:07 +0200
+Subject: [PATCH 21/32] sparc32: leon: Add fixes for leon3ft b2b store errata
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/include/asm/asmmacro.h     | 12 ++++
+ arch/sparc/include/asm/checksum_32.h  |  1 +
+ arch/sparc/include/asm/leon.h         | 15 ++++-
+ arch/sparc/include/asm/obio.h         |  6 +-
+ arch/sparc/include/asm/pgtsrmmu.h     |  7 ++-
+ arch/sparc/include/asm/processor_32.h | 14 ++++-
+ arch/sparc/include/asm/psr.h          |  3 +
+ arch/sparc/include/asm/sbi.h          | 17 +++++-
+ arch/sparc/include/asm/spinlock_32.h  | 10 +++-
+ arch/sparc/include/asm/uaccess_32.h   |  5 +-
+ arch/sparc/include/asm/winmacro.h     | 23 ++++++-
+ arch/sparc/include/asm/xor_32.h       | 18 ++++++
+ arch/sparc/kernel/entry.S             | 46 +++++++++++---
+ arch/sparc/kernel/etrap_32.S          |  1 +
+ arch/sparc/kernel/head_32.S           | 19 +++++-
+ arch/sparc/kernel/leon_smp.c          | 10 +++-
+ arch/sparc/kernel/sun4d_smp.c         |  8 ++-
+ arch/sparc/kernel/una_asm_32.S        | 23 ++++---
+ arch/sparc/kernel/wof.S               |  4 +-
+ arch/sparc/lib/blockops.S             | 17 +++++-
+ arch/sparc/lib/checksum_32.S          | 28 +++++----
+ arch/sparc/lib/copy_user.S            |  7 ++-
+ arch/sparc/lib/locks.S                |  9 +++
+ arch/sparc/lib/memcpy.S               | 10 ++--
+ arch/sparc/lib/memset.S               | 86 ++++++++++++++++++++++-----
+ arch/sparc/mm/hypersparc.S            | 54 +++++++++++++----
+ arch/sparc/mm/leon_mm.c               | 14 ++++-
+ arch/sparc/mm/srmmu.c                 |  5 +-
+ arch/sparc/mm/swift.S                 |  7 ++-
+ arch/sparc/mm/tsunami.S               |  4 +-
+ arch/sparc/mm/viking.S                | 43 ++++++++------
+ 31 files changed, 417 insertions(+), 109 deletions(-)
+
+diff --git a/arch/sparc/include/asm/asmmacro.h b/arch/sparc/include/asm/asmmacro.h
+index 49aaf6f3bc55..687269d581d1 100644
+--- a/arch/sparc/include/asm/asmmacro.h
++++ b/arch/sparc/include/asm/asmmacro.h
+@@ -43,4 +43,16 @@
+ 	__VA_ARGS__;				\
+ 	.previous
+ 
++#ifdef __FIX_LEON3FT_B2BST
++#define B2B_SINGLE_NOP nop;
++#define B2B_DOUBLE_NOP nop; nop;
++#define B2B_INLINE_SINGLE_NOP "nop\n\t"
++#define B2B_INLINE_DOUBLE_NOP "nop\n\tnop\n\t"
++#else
++#define B2B_SINGLE_NOP
++#define B2B_DOUBLE_NOP
++#define B2B_INLINE_SINGLE_NOP ""
++#define B2B_INLINE_DOUBLE_NOP ""
++#endif
++
+ #endif /* !(_SPARC_ASMMACRO_H) */
+diff --git a/arch/sparc/include/asm/checksum_32.h b/arch/sparc/include/asm/checksum_32.h
+index ce11e0ad80c7..981a36b40754 100644
+--- a/arch/sparc/include/asm/checksum_32.h
++++ b/arch/sparc/include/asm/checksum_32.h
+@@ -18,6 +18,7 @@
+ 
+ #include <linux/in6.h>
+ #include <linux/uaccess.h>
++#include <asm/asmmacro.h>
+ 
+ /* computes the checksum of a memory block at buff, length len,
+  * and adds in "sum" (32-bit)
+diff --git a/arch/sparc/include/asm/leon.h b/arch/sparc/include/asm/leon.h
+index c1e05e4ab9e3..143c06f8c7bc 100644
+--- a/arch/sparc/include/asm/leon.h
++++ b/arch/sparc/include/asm/leon.h
+@@ -61,10 +61,15 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++#include <asm/asmmacro.h>
++
+ /* do a physical address bypass write, i.e. for 0x80000000 */
+ static inline void leon_store_reg(unsigned long paddr, unsigned long value)
+ {
+-	__asm__ __volatile__("sta %0, [%1] %2\n\t" : : "r"(value), "r"(paddr),
++	__asm__ __volatile__(B2B_INLINE_DOUBLE_NOP
++			     "sta %0, [%1] %2\n\t"
++			     B2B_INLINE_DOUBLE_NOP
++			     : : "r"(value), "r"(paddr),
+ 			     "i"(ASI_LEON_BYPASS) : "memory");
+ }
+ 
+@@ -102,7 +107,9 @@ static inline void sparc_leon3_enable_snooping(void)
+ 	__asm__ __volatile__ ("lda [%%g0] 2, %%l1\n\t"
+ 			  "set 0x800000, %%l2\n\t"
+ 			  "or  %%l2, %%l1, %%l2\n\t"
+-			  "sta %%l2, [%%g0] 2\n\t" : : : "l1", "l2");
++			  "sta %%l2, [%%g0] 2\n\t"
++			  B2B_INLINE_DOUBLE_NOP
++			  : : : "l1", "l2");
+ };
+ 
+ static inline int sparc_leon3_snooping_enabled(void)
+@@ -117,7 +124,9 @@ static inline void sparc_leon3_disable_cache(void)
+ 	__asm__ __volatile__ ("lda [%%g0] 2, %%l1\n\t"
+ 			  "set 0x00000f, %%l2\n\t"
+ 			  "andn  %%l2, %%l1, %%l2\n\t"
+-			  "sta %%l2, [%%g0] 2\n\t" : : : "l1", "l2");
++			  "sta %%l2, [%%g0] 2\n\t"
++			  B2B_INLINE_DOUBLE_NOP
++			  : : : "l1", "l2");
+ };
+ 
+ static inline unsigned long sparc_leon3_asr17(void)
+diff --git a/arch/sparc/include/asm/obio.h b/arch/sparc/include/asm/obio.h
+index 1b151f738b00..122a49968a04 100644
+--- a/arch/sparc/include/asm/obio.h
++++ b/arch/sparc/include/asm/obio.h
+@@ -112,7 +112,11 @@ static inline int bw_get_intr_mask(int sbus_level)
+ 
+ static inline void bw_clear_intr_mask(int sbus_level, int mask)
+ {
+-	__asm__ __volatile__ ("stha %0, [%1] %2" : :
++	/* Not used for LEON. B2B-nops just to make scan script happy. */
++	__asm__ __volatile__ (B2B_INLINE_DOUBLE_NOP
++			      "stha %0, [%1] %2\n\t"
++			      B2B_INLINE_DOUBLE_NOP
++			      : :
+ 			      "r" (mask),
+ 			      "r" (BW_LOCAL_BASE + BW_INTR_TABLE_CLEAR + (sbus_level << 3)),
+ 			      "i" (ASI_M_CTL));
+diff --git a/arch/sparc/include/asm/pgtsrmmu.h b/arch/sparc/include/asm/pgtsrmmu.h
+index 117009b03cf4..5c16cc8f0a38 100644
+--- a/arch/sparc/include/asm/pgtsrmmu.h
++++ b/arch/sparc/include/asm/pgtsrmmu.h
+@@ -106,6 +106,8 @@
+ 	 restore %g0, %g0, %g0;
+ 
+ #ifndef __ASSEMBLY__
++#include <asm/asmmacro.h>
++
+ extern unsigned long last_valid_pfn;
+ 
+ /* This makes sense. Honest it does - Anton */
+@@ -127,7 +129,10 @@ unsigned int srmmu_get_faddr(void);
+ /* This is guaranteed on all SRMMU's. */
+ static inline void srmmu_flush_whole_tlb(void)
+ {
+-	__asm__ __volatile__("sta %%g0, [%0] %1\n\t": :
++	__asm__ __volatile__(B2B_INLINE_DOUBLE_NOP
++			     "sta %%g0, [%0] %1\n\t"
++			     B2B_INLINE_DOUBLE_NOP
++			     : :
+ 			     "r" (0x400),        /* Flush entire TLB!! */
+ 			     "i" (ASI_M_FLUSH_PROBE) : "memory");
+ 
+diff --git a/arch/sparc/include/asm/processor_32.h b/arch/sparc/include/asm/processor_32.h
+index 3c4bc2189092..bf7c364caa29 100644
+--- a/arch/sparc/include/asm/processor_32.h
++++ b/arch/sparc/include/asm/processor_32.h
+@@ -12,6 +12,7 @@
+ #include <asm/head.h>
+ #include <asm/signal.h>
+ #include <asm/page.h>
++#include <asm/asmmacro.h>
+ 
+ /* Whee, this is STACK_TOP + PAGE_SIZE and the lowest kernel address too...
+  * That one page is used to protect kernel from intruders, so that
+@@ -73,15 +74,24 @@ static inline void start_thread(struct pt_regs * regs, unsigned long pc,
+ 	regs->npc = regs->pc + 4;
+ 	regs->y = 0;
+ 	zero = 0;
+-	__asm__ __volatile__("std\t%%g0, [%0 + %3 + 0x00]\n\t"
++	__asm__ __volatile__(B2B_INLINE_DOUBLE_NOP
++			     "std\t%%g0, [%0 + %3 + 0x00]\n\t"
++			     B2B_INLINE_SINGLE_NOP
+ 			     "std\t%%g0, [%0 + %3 + 0x08]\n\t"
++			     B2B_INLINE_SINGLE_NOP
+ 			     "std\t%%g0, [%0 + %3 + 0x10]\n\t"
++			     B2B_INLINE_SINGLE_NOP
+ 			     "std\t%%g0, [%0 + %3 + 0x18]\n\t"
++			     B2B_INLINE_SINGLE_NOP
+ 			     "std\t%%g0, [%0 + %3 + 0x20]\n\t"
++			     B2B_INLINE_SINGLE_NOP
+ 			     "std\t%%g0, [%0 + %3 + 0x28]\n\t"
++			     B2B_INLINE_SINGLE_NOP
+ 			     "std\t%%g0, [%0 + %3 + 0x30]\n\t"
++			     B2B_INLINE_SINGLE_NOP
+ 			     "st\t%1, [%0 + %3 + 0x38]\n\t"
+-			     "st\t%%g0, [%0 + %3 + 0x3c]"
++			     "st\t%%g0, [%0 + %3 + 0x3c]\n\t"
++			     B2B_INLINE_DOUBLE_NOP
+ 			     : /* no outputs */
+ 			     : "r" (regs),
+ 			       "r" (sp - sizeof(struct reg_window32)),
+diff --git a/arch/sparc/include/asm/psr.h b/arch/sparc/include/asm/psr.h
+index 65127ce565ab..4ad45ccfe8d8 100644
+--- a/arch/sparc/include/asm/psr.h
++++ b/arch/sparc/include/asm/psr.h
+@@ -15,6 +15,8 @@
+ 
+ 
+ #ifndef __ASSEMBLY__
++#include <asm/asmmacro.h>
++
+ /* Get the %psr register. */
+ static inline unsigned int get_psr(void)
+ {
+@@ -55,6 +57,7 @@ static inline unsigned int get_fsr(void)
+ 	unsigned int fsr = 0;
+ 
+ 	__asm__ __volatile__(
++		B2B_INLINE_DOUBLE_NOP
+ 		"st	%%fsr, %1\n\t"
+ 		"ld	%1, %0\n\t"
+ 	: "=r" (fsr)
+diff --git a/arch/sparc/include/asm/sbi.h b/arch/sparc/include/asm/sbi.h
+index 4d6026c1e446..49b4e0aa4689 100644
+--- a/arch/sparc/include/asm/sbi.h
++++ b/arch/sparc/include/asm/sbi.h
+@@ -66,6 +66,8 @@ struct sbi_regs {
+ 
+ #ifndef __ASSEMBLY__
+ 
++#include <asm/asmmacro.h>
++
+ static inline int acquire_sbi(int devid, int mask)
+ {
+ 	__asm__ __volatile__ ("swapa [%2] %3, %0" :
+@@ -78,7 +80,10 @@ static inline int acquire_sbi(int devid, int mask)
+ 
+ static inline void release_sbi(int devid, int mask)
+ {
+-	__asm__ __volatile__ ("sta %0, [%1] %2" : :
++	__asm__ __volatile__ (B2B_INLINE_DOUBLE_NOP
++			      "sta %0, [%1] %2\n\t"
++			      B2B_INLINE_DOUBLE_NOP
++			      : :
+ 			      "r" (mask),
+ 			      "r" (ECSR_DEV_BASE(devid) | SBI_INTR_STATE),
+ 			      "i" (ASI_M_CTL));
+@@ -86,7 +91,10 @@ static inline void release_sbi(int devid, int mask)
+ 
+ static inline void set_sbi_tid(int devid, int targetid)
+ {
+-	__asm__ __volatile__ ("sta %0, [%1] %2" : :
++	__asm__ __volatile__ (B2B_INLINE_DOUBLE_NOP
++			      "sta %0, [%1] %2\n\t"
++			      B2B_INLINE_DOUBLE_NOP
++			      : :
+ 			      "r" (targetid),
+ 			      "r" (ECSR_DEV_BASE(devid) | SBI_INTR_TID),
+ 			      "i" (ASI_M_CTL));
+@@ -105,7 +113,10 @@ static inline int get_sbi_ctl(int devid, int cfgno)
+ 
+ static inline void set_sbi_ctl(int devid, int cfgno, int cfg)
+ {
+-	__asm__ __volatile__ ("sta %0, [%1] %2" : :
++	__asm__ __volatile__ (B2B_INLINE_DOUBLE_NOP
++			      "sta %0, [%1] %2\n\t"
++			      B2B_INLINE_DOUBLE_NOP
++			      : :
+ 			      "r" (cfg),
+ 			      "r" ((ECSR_DEV_BASE(devid) | SBI_CFG0) + (cfgno<<2)),
+ 			      "i" (ASI_M_CTL));
+diff --git a/arch/sparc/include/asm/spinlock_32.h b/arch/sparc/include/asm/spinlock_32.h
+index bc5aa6f61676..adade4095cf2 100644
+--- a/arch/sparc/include/asm/spinlock_32.h
++++ b/arch/sparc/include/asm/spinlock_32.h
+@@ -12,6 +12,7 @@
+ #include <asm/psr.h>
+ #include <asm/barrier.h>
+ #include <asm/processor.h> /* for cpu_relax */
++#include <asm/asmmacro.h>
+ 
+ #define arch_spin_is_locked(lock) (*((volatile unsigned char *)(lock)) != 0)
+ 
+@@ -47,7 +48,10 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
+ 
+ static inline void arch_spin_unlock(arch_spinlock_t *lock)
+ {
+-	__asm__ __volatile__("stb %%g0, [%0]" : : "r" (lock) : "memory");
++	__asm__ __volatile__(B2B_INLINE_DOUBLE_NOP
++			     "stb %%g0, [%0]\n\t"
++			     B2B_INLINE_DOUBLE_NOP
++			     : : "r" (lock) : "memory");
+ }
+ 
+ /* Read-write spinlocks, allowing multiple readers
+@@ -133,7 +137,9 @@ static inline void arch_write_lock(arch_rwlock_t *rw)
+ static inline void arch_write_unlock(arch_rwlock_t *lock)
+ {
+ 	__asm__ __volatile__(
+-"	st		%%g0, [%0]"
++"	" B2B_INLINE_DOUBLE_NOP
++"	st		%%g0, [%0]\n"
++"	" B2B_INLINE_DOUBLE_NOP
+ 	: /* no outputs */
+ 	: "r" (lock)
+ 	: "memory");
+diff --git a/arch/sparc/include/asm/uaccess_32.h b/arch/sparc/include/asm/uaccess_32.h
+index 0a2d3ebc4bb8..98432ac982ab 100644
+--- a/arch/sparc/include/asm/uaccess_32.h
++++ b/arch/sparc/include/asm/uaccess_32.h
+@@ -12,6 +12,7 @@
+ #include <linux/string.h>
+ 
+ #include <asm/processor.h>
++#include <asm/asmmacro.h>
+ 
+ #define ARCH_HAS_SORT_EXTABLE
+ #define ARCH_HAS_SEARCH_EXTABLE
+@@ -145,8 +146,10 @@ struct __large_struct { unsigned long buf[100]; };
+ #define __put_user_asm(x, size, addr, ret)				\
+ __asm__ __volatile__(							\
+ 		"/* Put user asm, inline. */\n"				\
++		B2B_INLINE_DOUBLE_NOP					\
+ 	"1:\t"	"st"#size " %1, %2\n\t"					\
+-		"clr	%0\n"						\
++		"clr	%0\n\t"						\
++		B2B_INLINE_SINGLE_NOP					\
+ 	"2:\n\n\t"							\
+ 		".section .fixup,#alloc,#execinstr\n\t"			\
+ 		".align	4\n"						\
+diff --git a/arch/sparc/include/asm/winmacro.h b/arch/sparc/include/asm/winmacro.h
+index b6e911f5d93c..9c6208460a46 100644
+--- a/arch/sparc/include/asm/winmacro.h
++++ b/arch/sparc/include/asm/winmacro.h
+@@ -9,19 +9,28 @@
+ #define _SPARC_WINMACRO_H
+ 
+ #include <asm/ptrace.h>
++#include <asm/asmmacro.h>
+ 
+ /* Store the register window onto the 8-byte aligned area starting
+  * at %reg.  It might be %sp, it might not, we don't care.
+  */
+ #define STORE_WINDOW(reg) \
+ 	std	%l0, [%reg + RW_L0]; \
++	B2B_SINGLE_NOP               \
+ 	std	%l2, [%reg + RW_L2]; \
++	B2B_SINGLE_NOP               \
+ 	std	%l4, [%reg + RW_L4]; \
++	B2B_SINGLE_NOP               \
+ 	std	%l6, [%reg + RW_L6]; \
++	B2B_SINGLE_NOP               \
+ 	std	%i0, [%reg + RW_I0]; \
++	B2B_SINGLE_NOP               \
+ 	std	%i2, [%reg + RW_I2]; \
++	B2B_SINGLE_NOP               \
+ 	std	%i4, [%reg + RW_I4]; \
+-	std	%i6, [%reg + RW_I6];
++	B2B_SINGLE_NOP               \
++	std	%i6, [%reg + RW_I6]; \
++	B2B_SINGLE_NOP
+ 
+ /* Load a register window from the area beginning at %reg. */
+ #define LOAD_WINDOW(reg) \
+@@ -64,17 +73,25 @@
+ 
+ #define STORE_PT_INS(base_reg) \
+         std     %i0, [%base_reg + STACKFRAME_SZ + PT_I0]; \
++        B2B_SINGLE_NOP                                    \
+         std     %i2, [%base_reg + STACKFRAME_SZ + PT_I2]; \
++        B2B_SINGLE_NOP                                    \
+         std     %i4, [%base_reg + STACKFRAME_SZ + PT_I4]; \
+-        std     %i6, [%base_reg + STACKFRAME_SZ + PT_I6];
++        B2B_SINGLE_NOP                                    \
++        std     %i6, [%base_reg + STACKFRAME_SZ + PT_I6]; \
++        B2B_SINGLE_NOP
+ 
+ #define STORE_PT_GLOBALS(base_reg) \
+         st      %g1, [%base_reg + STACKFRAME_SZ + PT_G1]; \
+         std     %g2, [%base_reg + STACKFRAME_SZ + PT_G2]; \
++        B2B_SINGLE_NOP                                    \
+         std     %g4, [%base_reg + STACKFRAME_SZ + PT_G4]; \
+-        std     %g6, [%base_reg + STACKFRAME_SZ + PT_G6];
++        B2B_SINGLE_NOP                                    \
++        std     %g6, [%base_reg + STACKFRAME_SZ + PT_G6]; \
++        B2B_SINGLE_NOP
+ 
+ #define STORE_PT_YREG(base_reg, scratch) \
++        B2B_SINGLE_NOP \
+         rd      %y, %scratch; \
+         st      %scratch, [%base_reg + STACKFRAME_SZ + PT_Y];
+ 
+diff --git a/arch/sparc/include/asm/xor_32.h b/arch/sparc/include/asm/xor_32.h
+index 3e5af37e4b9c..3c72d9644785 100644
+--- a/arch/sparc/include/asm/xor_32.h
++++ b/arch/sparc/include/asm/xor_32.h
+@@ -12,6 +12,8 @@
+  * Copyright (C) 1999 Jakub Jelinek (jj@ultra.linux.cz)
+  */
+ 
++#include <asm/asmmacro.h>
++
+ static void
+ sparc_2(unsigned long bytes, unsigned long *p1, unsigned long *p2)
+ {
+@@ -36,9 +38,13 @@ sparc_2(unsigned long bytes, unsigned long *p1, unsigned long *p2)
+ 		  "xor %%o2, %%l4, %%o2\n\t"
+ 		  "xor %%o3, %%l5, %%o3\n\t"
+ 		  "std %%g2, [%0 + 0x00]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%g4, [%0 + 0x08]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%o0, [%0 + 0x10]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%o2, [%0 + 0x18]\n"
++		  B2B_INLINE_SINGLE_NOP
+ 		:
+ 		: "r" (p1), "r" (p2)
+ 		: "g2", "g3", "g4", "g5",
+@@ -86,9 +92,13 @@ sparc_3(unsigned long bytes, unsigned long *p1, unsigned long *p2,
+ 		  "xor %%o2, %%l4, %%o2\n\t"
+ 		  "xor %%o3, %%l5, %%o3\n\t"
+ 		  "std %%g2, [%0 + 0x00]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%g4, [%0 + 0x08]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%o0, [%0 + 0x10]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%o2, [%0 + 0x18]\n"
++		  B2B_INLINE_SINGLE_NOP
+ 		:
+ 		: "r" (p1), "r" (p2), "r" (p3)
+ 		: "g2", "g3", "g4", "g5",
+@@ -149,9 +159,13 @@ sparc_4(unsigned long bytes, unsigned long *p1, unsigned long *p2,
+ 		  "xor %%o2, %%l4, %%o2\n\t"
+ 		  "xor %%o3, %%l5, %%o3\n\t"
+ 		  "std %%g2, [%0 + 0x00]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%g4, [%0 + 0x08]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%o0, [%0 + 0x10]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%o2, [%0 + 0x18]\n"
++		  B2B_INLINE_SINGLE_NOP
+ 		:
+ 		: "r" (p1), "r" (p2), "r" (p3), "r" (p4)
+ 		: "g2", "g3", "g4", "g5",
+@@ -225,9 +239,13 @@ sparc_5(unsigned long bytes, unsigned long *p1, unsigned long *p2,
+ 		  "xor %%o2, %%l4, %%o2\n\t"
+ 		  "xor %%o3, %%l5, %%o3\n\t"
+ 		  "std %%g2, [%0 + 0x00]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%g4, [%0 + 0x08]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%o0, [%0 + 0x10]\n\t"
++		  B2B_INLINE_SINGLE_NOP
+ 		  "std %%o2, [%0 + 0x18]\n"
++		  B2B_INLINE_SINGLE_NOP
+ 		:
+ 		: "r" (p1), "r" (p2), "r" (p3), "r" (p4), "r" (p5)
+ 		: "g2", "g3", "g4", "g5",
+diff --git a/arch/sparc/kernel/entry.S b/arch/sparc/kernel/entry.S
+index 87c68aeeb794..c0fdf1de10f2 100644
+--- a/arch/sparc/kernel/entry.S
++++ b/arch/sparc/kernel/entry.S
+@@ -121,6 +121,7 @@ floppy_tdone:
+ 	sethi	%hi(pdma_vaddr), %l5
+ 	st	%l4, [%l5 + %lo(pdma_vaddr)]
+ 	sethi	%hi(pdma_size), %l5
++	B2B_SINGLE_NOP
+ 	st	%l6, [%l5 + %lo(pdma_size)]
+ 	/* Flip terminal count pin */
+ 	set	auxio_register, %l7
+@@ -138,11 +139,13 @@ floppy_tdone:
+ 	WRITE_PAUSE
+ 
+ 	stb     %l5, [%l7]
++	B2B_SINGLE_NOP
+ 
+ 	/* Prevent recursion */
+ 	sethi	%hi(doing_pdma), %l7
++	st	%g0, [%l7 + %lo(doing_pdma)]
+ 	b	floppy_dosoftint
+-	 st	%g0, [%l7 + %lo(doing_pdma)]
++	 nop
+ 
+ 	/* We emptied the FIFO, but we haven't read everything
+ 	 * as of yet.  Store the current transfer address and
+@@ -153,6 +156,7 @@ floppy_fifo_emptied:
+ 	sethi	%hi(pdma_vaddr), %l5
+ 	st	%l4, [%l5 + %lo(pdma_vaddr)]
+ 	sethi	%hi(pdma_size), %l7
++	B2B_SINGLE_NOP
+ 	st	%l6, [%l7 + %lo(pdma_size)]
+ 
+ 	/* Restore condition codes */
+@@ -165,10 +169,12 @@ floppy_fifo_emptied:
+ floppy_overrun:
+ 	sethi	%hi(pdma_vaddr), %l5
+ 	st	%l4, [%l5 + %lo(pdma_vaddr)]
++	B2B_SINGLE_NOP
+ 	sethi	%hi(pdma_size), %l5
+ 	st	%l6, [%l5 + %lo(pdma_size)]
+ 	/* Prevent recursion */
+ 	sethi	%hi(doing_pdma), %l7
++	B2B_SINGLE_NOP
+ 	st	%g0, [%l7 + %lo(doing_pdma)]
+ 
+ 	/* fall through... */
+@@ -323,8 +329,9 @@ linux_trap_ipi15_sun4m:
+ 	ld	[%o5 + %o0], %o5
+ 	ld	[%o5 + 0x00], %o3	! sun4m_irq_percpu[cpu]->pending
+ 	andcc	%o3, %o2, %g0
++	st	%o2, [%o5 + 0x04]	! sun4m_irq_percpu[cpu]->clear=0x80000000
+ 	be	sun4m_nmi_error		! Must be an NMI async memory error
+-	 st	%o2, [%o5 + 0x04]	! sun4m_irq_percpu[cpu]->clear=0x80000000
++	 nop
+ 	WRITE_PAUSE
+ 	ld	[%o5 + 0x00], %g0	! sun4m_irq_percpu[cpu]->pending
+ 	WRITE_PAUSE
+@@ -1024,8 +1031,9 @@ ret_sys_call:
+ 	 ld	[%sp + STACKFRAME_SZ + PT_NPC], %l1 /* pc = npc */
+ 	add	%l1, 0x4, %l2			/* npc = npc+4 */
+ 	st	%l1, [%sp + STACKFRAME_SZ + PT_PC]
++	st	%l2, [%sp + STACKFRAME_SZ + PT_NPC]
+ 	b	ret_trap_entry
+-	 st	%l2, [%sp + STACKFRAME_SZ + PT_NPC]
++	 nop
+ 1:
+ 	/* System call failure, set Carry condition code.
+ 	 * Also, get abs(errno) to return to the process.
+@@ -1038,8 +1046,9 @@ ret_sys_call:
+ 	 ld	[%sp + STACKFRAME_SZ + PT_NPC], %l1 /* pc = npc */
+ 	add	%l1, 0x4, %l2			/* npc = npc+4 */
+ 	st	%l1, [%sp + STACKFRAME_SZ + PT_PC]
++	st	%l2, [%sp + STACKFRAME_SZ + PT_NPC]
+ 	b	ret_trap_entry
+-	 st	%l2, [%sp + STACKFRAME_SZ + PT_NPC]
++	 nop
+ 
+ linux_syscall_trace2:
+ 	add	%sp, STACKFRAME_SZ, %o0
+@@ -1047,8 +1056,9 @@ linux_syscall_trace2:
+ 	call	syscall_trace
+ 	 add	%l1, 0x4, %l2			/* npc = npc+4 */
+ 	st	%l1, [%sp + STACKFRAME_SZ + PT_PC]
++	st	%l2, [%sp + STACKFRAME_SZ + PT_NPC]
+ 	b	ret_trap_entry
+-	 st	%l2, [%sp + STACKFRAME_SZ + PT_NPC]
++	 nop
+ 
+ 
+ /* Saving and restoring the FPU state is best done from lowlevel code.
+@@ -1070,6 +1080,7 @@ fpsave:
+ 	/* We have an fpqueue to save. */
+ 1:
+ 	std	%fq, [%o2]
++	B2B_SINGLE_NOP
+ fpsave_magic:
+ 	st	%fsr, [%o1]
+ 	ld	[%o1], %g3
+@@ -1086,22 +1097,39 @@ fpsave_magic:
+ 	st	%g2, [%o3]
+ 
+ 	std	%f0, [%o0 + 0x00]
++	B2B_SINGLE_NOP
+ 	std	%f2, [%o0 + 0x08]
++	B2B_SINGLE_NOP
+ 	std	%f4, [%o0 + 0x10]
++	B2B_SINGLE_NOP
+ 	std	%f6, [%o0 + 0x18]
++	B2B_SINGLE_NOP
+ 	std	%f8, [%o0 + 0x20]
++	B2B_SINGLE_NOP
+ 	std	%f10, [%o0 + 0x28]
++	B2B_SINGLE_NOP
+ 	std	%f12, [%o0 + 0x30]
++	B2B_SINGLE_NOP
+ 	std	%f14, [%o0 + 0x38]
++	B2B_SINGLE_NOP
+ 	std	%f16, [%o0 + 0x40]
++	B2B_SINGLE_NOP
+ 	std	%f18, [%o0 + 0x48]
++	B2B_SINGLE_NOP
+ 	std	%f20, [%o0 + 0x50]
++	B2B_SINGLE_NOP
+ 	std	%f22, [%o0 + 0x58]
++	B2B_SINGLE_NOP
+ 	std	%f24, [%o0 + 0x60]
++	B2B_SINGLE_NOP
+ 	std	%f26, [%o0 + 0x68]
++	B2B_SINGLE_NOP
+ 	std	%f28, [%o0 + 0x70]
++	B2B_SINGLE_NOP
++	std	%f30, [%o0 + 0x78]
++	B2B_SINGLE_NOP
+ 	retl
+-	 std	%f30, [%o0 + 0x78]
++	 nop
+ 
+ 	/* Thanks for Theo Deraadt and the authors of the Sprite/netbsd/openbsd
+ 	 * code for pointing out this possible deadlock, while we save state
+@@ -1109,8 +1137,9 @@ fpsave_magic:
+ 	 * code has to know how to deal with this.
+ 	 */
+ fpsave_catch:
++	st	%fsr, [%o1]
+ 	b	fpsave_magic + 4
+-	 st	%fsr, [%o1]
++	 nop
+ 
+ fpsave_catch2:
+ 	st	%fsr, [%o1] /* In this case, this is the first successful fsr read */
+@@ -1267,8 +1296,9 @@ kuw_patch1:
+ 	wr	%o5, 0x0, %psr			! re-enable interrupts
+ 	WRITE_PAUSE				! burn baby burn
+ 3:
++	st	%g0, [%g6 + TI_W_SAVED]		! no windows saved
+ 	retl					! return
+-	 st	%g0, [%g6 + TI_W_SAVED]		! no windows saved
++	 nop
+ 
+ 	.align	4
+ 	.globl	restore_current
+diff --git a/arch/sparc/kernel/etrap_32.S b/arch/sparc/kernel/etrap_32.S
+index 9f243f918619..860df075a355 100644
+--- a/arch/sparc/kernel/etrap_32.S
++++ b/arch/sparc/kernel/etrap_32.S
+@@ -253,6 +253,7 @@ trap_setup_user_stack_is_bolixed:
+ 	or	%glob_tmp, 0x2, %glob_tmp		! or in no_fault bit
+ LEON_PI(sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS)		! set it
+ SUN_PI_(sta	%glob_tmp, [%g0] ASI_M_MMUREGS)		! set it
++	B2B_DOUBLE_NOP
+ 
+ 	/* Dump the registers and cross fingers. */
+ 	STORE_WINDOW(sp)
+diff --git a/arch/sparc/kernel/head_32.S b/arch/sparc/kernel/head_32.S
+index be30c8d4cc73..cdff4d974434 100644
+--- a/arch/sparc/kernel/head_32.S
++++ b/arch/sparc/kernel/head_32.S
+@@ -26,6 +26,7 @@
+ #include <asm/errno.h>
+ #include <asm/pgtable.h>	/* PGDIR_SHIFT */
+ #include <asm/export.h>
++#include <asm/asmmacro.h>
+ 
+ 	.data
+ /* The following are used with the prom_vector node-ops to figure out
+@@ -365,6 +366,7 @@ execute_in_high_mem:
+ 
+ 		sethi	%hi(prom_vector_p), %g1
+ 		st	%o0, [%g1 + %lo(prom_vector_p)]
++		B2B_SINGLE_NOP
+ 
+ 		sethi	%hi(linux_dbvec), %g1
+ 		st	%o1, [%g1 + %lo(linux_dbvec)]
+@@ -465,6 +467,7 @@ sun4d_init:
+ 	srl     %g3, 3, %g4
+ 	sta     %g4, [%g0] ASI_M_VIKING_TMP1
+ 	sethi	%hi(boot_cpu_id), %g5
++	B2B_SINGLE_NOP
+ 	stb	%g4, [%g5 + %lo(boot_cpu_id)]
+ #endif
+ 
+@@ -550,6 +553,7 @@ continue_boot:
+ #ifdef CONFIG_SMP
+ 		st	%g6, [%g2]
+ 		add	%g2, %g3, %g2
++		B2B_SINGLE_NOP
+ #endif
+ 		st	%g6, [%g2]
+ 
+@@ -624,21 +628,27 @@ continue_boot:
+ 		set	flush_patch_one, %g5
+ 		st	%g4, [%g5 + 0x18]
+ 		st	%g4, [%g5 + 0x1c]
++		B2B_SINGLE_NOP
+ 		set	flush_patch_two, %g5
+ 		st	%g4, [%g5 + 0x18]
+ 		st	%g4, [%g5 + 0x1c]
++		B2B_SINGLE_NOP
+ 		set	flush_patch_three, %g5
+ 		st	%g4, [%g5 + 0x18]
+ 		st	%g4, [%g5 + 0x1c]
++		B2B_SINGLE_NOP
+ 		set	flush_patch_four, %g5
+ 		st	%g4, [%g5 + 0x18]
+ 		st	%g4, [%g5 + 0x1c]
++		B2B_SINGLE_NOP
+ 		set	flush_patch_exception, %g5
+ 		st	%g4, [%g5 + 0x18]
+ 		st	%g4, [%g5 + 0x1c]
++		B2B_SINGLE_NOP
+ 		set	flush_patch_switch, %g5
+ 		st	%g4, [%g5 + 0x18]
+ 		st	%g4, [%g5 + 0x1c]
++		B2B_SINGLE_NOP
+ 
+ 2:
+ 		sethi	%hi(nwindows), %g4
+@@ -738,8 +748,9 @@ no_sun4u_here:
+ 		add	%l4, 4, %l4
+ 		cmp	%l5, %l2
+ 		add	%l5, %l6, %l5
++		st	%l5, [%l4 - 4]
+ 		bgeu,a	3f
+-		 st	%l5, [%l4 - 4]
++		 nop
+ 3:
+ 		subcc	%l3, 4, %l3
+ 		bne	2b
+@@ -750,13 +761,15 @@ no_sun4u_here:
+ 
+ 		ld	[%l1 + (sun4u_r1 - sun4u_a1)], %o1
+ 		add	%l1, (sun4u_a2 - sun4u_a1), %o0
++		st	%o1, [%o0 + (sun4u_i2 - sun4u_a2)]
+ 		call	%l0
+-		 st	%o1, [%o0 + (sun4u_i2 - sun4u_a2)]
++		 nop
+ 
+ 		ld	[%l1 + (sun4u_1 - sun4u_a1)], %o1
+ 		add	%l1, (sun4u_a3 - sun4u_a1), %o0
+-		call	%l0
+ 		st	%o1, [%o0 + (sun4u_i3 - sun4u_a3)]
++		call	%l0
++		 nop
+ 
+ 		call	%l0
+ 		 add	%l1, (sun4u_a4 - sun4u_a1), %o0
+diff --git a/arch/sparc/kernel/leon_smp.c b/arch/sparc/kernel/leon_smp.c
+index 1eed26d423fb..f726d950e347 100644
+--- a/arch/sparc/kernel/leon_smp.c
++++ b/arch/sparc/kernel/leon_smp.c
+@@ -44,6 +44,7 @@
+ #include <asm/leon.h>
+ #include <asm/leon_amba.h>
+ #include <asm/timer.h>
++#include <asm/asmmacro.h>
+ 
+ #include "kernel.h"
+ 
+@@ -391,9 +392,14 @@ static void leon_cross_call(smpfunc_t func, cpumask_t mask, unsigned long arg1,
+ 			register unsigned long a4 asm("i4") = arg4;
+ 			register unsigned long a5 asm("i5") = 0;
+ 
+-			__asm__ __volatile__("std %0, [%6]\n\t"
++			__asm__ __volatile__(B2B_INLINE_DOUBLE_NOP
++					     "std %0, [%6]\n\t"
++					     B2B_INLINE_SINGLE_NOP
+ 					     "std %2, [%6 + 8]\n\t"
+-					     "std %4, [%6 + 16]\n\t" : :
++					     B2B_INLINE_SINGLE_NOP
++					     "std %4, [%6 + 16]\n\t"
++					     B2B_INLINE_SINGLE_NOP
++					     : :
+ 					     "r"(f), "r"(a1), "r"(a2), "r"(a3),
+ 					     "r"(a4), "r"(a5),
+ 					     "r"(&ccall_info.func));
+diff --git a/arch/sparc/kernel/sun4d_smp.c b/arch/sparc/kernel/sun4d_smp.c
+index ff30f03beb7c..b06eaf4d1256 100644
+--- a/arch/sparc/kernel/sun4d_smp.c
++++ b/arch/sparc/kernel/sun4d_smp.c
+@@ -21,6 +21,7 @@
+ #include <asm/oplib.h>
+ #include <asm/sbi.h>
+ #include <asm/mmu.h>
++#include <asm/asmmacro.h>
+ 
+ #include "kernel.h"
+ #include "irq.h"
+@@ -304,9 +305,14 @@ static void sun4d_cross_call(smpfunc_t func, cpumask_t mask, unsigned long arg1,
+ 			register unsigned long a5 asm("i5") = 0;
+ 
+ 			__asm__ __volatile__(
++				B2B_INLINE_DOUBLE_NOP
+ 				"std %0, [%6]\n\t"
++				B2B_INLINE_SINGLE_NOP
+ 				"std %2, [%6 + 8]\n\t"
+-				"std %4, [%6 + 16]\n\t" : :
++				B2B_INLINE_SINGLE_NOP
++				"std %4, [%6 + 16]\n\t"
++				B2B_INLINE_SINGLE_NOP
++				: :
+ 				"r"(f), "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5),
+ 				"r" (&ccall_info.func));
+ 		}
+diff --git a/arch/sparc/kernel/una_asm_32.S b/arch/sparc/kernel/una_asm_32.S
+index f8bf839289fb..177011bebe3e 100644
+--- a/arch/sparc/kernel/una_asm_32.S
++++ b/arch/sparc/kernel/una_asm_32.S
+@@ -6,6 +6,7 @@
+  */
+ 
+ #include <linux/errno.h>
++#include <asm/asmmacro.h>
+ 
+ 	.text
+ 
+@@ -32,26 +33,30 @@ __do_int_store:
+ 	 srl	%g1, 24, %g2
+ 	srl	%g1, 16, %g7
+ 4:	stb	%g2, [%o0]
+-	srl	%g1, 8, %g2
+ 5:	stb	%g7, [%o0 + 1]
++	srl	%g1, 8, %g2
+ 	ld	[%o2 + 4], %g7
+ 6:	stb	%g2, [%o0 + 2]
+-	srl	%g7, 24, %g2
+ 7:	stb	%g1, [%o0 + 3]
++	srl	%g7, 24, %g2
+ 	srl	%g7, 16, %g1
+ 8:	stb	%g2, [%o0 + 4]
+ 	srl	%g7, 8, %g2
++	B2B_SINGLE_NOP
+ 9:	stb	%g1, [%o0 + 5]
+ 10:	stb	%g2, [%o0 + 6]
++11:	stb	%g7, [%o0 + 7]
+ 	b	0f
+-11:	 stb	%g7, [%o0 + 7]
+-1:	srl	%g1, 16, %g7
++	 nop
++1:
+ 12:	stb	%g2, [%o0]
++	srl	%g1, 16, %g7
+ 	srl	%g1, 8, %g2
+ 13:	stb	%g7, [%o0 + 1]
+ 14:	stb	%g2, [%o0 + 2]
++15:	stb	%g1, [%o0 + 3]
+ 	b	0f
+-15:	 stb	%g1, [%o0 + 3]
++	 nop
+ 2:	srl	%g1, 8, %g2
+ 16:	stb	%g2, [%o0]
+ 17:	stb	%g1, [%o0 + 1]
+@@ -99,8 +104,9 @@ do_int_load:
+ 	 or	%g1, %g2, %g1
+ 	sll	%g1, 16, %g1
+ 	sra	%g1, 16, %g1
+-3:	b	0f
+-	 st	%g1, [%o0]
++3:	st	%g1, [%o0]
++	b	0f
++	 nop
+ 6:	ldub	[%o2 + 1], %g2
+ 	sll	%g1, 24, %g1
+ 7:	ldub	[%o2 + 2], %g7
+@@ -110,8 +116,9 @@ do_int_load:
+ 	or	%g3, %g2, %g3
+ 	or	%g7, %g3, %g7
+ 	or	%g1, %g7, %g1
++	st	%g1, [%o0]
+ 	b	0f
+-	 st	%g1, [%o0]
++	 nop
+ 9:	ldub	[%o2], %g1
+ 10:	ldub	[%o2 + 1], %g2
+ 	sll	%g1, 24, %g1
+diff --git a/arch/sparc/kernel/wof.S b/arch/sparc/kernel/wof.S
+index 96a3a112423a..8538818424c0 100644
+--- a/arch/sparc/kernel/wof.S
++++ b/arch/sparc/kernel/wof.S
+@@ -124,6 +124,8 @@ spwin_no_userwins_from_kernel:
+ 	jmp	%t_pc			! Return from trap
+ 	rett	%t_npc			! we are done
+ 
++	B2B_SINGLE_NOP			! To not trigger delay slot warning
++
+ spwin_exist_uwins:
+ 	/* LOCATION: Trap window */
+ 
+@@ -341,7 +343,7 @@ SUN_PI_(lda	[%g0] ASI_M_MMUREGS, %glob_tmp)		! read MMU control
+ 	or	%glob_tmp, 0x2, %glob_tmp		! or in no_fault bit
+ LEON_PI(sta	%glob_tmp, [%g0] ASI_LEON_MMUREGS)	! set it
+ SUN_PI_(sta	%glob_tmp, [%g0] ASI_M_MMUREGS)		! set it
+-
++	B2B_DOUBLE_NOP
+ 	/* Dump the registers and cross fingers. */
+ 	STORE_WINDOW(sp)
+ 
+diff --git a/arch/sparc/lib/blockops.S b/arch/sparc/lib/blockops.S
+index 76ddd1ff6833..9f66d08ff8a3 100644
+--- a/arch/sparc/lib/blockops.S
++++ b/arch/sparc/lib/blockops.S
+@@ -8,19 +8,28 @@
+ #include <linux/linkage.h>
+ #include <asm/page.h>
+ #include <asm/export.h>
++#include <asm/asmmacro.h>
+ 
+ 	/* Zero out 64 bytes of memory at (buf + offset).
+ 	 * Assumes %g1 contains zero.
+ 	 */
+ #define BLAST_BLOCK(buf, offset) \
+ 	std	%g0, [buf + offset + 0x38]; \
++	B2B_SINGLE_NOP                      \
+ 	std	%g0, [buf + offset + 0x30]; \
++	B2B_SINGLE_NOP                      \
+ 	std	%g0, [buf + offset + 0x28]; \
++	B2B_SINGLE_NOP                      \
+ 	std	%g0, [buf + offset + 0x20]; \
++	B2B_SINGLE_NOP                      \
+ 	std	%g0, [buf + offset + 0x18]; \
++	B2B_SINGLE_NOP                      \
+ 	std	%g0, [buf + offset + 0x10]; \
++	B2B_SINGLE_NOP                      \
+ 	std	%g0, [buf + offset + 0x08]; \
+-	std	%g0, [buf + offset + 0x00];
++	B2B_SINGLE_NOP                      \
++	std	%g0, [buf + offset + 0x00]; \
++	B2B_SINGLE_NOP
+ 
+ 	/* Copy 32 bytes of memory at (src + offset) to
+ 	 * (dst + offset).
+@@ -31,9 +40,13 @@
+ 	ldd	[src + offset + 0x08], t4; \
+ 	ldd	[src + offset + 0x00], t6; \
+ 	std	t0, [dst + offset + 0x18]; \
++	B2B_SINGLE_NOP                     \
+ 	std	t2, [dst + offset + 0x10]; \
++	B2B_SINGLE_NOP                     \
+ 	std	t4, [dst + offset + 0x08]; \
+-	std	t6, [dst + offset + 0x00];
++	B2B_SINGLE_NOP                     \
++	std	t6, [dst + offset + 0x00]; \
++	B2B_SINGLE_NOP
+ 
+ 	/* Profiling evidence indicates that memset() is
+ 	 * commonly called for blocks of size PAGE_SIZE,
+diff --git a/arch/sparc/lib/checksum_32.S b/arch/sparc/lib/checksum_32.S
+index 7488d130faf7..1f5b2daf2d51 100644
+--- a/arch/sparc/lib/checksum_32.S
++++ b/arch/sparc/lib/checksum_32.S
+@@ -190,39 +190,47 @@ cpout:	retl						! get outta here
+ 	 * because of this we thus do all the ldd's together to get
+ 	 * Viking MXCC into streaming mode.  Ho hum...
+ 	 */
++	/* B2B-FIX-NOTE: The fixup section is affected only by number of
++	 * instructions and where the load instructions are located in this
++	 * macro. Neither of those factors have been changed.
++	 */
+ #define CSUMCOPY_BIGCHUNK(src, dst, sum, off, t0, t1, t2, t3, t4, t5, t6, t7)	\
+ 	ldd	[src + off + 0x00], t0;						\
+ 	ldd	[src + off + 0x08], t2;						\
+ 	ldd	[src + off + 0x10], t4;						\
+ 	ldd	[src + off + 0x18], t6;						\
+ 	st	t0, [dst + off + 0x00];						\
+-	addxcc	t0, sum, sum;							\
+ 	st	t1, [dst + off + 0x04];						\
++	addxcc	t0, sum, sum;							\
+ 	addxcc	t1, sum, sum;							\
+ 	st	t2, [dst + off + 0x08];						\
+-	addxcc	t2, sum, sum;							\
+ 	st	t3, [dst + off + 0x0c];						\
++	addxcc	t2, sum, sum;							\
+ 	addxcc	t3, sum, sum;							\
+ 	st	t4, [dst + off + 0x10];						\
+-	addxcc	t4, sum, sum;							\
+ 	st	t5, [dst + off + 0x14];						\
++	addxcc	t4, sum, sum;							\
+ 	addxcc	t5, sum, sum;							\
+ 	st	t6, [dst + off + 0x18];						\
+-	addxcc	t6, sum, sum;							\
+ 	st	t7, [dst + off + 0x1c];						\
++	addxcc	t6, sum, sum;							\
+ 	addxcc	t7, sum, sum;
+ 
+ 	/* Yuck, 6 superscalar cycles... */
++	/* B2B-FIX-NOTE: The fixup section is affected only by number of
++	 * instructions and where the load instructions are located in this
++	 * macro. Neither of those factors have been changed.
++	 */
+ #define CSUMCOPY_LASTCHUNK(src, dst, sum, off, t0, t1, t2, t3)	\
+ 	ldd	[src - off - 0x08], t0;				\
+ 	ldd	[src - off - 0x00], t2;				\
+ 	addxcc	t0, sum, sum;					\
+-	st	t0, [dst - off - 0x08];				\
+ 	addxcc	t1, sum, sum;					\
++	st	t0, [dst - off - 0x08];				\
+ 	st	t1, [dst - off - 0x04];				\
+ 	addxcc	t2, sum, sum;					\
+-	st	t2, [dst - off - 0x00];				\
+ 	addxcc	t3, sum, sum;					\
++	st	t2, [dst - off - 0x00];				\
+ 	st	t3, [dst - off + 0x04];
+ 
+ 	/* Handle the end cruft code out of band for better cache patterns. */
+@@ -399,8 +407,8 @@ ccslow:	cmp	%g1, 0
+ 	sub	%g1, 2, %g1	
+ 	srl	%o4, 8, %g2
+ 	sub	%g4, 1, %g4	
+-	EX(stb	%g2, [%o1])
+ 	add	%o4, %g5, %g5
++	EX(stb	%g2, [%o1])
+ 	EX(stb	%o4, [%o1 + 1])
+ 	add	%o0, 2, %o0	
+ 	srl	%g4, 1, %g4
+@@ -413,10 +421,10 @@ ccslow:	cmp	%g1, 0
+ 	srl	%o4, 16, %g3
+ 	EX(stb	%g2, [%o1])
+ 	srl	%o4, 8, %g2
+-	EX(stb	%g3, [%o1 + 1])
+ 	add	%o0, 4, %o0
+-	EX(stb	%g2, [%o1 + 2])
+ 	addcc	%o4, %g5, %g5
++	EX(stb	%g3, [%o1 + 1])
++	EX(stb	%g2, [%o1 + 2])
+ 	EX(stb	%o4, [%o1 + 3])
+ 	addx	%g5, %g0, %g5	! I am now to lazy to optimize this (question it
+ 	add	%o1, 4, %o1	! is worthy). Maybe some day - with the sll/srl
+@@ -435,8 +443,8 @@ ccslow:	cmp	%g1, 0
+ 	srl	%o4, 8, %g2
+ 	add	%o0, 2, %o0	
+ 	EX(stb	%g2, [%o1])
+-	add	%g5, %o4, %g5
+ 	EX(stb	%o4, [%o1 + 1])
++	add	%g5, %o4, %g5
+ 	add	%o1, 2, %o1
+ 3:	be,a	1f		
+ 	 sll	%g5, 16, %o4
+diff --git a/arch/sparc/lib/copy_user.S b/arch/sparc/lib/copy_user.S
+index dc72f2b970b7..b7cd5165497d 100644
+--- a/arch/sparc/lib/copy_user.S
++++ b/arch/sparc/lib/copy_user.S
+@@ -17,6 +17,7 @@
+ #include <asm/page.h>
+ #include <asm/thread_info.h>
+ #include <asm/export.h>
++#include <asm/asmmacro.h>
+ 
+ /* Work around cpp -rob */
+ #define ALLOC #alloc
+@@ -82,12 +83,12 @@
+ 
+ #define MOVE_BIGALIGNCHUNK(src, dst, offset, t0, t1, t2, t3, t4, t5, t6, t7) \
+ 	ldd	[%src + (offset) + 0x00], %t0; \
+-	ldd	[%src + (offset) + 0x08], %t2; \
+-	ldd	[%src + (offset) + 0x10], %t4; \
+-	ldd	[%src + (offset) + 0x18], %t6; \
+ 	std	%t0, [%dst + (offset) + 0x00]; \
++	ldd	[%src + (offset) + 0x08], %t2; \
+ 	std	%t2, [%dst + (offset) + 0x08]; \
++	ldd	[%src + (offset) + 0x10], %t4; \
+ 	std	%t4, [%dst + (offset) + 0x10]; \
++	ldd	[%src + (offset) + 0x18], %t6; \
+ 	std	%t6, [%dst + (offset) + 0x18];
+ 
+ #define MOVE_LASTCHUNK(src, dst, offset, t0, t1, t2, t3) \
+diff --git a/arch/sparc/lib/locks.S b/arch/sparc/lib/locks.S
+index 9a1289a3fb28..066717755d67 100644
+--- a/arch/sparc/lib/locks.S
++++ b/arch/sparc/lib/locks.S
+@@ -92,7 +92,16 @@ ___rw_write_enter:
+ 	bne	___rw_write_enter_spin_on_wlock
+ 	 ld	[%g1], %g2
+ 	andncc	%g2, 0xff, %g0
++#ifdef __FIX_LEON3FT_B2BST
++	be 1f
++	 nop
++	stb	%g0, [%g1 + 3]
++	b ___rw_write_enter_spin_on_wlock
++	 nop
++1:
++#else
+ 	bne,a	___rw_write_enter_spin_on_wlock
+ 	 stb	%g0, [%g1 + 3]
++#endif
+ 	retl
+ 	 mov	%g4, %o7
+diff --git a/arch/sparc/lib/memcpy.S b/arch/sparc/lib/memcpy.S
+index ee823d8c9215..dac6d6f0fe3c 100644
+--- a/arch/sparc/lib/memcpy.S
++++ b/arch/sparc/lib/memcpy.S
+@@ -32,12 +32,12 @@ x:
+ 
+ #define MOVE_BIGALIGNCHUNK(src, dst, offset, t0, t1, t2, t3, t4, t5, t6, t7) \
+ 	ldd	[%src + (offset) + 0x00], %t0; \
+-	ldd	[%src + (offset) + 0x08], %t2; \
+-	ldd	[%src + (offset) + 0x10], %t4; \
+-	ldd	[%src + (offset) + 0x18], %t6; \
+ 	std	%t0, [%dst + (offset) + 0x00]; \
++	ldd	[%src + (offset) + 0x08], %t2; \
+ 	std	%t2, [%dst + (offset) + 0x08]; \
++	ldd	[%src + (offset) + 0x10], %t4; \
+ 	std	%t4, [%dst + (offset) + 0x10]; \
++	ldd	[%src + (offset) + 0x18], %t6; \
+ 	std	%t6, [%dst + (offset) + 0x18];
+ 
+ #define MOVE_LASTCHUNK(src, dst, offset, t0, t1, t2, t3) \
+@@ -50,8 +50,8 @@ x:
+ 
+ #define MOVE_LASTALIGNCHUNK(src, dst, offset, t0, t1, t2, t3) \
+ 	ldd	[%src - (offset) - 0x10], %t0; \
+-	ldd	[%src - (offset) - 0x08], %t2; \
+ 	std	%t0, [%dst - (offset) - 0x10]; \
++	ldd	[%src - (offset) - 0x08], %t2; \
+ 	std	%t2, [%dst - (offset) - 0x08];
+ 
+ #define MOVE_SHORTCHUNK(src, dst, offset, t0, t1) \
+@@ -192,8 +192,8 @@ EXPORT_SYMBOL(memcpy)
+ 
+ 	ldd		[%o1], %g2
+ 	add		%o0, 8, %o0
+-	st		%g2, [%o0 - 0x08]
+ 	add		%o1, 8, %o1
++	st		%g2, [%o0 - 0x08]
+ 	st		%g3, [%o0 - 0x04]
+ 
+ 81:	/* memcpy_last7 */
+diff --git a/arch/sparc/lib/memset.S b/arch/sparc/lib/memset.S
+index f427f34b8b79..77ea205b8d66 100644
+--- a/arch/sparc/lib/memset.S
++++ b/arch/sparc/lib/memset.S
+@@ -11,6 +11,7 @@
+ 
+ #include <asm/ptrace.h>
+ #include <asm/export.h>
++#include <asm/asmmacro.h>
+ 
+ /* Work around cpp -rob */
+ #define ALLOC #alloc
+@@ -39,23 +40,39 @@
+  * Store 64 bytes at (BASE + OFFSET) using value SOURCE. */
+ #define ZERO_BIG_BLOCK(base, offset, source)    \
+ 	std	source, [base + offset + 0x00]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base + offset + 0x08]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base + offset + 0x10]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base + offset + 0x18]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base + offset + 0x20]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base + offset + 0x28]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base + offset + 0x30]; \
+-	std	source, [base + offset + 0x38];
++	B2B_SINGLE_NOP				\
++	std	source, [base + offset + 0x38]; \
++	B2B_SINGLE_NOP
+ 
+ #define ZERO_LAST_BLOCKS(base, offset, source)	\
+ 	std	source, [base - offset - 0x38]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base - offset - 0x30]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base - offset - 0x28]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base - offset - 0x20]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base - offset - 0x18]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base - offset - 0x10]; \
++	B2B_SINGLE_NOP				\
+ 	std	source, [base - offset - 0x08]; \
+-	std	source, [base - offset - 0x00];
++	B2B_SINGLE_NOP				\
++	std	source, [base - offset - 0x00]; \
++	B2B_SINGLE_NOP
+ 
+ 	.text
+ 	.align 4
+@@ -82,12 +99,14 @@ memset:
+ 	 mov	%o2, %o1
+ 3:
+ 	cmp	%o2, 3
++	EX(stb	%g3, [%o0], sub %o1, 0)
+ 	be	2f
+-	 EX(stb	%g3, [%o0], sub %o1, 0)
++	 nop
+ 
+ 	cmp	%o2, 2
++	EX(stb	%g3, [%o0 + 0x01], sub %o1, 1)
+ 	be	2f
+-	 EX(stb	%g3, [%o0 + 0x01], sub %o1, 1)
++	 nop
+ 
+ 	EX(stb	%g3, [%o0 + 0x02], sub %o1, 2)
+ 2:
+@@ -132,7 +151,11 @@ __bzero:
+ 	be	13f
+ 	 andcc	%o1, 7, %o1
+ 
+-	srl	%o2, 1, %o3
++#ifdef __FIX_LEON3FT_B2BST
++	mov	%o2, %o3	/* 8 bytes of std+nop sets 8 bytes of memory */
++#else
++	srl	%o2, 1, %o3	/* 4 bytes of std sets 8 bytes of memory */
++#endif
+ 	set	13f, %o4
+ 	sub	%o4, %o3, %o4
+ 	jmp	%o4
+@@ -158,8 +181,9 @@ __bzero:
+ 	EX(sth	%g3, [%o0], and %o1, 3)
+ 	add	%o0, 2, %o0
+ 1:
+-	bne,a	8f
+-	 EX(stb	%g3, [%o0], and %o1, 1)
++	be	8f
++	 nop
++	EX(stb	%g3, [%o0], and %o1, 1)
+ 8:
+ 	b	0f
+ 	 nop
+@@ -171,8 +195,9 @@ __bzero:
+ 8:
+ 	 add	%o0, 1, %o0
+ 	subcc	%o1, 1, %o1
++	EX(stb	%g3, [%o0 - 1], add %o1, 1)
+ 	bne	8b
+-	 EX(stb	%g3, [%o0 - 1], add %o1, 1)
++	 nop
+ 0:
+ 	andcc	%g4, 1, %g0
+ 	be	5f
+@@ -180,23 +205,56 @@ __bzero:
+ 	retl
+ 	 mov	%g1, %o0
+ 5:
++	clr	%o0
+ 	retl
+-	 clr	%o0
++	 nop
+ __memset_end:
+ 
+ 	.section .fixup,#alloc,#execinstr
+ 	.align	4
+ 20:
++	/*
++	 * We got a fault in the 10: to 11: address range.
++	 *
++	 * At this point:
++	 * - %g2 now contains the index (within the range) of the instruction that
++	 *   got the fault.
++	 * - %o1 contains the number of bytes that were left to set/zero before
++	 *   entering the loop the first time.
++	 * - %l3 contains the number of bytes left for the loop to set/zero
++	 *   (but adjusted in the middle of the loop)
++	 *
++	 */
++#ifdef __FIX_LEON3FT_B2BST
++	cmp	%g2, 16		/* Double number of instructions per half */
++#else
+ 	cmp	%g2, 8
++#endif
+ 	bleu	1f
+ 	 and	%o1, 0x7f, %o1
+-	sub	%g2, 9, %g2
+-	add	%o3, 64, %o3
++	/* We were in second half of the 10: to 11: block */
++#ifdef __FIX_LEON3FT_B2BST
++	sub	%g2, 17, %g2	/* Adjust index: 8 std + nop pairs + one subcc */
++#else
++	sub	%g2, 9, %g2	/* Adjust index to start of ZERO_BIG_BLOCK */
++#endif
++	add	%o3, 64, %o3	/* Adjust bytes left in turn of the loop */
++				/* (due to the subcc being in the middle ) */
+ 1:
+-	sll	%g2, 3, %g2
+-	add	%o3, %o1, %o0
++	/*
++	 * Convert index of faulting instruction within ZERO_BIG_BLOCK to
++	 * number of bytes written
++	 */
++#ifdef __FIX_LEON3FT_B2BST
++	sll	%g2, 2, %g2	/* 8 bytes is written per 2 instructions (std+nop) */
++#else
++	sll	%g2, 3, %g2	/* 8 bytes is written per std instruction */
++#endif
++	add	%o3, %o1, %o0   /* Bytes left before faulting ZERO_BIG_BLOCK */
+ 	b 30f
+-	 sub	%o0, %g2, %o0
++	 sub	%o0, %g2, %o0 	/* Subtract bytes written by the faulting */
++				/* ZERO_BIG_BLOCK => the number of bytes */
++				/* that were not set/zeroed. */
+ 21:
+ 	mov	8, %o0
+ 	and	%o1, 7, %o1
+diff --git a/arch/sparc/mm/hypersparc.S b/arch/sparc/mm/hypersparc.S
+index 6c2521e85a42..513ea55441b7 100644
+--- a/arch/sparc/mm/hypersparc.S
++++ b/arch/sparc/mm/hypersparc.S
+@@ -13,6 +13,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/pgtsrmmu.h>
+ #include <linux/init.h>
++#include <asm/asmmacro.h>
+ 
+ 	.text
+ 	.align	4
+@@ -32,10 +33,12 @@ hypersparc_flush_cache_all:
+ 	ld	[%g1 + %lo(vac_line_size)], %g2
+ 1:	
+ 	subcc	%g5, %g2, %g5			! hyper_flush_unconditional_combined
++	sta	%g0, [%g5] ASI_M_FLUSH_CTX
+ 	bne	1b
+-	 sta	%g0, [%g5] ASI_M_FLUSH_CTX
++	 nop
++	sta	%g0, [%g0] ASI_M_FLUSH_IWHOLE	! hyper_flush_whole_icache
+ 	retl
+-	 sta	%g0, [%g0] ASI_M_FLUSH_IWHOLE	! hyper_flush_whole_icache
++	 nop
+ 
+ 	/* We expand the window flush to get maximum performance. */
+ hypersparc_flush_cache_mm:
+@@ -68,8 +71,9 @@ hypersparc_flush_cache_mm:
+ 	sta	%g0, [%o0 + %g3] ASI_M_FLUSH_USER
+ 	sta	%g0, [%o0 + %g4] ASI_M_FLUSH_USER
+ 	sta	%g0, [%o0 + %g5] ASI_M_FLUSH_USER
++	sta	%g0, [%o0 + %o4] ASI_M_FLUSH_USER
+ 	bne	1b
+-	 sta	%g0, [%o0 + %o4] ASI_M_FLUSH_USER
++	 nop
+ hypersparc_flush_cache_mm_out:
+ 	retl
+ 	 nop
+@@ -117,8 +121,9 @@ hypersparc_flush_cache_range:
+ 	sta	%g0, [%o3 + %g2] ASI_M_FLUSH_USER
+ 	sta	%g0, [%o3 + %g3] ASI_M_FLUSH_USER
+ 	sta	%g0, [%o3 + %g4] ASI_M_FLUSH_USER
++	sta	%g0, [%o3 + %g5] ASI_M_FLUSH_USER
+ 	bne	1b
+-	 sta	%g0, [%o3 + %g5] ASI_M_FLUSH_USER
++	 nop
+ 	retl
+ 	 nop
+ 
+@@ -145,9 +150,11 @@ hypersparc_flush_cache_range:
+ 	sta	%g0, [%o2 + %g2] ASI_M_FLUSH_PAGE
+ 	sta	%g0, [%o2 + %g3] ASI_M_FLUSH_PAGE
+ 	andcc	%o2, 0xffc, %g0
++	B2B_SINGLE_NOP
+ 	sta	%g0, [%o2 + %g4] ASI_M_FLUSH_PAGE
++	sta	%g0, [%o2 + %g5] ASI_M_FLUSH_PAGE
+ 	bne	2b
+-	 sta	%g0, [%o2 + %g5] ASI_M_FLUSH_PAGE
++	 nop
+ 3:
+ 	cmp	%o2, %o1
+ 	bne	1b
+@@ -202,9 +209,11 @@ hypersparc_flush_cache_page:
+ 	sta	%g0, [%o1 + %g2] ASI_M_FLUSH_PAGE
+ 	sta	%g0, [%o1 + %g3] ASI_M_FLUSH_PAGE
+ 	andcc	%o1, 0xffc, %g0
++	B2B_SINGLE_NOP
+ 	sta	%g0, [%o1 + %g4] ASI_M_FLUSH_PAGE
++	sta	%g0, [%o1 + %g5] ASI_M_FLUSH_PAGE
+ 	bne	1b
+-	 sta	%g0, [%o1 + %g5] ASI_M_FLUSH_PAGE
++	 nop
+ 2:
+ 	mov	SRMMU_FAULT_STATUS, %g7
+ 	mov	SRMMU_CTX_REG, %g4
+@@ -247,9 +256,11 @@ hypersparc_flush_page_to_ram:
+ 	sta	%g0, [%o0 + %g2] ASI_M_FLUSH_PAGE
+ 	sta	%g0, [%o0 + %g3] ASI_M_FLUSH_PAGE
+ 	andcc	%o0, 0xffc, %g0
++	B2B_SINGLE_NOP
+ 	sta	%g0, [%o0 + %g4] ASI_M_FLUSH_PAGE
++	sta	%g0, [%o0 + %g5] ASI_M_FLUSH_PAGE
+ 	bne	1b
+-	 sta	%g0, [%o0 + %g5] ASI_M_FLUSH_PAGE
++	 nop
+ 2:
+ 	mov	SRMMU_FAULT_STATUS, %g1
+ 	retl
+@@ -282,8 +293,9 @@ hypersparc_flush_tlb_mm:
+ 	sta	%o1, [%g1] ASI_M_MMUREGS
+ 	sta	%g0, [%g2] ASI_M_FLUSH_PROBE
+ hypersparc_flush_tlb_mm_out:
++	sta	%g5, [%g1] ASI_M_MMUREGS
+ 	retl
+-	 sta	%g5, [%g1] ASI_M_MMUREGS
++	 nop
+ 
+ hypersparc_flush_tlb_range:
+ 	ld	[%o0 + VMA_VM_MM], %o0
+@@ -298,15 +310,16 @@ hypersparc_flush_tlb_range:
+ 	sta	%o3, [%g1] ASI_M_MMUREGS
+ 	and	%o1, %o4, %o1
+ 	add	%o1, 0x200, %o1
+-	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
+ 1:
++	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
+ 	sub	%o1, %o4, %o1
+ 	cmp	%o1, %o2
+-	blu,a	1b
+-	 sta	%g0, [%o1] ASI_M_FLUSH_PROBE
++	blu	1b
++	 nop
+ hypersparc_flush_tlb_range_out:
++	sta	%g5, [%g1] ASI_M_MMUREGS
+ 	retl
+-	 sta	%g5, [%g1] ASI_M_MMUREGS
++	 nop
+ 
+ hypersparc_flush_tlb_page:
+ 	ld	[%o0 + VMA_VM_MM], %o0
+@@ -321,8 +334,9 @@ hypersparc_flush_tlb_page:
+ 	sta	%o3, [%g1] ASI_M_MMUREGS
+ 	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
+ hypersparc_flush_tlb_page_out:
++	sta	%g5, [%g1] ASI_M_MMUREGS
+ 	retl
+-	 sta	%g5, [%g1] ASI_M_MMUREGS
++	 nop
+ 
+ 	__INIT
+ 	
+@@ -340,12 +354,19 @@ hypersparc_bzero_1page:
+ 	mov	16, %o1
+ 1:
+ 	stda	%g0, [%o0 + %g0] ASI_M_BFILL
++	B2B_SINGLE_NOP
+ 	stda	%g0, [%o0 + %g2] ASI_M_BFILL
++	B2B_SINGLE_NOP
+ 	stda	%g0, [%o0 + %g3] ASI_M_BFILL
++	B2B_SINGLE_NOP
+ 	stda	%g0, [%o0 + %g4] ASI_M_BFILL
++	B2B_SINGLE_NOP
+ 	stda	%g0, [%o0 + %g5] ASI_M_BFILL
++	B2B_SINGLE_NOP
+ 	stda	%g0, [%o0 + %g7] ASI_M_BFILL
++	B2B_SINGLE_NOP
+ 	stda	%g0, [%o0 + %o2] ASI_M_BFILL
++	B2B_SINGLE_NOP
+ 	stda	%g0, [%o0 + %o3] ASI_M_BFILL
+ 	subcc	%o1, 1, %o1
+ 	bne	1b
+@@ -361,17 +382,24 @@ hypersparc_copy_1page:
+ 1:
+ 	sta	%o0, [%o0 + %o2] ASI_M_BCOPY
+ 	add	%o0, 32, %o0
++	B2B_SINGLE_NOP
+ 	sta	%o0, [%o0 + %o2] ASI_M_BCOPY
+ 	add	%o0, 32, %o0
++	B2B_SINGLE_NOP
+ 	sta	%o0, [%o0 + %o2] ASI_M_BCOPY
+ 	add	%o0, 32, %o0
++	B2B_SINGLE_NOP
+ 	sta	%o0, [%o0 + %o2] ASI_M_BCOPY
+ 	add	%o0, 32, %o0
++	B2B_SINGLE_NOP
+ 	sta	%o0, [%o0 + %o2] ASI_M_BCOPY
+ 	add	%o0, 32, %o0
++	B2B_SINGLE_NOP
+ 	sta	%o0, [%o0 + %o2] ASI_M_BCOPY
++	B2B_SINGLE_NOP
+ 	add	%o0, 32, %o0
+ 	sta	%o0, [%o0 + %o2] ASI_M_BCOPY
++	B2B_SINGLE_NOP
+ 	add	%o0, 32, %o0
+ 	sta	%o0, [%o0 + %o2] ASI_M_BCOPY
+ 	subcc	%g1, 1, %g1
+diff --git a/arch/sparc/mm/leon_mm.c b/arch/sparc/mm/leon_mm.c
+index f8ac99759ed3..c2e0b2905035 100644
+--- a/arch/sparc/mm/leon_mm.c
++++ b/arch/sparc/mm/leon_mm.c
+@@ -16,6 +16,7 @@
+ #include <asm/leon.h>
+ #include <asm/tlbflush.h>
+ #include <asm/pgtsrmmu.h>
++#include <asm/asmmacro.h>
+ 
+ #include "mm_32.h"
+ 
+@@ -188,7 +189,10 @@ void leon_flush_icache_all(void)
+ 
+ void leon_flush_dcache_all(void)
+ {
+-	__asm__ __volatile__("sta %%g0, [%%g0] %0\n\t" : :
++	__asm__ __volatile__(B2B_INLINE_DOUBLE_NOP
++			     "sta %%g0, [%%g0] %0\n\t"
++			     B2B_INLINE_DOUBLE_NOP
++			     : :
+ 			     "i"(ASI_LEON_DFLUSH) : "memory");
+ }
+ 
+@@ -201,15 +205,21 @@ void leon_flush_pcache_all(struct vm_area_struct *vma, unsigned long page)
+ 
+ void leon_flush_cache_all(void)
+ {
++	__asm__ __volatile__(B2B_INLINE_SINGLE_NOP);
+ 	__asm__ __volatile__(".align 32\nflush\n.align 32\n");	/*iflush*/
+ 	__asm__ __volatile__("sta %%g0, [%%g0] %0\n\t" : :
+ 			     "i"(ASI_LEON_DFLUSH) : "memory");
++	__asm__ __volatile__(B2B_INLINE_DOUBLE_NOP);
++
+ }
+ 
+ void leon_flush_tlb_all(void)
+ {
+ 	leon_flush_cache_all();
+-	__asm__ __volatile__("sta %%g0, [%0] %1\n\t" : : "r"(0x400),
++	__asm__ __volatile__(B2B_INLINE_DOUBLE_NOP
++			     "sta %%g0, [%0] %1\n\t"
++			     B2B_INLINE_DOUBLE_NOP
++			     : : "r"(0x400),
+ 			     "i"(ASI_LEON_MMUFLUSH) : "memory");
+ }
+ 
+diff --git a/arch/sparc/mm/srmmu.c b/arch/sparc/mm/srmmu.c
+index 4ab2e43e93a1..0d523aaf2c1c 100644
+--- a/arch/sparc/mm/srmmu.c
++++ b/arch/sparc/mm/srmmu.c
+@@ -26,6 +26,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
++#include <asm/asmmacro.h>
+ #include <asm/io-unit.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+@@ -129,7 +130,9 @@ static void msi_set_sync(void)
+ {
+ 	__asm__ __volatile__ ("lda [%0] %1, %%g3\n\t"
+ 			      "andn %%g3, %2, %%g3\n\t"
+-			      "sta %%g3, [%0] %1\n\t" : :
++			      "sta %%g3, [%0] %1\n\t"
++			      B2B_INLINE_DOUBLE_NOP
++			      : :
+ 			      "r" (MSI_MBUS_ARBEN),
+ 			      "i" (ASI_M_CTL), "r" (MSI_ASYNC_MODE) : "g3");
+ }
+diff --git a/arch/sparc/mm/swift.S b/arch/sparc/mm/swift.S
+index f414bfd8d899..303b86ff3864 100644
+--- a/arch/sparc/mm/swift.S
++++ b/arch/sparc/mm/swift.S
+@@ -10,6 +10,7 @@
+ #include <asm/page.h>
+ #include <asm/pgtsrmmu.h>
+ #include <asm/asm-offsets.h>
++#include <asm/asmmacro.h>
+ 
+ 	.text
+ 	.align	4
+@@ -32,8 +33,9 @@ swift_flush_page_to_ram:
+ 1:	subcc	%o0, 0x10, %o0
+ 	add	%o0, %o0, %o1
+ 	sta	%g0, [%o0] ASI_M_DATAC_TAG
++	sta	%g0, [%o1] ASI_M_TXTC_TAG
+ 	bne	1b
+-	 sta	%g0, [%o1] ASI_M_TXTC_TAG
++	 nop
+ 	retl
+ 	 nop
+ #else
+@@ -46,8 +48,9 @@ swift_flush_cache_all:
+ 	sethi	%hi(16 * 1024), %o0
+ 1:	subcc	%o0, 16, %o0
+ 	sta	%g0, [%o0] ASI_M_TXTC_TAG
++	sta	%g0, [%o0] ASI_M_DATAC_TAG
+ 	bne	1b
+-	 sta	%g0, [%o0] ASI_M_DATAC_TAG
++	 nop
+ 	retl
+ 	 nop
+ 
+diff --git a/arch/sparc/mm/tsunami.S b/arch/sparc/mm/tsunami.S
+index 62b742df65dc..fc0c18e74408 100644
+--- a/arch/sparc/mm/tsunami.S
++++ b/arch/sparc/mm/tsunami.S
+@@ -11,6 +11,7 @@
+ #include <asm/asi.h>
+ #include <asm/page.h>
+ #include <asm/pgtsrmmu.h>
++#include <asm/asmmacro.h>
+ 
+ 	.text
+ 	.align	4
+@@ -81,8 +82,9 @@ tsunami_flush_tlb_page:
+ 	nop
+ 	nop
+ tsunami_flush_tlb_page_out:
++	sta	%g5, [%g1] ASI_M_MMUREGS
+ 	retl
+-	 sta	%g5, [%g1] ASI_M_MMUREGS
++	 nop
+ 
+ #define MIRROR_BLOCK(dst, src, offset, t0, t1, t2, t3) \
+ 	ldd	[src + offset + 0x18], t0; \
+diff --git a/arch/sparc/mm/viking.S b/arch/sparc/mm/viking.S
+index 48f062de7a7f..de913516fdeb 100644
+--- a/arch/sparc/mm/viking.S
++++ b/arch/sparc/mm/viking.S
+@@ -16,6 +16,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/pgtsrmmu.h>
+ #include <asm/viking.h>
++#include <asm/asmmacro.h>
+ 
+ #ifdef CONFIG_SMP
+ 	.data
+@@ -99,8 +100,8 @@ viking_mxcc_flush_page:
+ 	sub	%g3, MXCC_STREAM_SIZE, %g3
+ 6:
+ 	stda	%g2, [%o2] ASI_M_MXCC
+-	stda	%g2, [%o3] ASI_M_MXCC
+ 	andncc	%g3, PAGE_MASK, %g0
++	stda	%g2, [%o3] ASI_M_MXCC
+ 	bne	6b
+ 	 sub	%g3, MXCC_STREAM_SIZE, %g3
+ 
+@@ -128,8 +129,9 @@ viking_flush_cache_out:
+ 
+ viking_flush_tlb_all:
+ 	mov	0x400, %g1
++	sta	%g0, [%g1] ASI_M_FLUSH_PROBE
+ 	retl
+-	 sta	%g0, [%g1] ASI_M_FLUSH_PROBE
++	 nop
+ 
+ viking_flush_tlb_mm:
+ 	mov	SRMMU_CTX_REG, %g1
+@@ -142,8 +144,9 @@ viking_flush_tlb_mm:
+ 	mov	0x300, %g2
+ 	sta	%o1, [%g1] ASI_M_MMUREGS
+ 	sta	%g0, [%g2] ASI_M_FLUSH_PROBE
++	sta	%g5, [%g1] ASI_M_MMUREGS
+ 	retl
+-	 sta	%g5, [%g1] ASI_M_MMUREGS
++	 nop
+ #ifndef CONFIG_SMP
+ 1:	retl
+ 	 nop
+@@ -162,13 +165,14 @@ viking_flush_tlb_range:
+ 	sta	%o3, [%g1] ASI_M_MMUREGS
+ 	and	%o1, %o4, %o1
+ 	add	%o1, 0x200, %o1
+-	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
+-1:	sub	%o1, %o4, %o1
++1:	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
++	sub	%o1, %o4, %o1
+ 	cmp	%o1, %o2
+-	blu,a	1b
+-	 sta	%g0, [%o1] ASI_M_FLUSH_PROBE
++	blu	1b
++	 nop
++	sta	%g5, [%g1] ASI_M_MMUREGS
+ 	retl
+-	 sta	%g5, [%g1] ASI_M_MMUREGS
++	 nop
+ #ifndef CONFIG_SMP
+ 2:	retl
+ 	 nop
+@@ -186,8 +190,9 @@ viking_flush_tlb_page:
+ 	and	%o1, PAGE_MASK, %o1
+ 	sta	%o3, [%g1] ASI_M_MMUREGS
+ 	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
++	sta	%g5, [%g1] ASI_M_MMUREGS
+ 	retl
+-	 sta	%g5, [%g1] ASI_M_MMUREGS
++	 nop
+ #ifndef CONFIG_SMP
+ 1:	retl
+ 	 nop
+@@ -209,8 +214,9 @@ sun4dsmp_flush_tlb_all:
+ 	bne	2f
+ 	 mov	0x400, %g1
+ 	sta	%g0, [%g1] ASI_M_FLUSH_PROBE
++	stb	%g0, [%g3 + %lo(sun4dsmp_flush_tlb_spin)]
+ 	retl
+-	 stb	%g0, [%g3 + %lo(sun4dsmp_flush_tlb_spin)]
++	 nop
+ 2:	tst	%g5
+ 	bne,a	2b
+ 	 ldub	[%g3 + %lo(sun4dsmp_flush_tlb_spin)], %g5
+@@ -228,8 +234,9 @@ sun4dsmp_flush_tlb_mm:
+ 	sta	%o1, [%g1] ASI_M_MMUREGS
+ 	sta	%g0, [%g2] ASI_M_FLUSH_PROBE
+ 	sta	%g5, [%g1] ASI_M_MMUREGS
++	stb	%g0, [%g3 + %lo(sun4dsmp_flush_tlb_spin)]
+ 	retl
+-	 stb	%g0, [%g3 + %lo(sun4dsmp_flush_tlb_spin)]
++	 nop
+ 2:	tst	%g5
+ 	bne,a	2b
+ 	 ldub	[%g3 + %lo(sun4dsmp_flush_tlb_spin)], %g5
+@@ -248,14 +255,15 @@ sun4dsmp_flush_tlb_range:
+ 	sta	%o3, [%g1] ASI_M_MMUREGS
+ 	and	%o1, %o4, %o1
+ 	add	%o1, 0x200, %o1
+-	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
+-2:	sub	%o1, %o4, %o1
++2:	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
++	sub	%o1, %o4, %o1
+ 	cmp	%o1, %o2
+-	blu,a	2b
+-	 sta	%g0, [%o1] ASI_M_FLUSH_PROBE
++	blu	2b
++	 nop
+ 	sta	%g5, [%g1] ASI_M_MMUREGS
++	stb	%g0, [%g3 + %lo(sun4dsmp_flush_tlb_spin)]
+ 	retl
+-	 stb	%g0, [%g3 + %lo(sun4dsmp_flush_tlb_spin)]
++	 nop
+ 3:	tst	%g5
+ 	bne,a	3b
+ 	 ldub	[%g3 + %lo(sun4dsmp_flush_tlb_spin)], %g5
+@@ -274,8 +282,9 @@ sun4dsmp_flush_tlb_page:
+ 	sta	%o3, [%g1] ASI_M_MMUREGS
+ 	sta	%g0, [%o1] ASI_M_FLUSH_PROBE
+ 	sta	%g5, [%g1] ASI_M_MMUREGS
++	stb	%g0, [%g3 + %lo(sun4dsmp_flush_tlb_spin)]
+ 	retl
+-	 stb	%g0, [%g3 + %lo(sun4dsmp_flush_tlb_spin)]
++	 nop
+ 2:	tst	%g5
+ 	bne,a	2b
+ 	 ldub	[%g3 + %lo(sun4dsmp_flush_tlb_spin)], %g5
+-- 
+2.34.1
+

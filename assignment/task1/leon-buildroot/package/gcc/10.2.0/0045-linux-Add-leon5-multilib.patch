@@ -1,0 +1,35 @@
+From d993cbf7d28bc6519480a8ab497d449acc38b79a Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Tue, 3 Jan 2023 11:47:29 +0100
+Subject: [PATCH 45/50] linux: Add leon5 multilib
+
+---
+ gcc/config/sparc/t-linux-multilib | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/gcc/config/sparc/t-linux-multilib b/gcc/config/sparc/t-linux-multilib
+index a4fc3e26f4c..bd957d3341c 100644
+--- a/gcc/config/sparc/t-linux-multilib
++++ b/gcc/config/sparc/t-linux-multilib
+@@ -1,10 +1,14 @@
+ 
+ # leon3 is implicitly default with Gaisler patches
+ 
+-MULTILIB_OPTIONS = mfix-ut700
+-MULTILIB_DIRNAMES = mfix-ut700
++MULTILIB_OPTIONS = mcpu=leon5 mfix-ut700
++MULTILIB_DIRNAMES = leon5 mfix-ut700
+ MULTILIB_MATCHES =
+ 
+ MULTILIB_REQUIRED =
+-MULTILIB_REQUIRED += mfix-ut700
+-MULTILIB_OSDIRNAMES = mfix-ut700=!mfix-ut700
++MULTILIB_REQUIRED += mcpu=leon5 mfix-ut700
++
++# The . in mcpu.leon5 is there to match the = of mcpu=leon5 in MULTILIB_OPTIONS
++# without messing up the regexp that is built up from the different sides of the
++# = in mcpu.leon5=!leon5 (in genmultilib)
++MULTILIB_OSDIRNAMES = mcpu.leon5=!leon5 mfix-ut700=!mfix-ut700
+-- 
+2.34.1
+

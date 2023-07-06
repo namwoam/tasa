@@ -1,0 +1,34 @@
+From aa5a076de52f8eae1ad76465c57f0168ebaa43a1 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 20 Sep 2017 11:13:51 +0200
+Subject: [PATCH 03/32] sparc32,leon: Require CAS for SMP
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/Kconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 178496eff3de..2099e1886450 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -162,6 +162,7 @@ menu "Processor type and features"
+ 
+ config SMP
+ 	bool "Symmetric multi-processing support"
++	select SPARC_LEON_CAS if SPARC_LEON
+ 	help
+ 	  This enables support for systems with more than one CPU. If you have
+ 	  a system with only one CPU, say N. If you have a system with more
+@@ -182,6 +183,8 @@ config SMP
+ 
+ 	  If you don't know what to do here, say N.
+ 
++	  Enables usage of CAS on LEON systems.
++
+ config NR_CPUS
+ 	int "Maximum number of CPUs"
+ 	depends on SMP
+-- 
+2.34.1
+

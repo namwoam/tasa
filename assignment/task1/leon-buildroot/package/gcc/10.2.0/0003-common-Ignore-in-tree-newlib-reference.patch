@@ -1,0 +1,21 @@
+From 55632d2aeb34183a0e024af6c45de3565f62f28f Mon Sep 17 00:00:00 2001
+From: Daniel Cederman <cederman@gaisler.com>
+Date: Tue, 21 Feb 2017 10:13:53 +0100
+Subject: [PATCH 03/50] common: Ignore in-tree newlib reference
+
+---
+ .gitignore | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/.gitignore b/.gitignore
+index d9d3967a12c..ef87993ce67 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -57,3 +57,4 @@ REVISION
+ /mpc*
+ /gmp*
+ /isl*
++/newlib
+-- 
+2.34.1
+

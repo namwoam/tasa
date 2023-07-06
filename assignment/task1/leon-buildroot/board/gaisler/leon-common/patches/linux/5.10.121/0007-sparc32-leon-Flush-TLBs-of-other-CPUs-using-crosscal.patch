@@ -1,0 +1,43 @@
+From 197148cd1b26453c1153e94e771c889de1a29e0d Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Fri, 8 Sep 2017 15:19:56 +0200
+Subject: [PATCH 07/28] sparc32,leon: Flush TLBs of other CPUs using crosscall
+ on SMP
+
+LEON systems do not have hardware broadcast for TLB flushes (unlike Sun4d).
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/mm/leon_mm.c | 2 +-
+ arch/sparc/mm/srmmu.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/sparc/mm/leon_mm.c b/arch/sparc/mm/leon_mm.c
+index 1bb2266d0b80..d894a57a6ab3 100644
+--- a/arch/sparc/mm/leon_mm.c
++++ b/arch/sparc/mm/leon_mm.c
+@@ -271,7 +271,7 @@ int __init leon_flush_needed(void)
+ void leon_switch_mm(void)
+ {
+ 	srmmu_get_fstatus(); /* errata, must clear FSR.OW to trust next fault */
+-	flush_tlb_mm((void *)0);
++	leon_flush_tlb_all();
+ 	if (leon_flush_during_switch)
+ 		leon_flush_cache_all();
+ }
+diff --git a/arch/sparc/mm/srmmu.c b/arch/sparc/mm/srmmu.c
+index 0070f8b9a753..4ab2e43e93a1 100644
+--- a/arch/sparc/mm/srmmu.c
++++ b/arch/sparc/mm/srmmu.c
+@@ -1796,7 +1796,7 @@ void __init load_mmu(void)
+ 	/* El switcheroo... */
+ 	local_ops = sparc32_cachetlb_ops;
+ 
+-	if (sparc_cpu_model == sun4d || sparc_cpu_model == sparc_leon) {
++	if (sparc_cpu_model == sun4d) {
+ 		smp_cachetlb_ops.tlb_all = local_ops->tlb_all;
+ 		smp_cachetlb_ops.tlb_mm = local_ops->tlb_mm;
+ 		smp_cachetlb_ops.tlb_range = local_ops->tlb_range;
+-- 
+2.17.1
+

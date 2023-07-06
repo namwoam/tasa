@@ -1,0 +1,91 @@
+From b04fd686298fdb90d617a9bb07d3c8dd3d0962f8 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Thu, 5 Jan 2023 16:57:29 +0100
+Subject: [PATCH 28/32] sparc32,leon: Make what -mcpu to be used configurable,
+ defaulting to none
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/Kconfig  | 32 ++++++++++++++++++++++++++++++++
+ arch/sparc/Makefile | 13 +++++++++----
+ 2 files changed, 41 insertions(+), 4 deletions(-)
+
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index a9d618c6f6c1..8188cae9786f 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -395,6 +395,38 @@ config SPARC_LEON
+ 	  toolchain at www.gaisler.com.
+ 
+ if SPARC_LEON
++
++choice
++	prompt "LEON CPU architecture"
++	default SPARC_LEON_MCPU_DEFAULT
++	help
++	  This chooses if and what architecture shall be used if any
++	  to build the kernel.
++
++config SPARC_LEON_MCPU_DEFAULT
++	bool "default"
++	help
++	  Build the kernel with no -mcpu option, getting the default
++	  for the toolchain that is being used.
++
++config SPARC_LEON_MCPU_LEON3
++	bool "leon3"
++	help
++	  Build the kernel with -mcpu=leon3.
++
++config SPARC_LEON_MCPU_LEON5
++	bool "leon5"
++	help
++	  Build the kernel with -mcpu=leon5.
++
++endchoice
++
++config SPARC_LEON_MCPU
++	string
++	default ""		if SPARC_LEON_MCPU_DEFAULT
++	default "leon3"		if SPARC_LEON_MCPU_LEON3
++	default "leon5"		if SPARC_LEON_MCPU_LEON5
++
+ config SPARC_LEON_FIX_UT700
+ 	bool "UT700 errata fixes"
+ 	select SPARC_LEON_FIX_TN0018
+diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
+index aa9d12c54e4b..63894edc86c6 100644
+--- a/arch/sparc/Makefile
++++ b/arch/sparc/Makefile
+@@ -26,19 +26,24 @@ export BITS    := 32
+ UTS_MACHINE    := sparc
+ 
+ ifeq ($(CONFIG_SPARC_LEON),y)
+-SPARC_MCPU=leon3
++leon_mcpu := $(strip $(shell echo $(CONFIG_SPARC_LEON_MCPU)))
++ifeq ($(leon_mcpu),)
++SPARC_MCPU=
+ else
+-SPARC_MCPU=v8
++SPARC_MCPU=-mcpu=$(leon_mcpu)
++endif
++else
++SPARC_MCPU=-mcpu=v8
+ endif
+ 
+ # We are adding -Wa,-Av8 to KBUILD_CFLAGS to deal with a specs bug in some
+ # versions of gcc.  Some gcc versions won't pass -Av8 to binutils when you
+ # give -mcpu=v8.  This silently worked with older bintutils versions but
+ # does not any more.
+-KBUILD_CFLAGS  += -m32 -mcpu=$(SPARC_MCPU) -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7
++KBUILD_CFLAGS  += -m32 $(SPARC_MCPU) -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7
+ KBUILD_CFLAGS  += -Wa,-Av8
+ 
+-KBUILD_AFLAGS  += -m32 -mcpu=$(SPARC_MCPU) -Wa,-Av8
++KBUILD_AFLAGS  += -m32 $(SPARC_MCPU) -Wa,-Av8
+ 
+ ifeq ($(CONFIG_SPARC_LEON_FIX_UT700),y)
+ KBUILD_CFLAGS  += -mfix-ut700 -fno-jump-tables
+-- 
+2.34.1
+

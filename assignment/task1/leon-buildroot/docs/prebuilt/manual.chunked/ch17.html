@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 17. Adding support for a particular board</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt03.html" title="Part III. Developer guide" /><link rel="prev" href="ch16.html" title="Chapter 16. Coding style" /><link rel="next" href="ch18.html" title="Chapter 18. Adding new packages to Buildroot" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch16.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch18.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="adding-board-support"></a>Chapter 17. Adding support for a particular board</h2></div></div></div><p>Buildroot contains basic configurations for several publicly available
+hardware boards, so that users of such a board can easily build a system
+that is known to work. You are welcome to add support for other boards
+to Buildroot too.</p><p>To do so, you need to create a normal Buildroot configuration that
+builds a basic system for the hardware: (internal) toolchain, kernel,
+bootloader, filesystem and a simple BusyBox-only userspace. No specific
+package should be selected: the configuration should be as minimal as
+possible, and should only build a working basic BusyBox system for the
+target platform. You can of course use more complicated configurations
+for your internal projects, but the Buildroot project will only
+integrate basic board configurations. This is because package
+selections are highly application-specific.</p><p>Once you have a known working configuration, run <code class="literal">make
+savedefconfig</code>. This will generate a minimal <code class="literal">defconfig</code> file at the
+root of the Buildroot source tree. Move this file into the <code class="literal">configs/</code>
+directory, and rename it <code class="literal">&lt;boardname&gt;_defconfig</code>. If the configuration
+is a bit more complicated, it is nice to manually reformat it and
+separate it into sections, with a comment before each section. Typical
+sections are <span class="emphasis"><em>Architecture</em></span>, <span class="emphasis"><em>Toolchain options</em></span> (typically just linux
+headers version), <span class="emphasis"><em>Firmware</em></span>, <span class="emphasis"><em>Bootloader</em></span>, <span class="emphasis"><em>Kernel</em></span>, and <span class="emphasis"><em>Filesystem</em></span>.</p><p>Always use fixed versions or commit hashes for the different
+components, not the "latest" version. For example, set
+<code class="literal">BR2_LINUX_KERNEL_CUSTOM_VERSION=y</code> and
+<code class="literal">BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE</code> to the kernel version you tested
+with.</p><p>It is recommended to use as much as possible upstream versions of the
+Linux kernel and bootloaders, and to use as much as possible default
+kernel and bootloader configurations. If they are incorrect for your
+board, or no default exists, we encourage you to send fixes to the
+corresponding upstream projects.</p><p>However, in the mean time, you may want to store kernel or bootloader
+configuration or patches specific to your target platform. To do so,
+create a directory <code class="literal">board/&lt;manufacturer&gt;</code> and a subdirectory
+<code class="literal">board/&lt;manufacturer&gt;/&lt;boardname&gt;</code>. You can then store your patches
+and configurations in these directories, and reference them from the main
+Buildroot configuration. Refer to <a class="xref" href="ch09.html" title="Chapter 9. Project-specific customization">Chapter 9, <em>Project-specific customization</em></a> for more details.</p><p>Before submitting patches for new boards it is recommended to test it by
+building it using latest gitlab-CI docker container. To do this use
+utils/docker-run script and inside it issue these commands:</p><pre class="screen"> $ make +&lt;boardname&gt;_defconfig+
+ $ make</pre></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt03.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

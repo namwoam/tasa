@@ -1,0 +1,59 @@
+From 9efaeac80074fda18ae0d26dd4624d995ade9a77 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Mon, 16 Jan 2023 15:43:24 +0100
+Subject: [PATCH 50/50] common: Revert membar optimization that is not suitable
+ for LEON5
+
+LEON5 has a deeper write-buffer and hence stb is not enough to flush a
+write out.
+
+This reverts commit 49cc765db35a5a21cab2aece27a44983fa70b94b,
+"sync.md (*membar_storeload_leon3): New insn."
+as well as making sure that the ldstuba based membar is handled in
+the errata workaround for TN-0010.
+---
+ gcc/config/sparc/sparc.c |  1 +
+ gcc/config/sparc/sync.md | 12 ++----------
+ 2 files changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/gcc/config/sparc/sparc.c b/gcc/config/sparc/sparc.c
+index 537340539db..6c513d6d4b1 100644
+--- a/gcc/config/sparc/sparc.c
++++ b/gcc/config/sparc/sparc.c
+@@ -1068,6 +1068,7 @@ atomic_insn_for_leon3_p (rtx_insn *insn)
+ {
+   switch (INSN_CODE (insn))
+     {
++    case CODE_FOR_membar_storeload:
+     case CODE_FOR_swapsi:
+     case CODE_FOR_ldstub:
+     case CODE_FOR_atomic_compare_and_swap_leon3_1:
+diff --git a/gcc/config/sparc/sync.md b/gcc/config/sparc/sync.md
+index 506e90ba2ce..df3db44426d 100644
+--- a/gcc/config/sparc/sync.md
++++ b/gcc/config/sparc/sync.md
+@@ -64,19 +64,11 @@
+   "stbar"
+   [(set_attr "type" "multi")])
+ 
+-;; For LEON3, STB has the effect of membar #StoreLoad.
+-(define_insn "*membar_storeload_leon3"
+-  [(set (match_operand:BLK 0 "" "")
+-	(unspec:BLK [(match_dup 0) (const_int 2)] UNSPEC_MEMBAR))]
+-  "TARGET_LEON3"
+-  "stb\t%%g0, [%%sp-1]"
+-  [(set_attr "type" "store")])
+-
+ ;; For V8, LDSTUB has the effect of membar #StoreLoad.
+-(define_insn "*membar_storeload"
++(define_insn "membar_storeload"
+   [(set (match_operand:BLK 0 "" "")
+ 	(unspec:BLK [(match_dup 0) (const_int 2)] UNSPEC_MEMBAR))]
+-  "TARGET_V8 && !TARGET_LEON3"
++  "TARGET_V8"
+   "ldstub\t[%%sp-1], %%g0"
+   [(set_attr "type" "multi")])
+ 
+-- 
+2.34.1
+

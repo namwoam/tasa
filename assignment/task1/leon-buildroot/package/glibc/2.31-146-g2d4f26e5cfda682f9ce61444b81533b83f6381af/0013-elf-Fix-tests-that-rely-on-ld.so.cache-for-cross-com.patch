@@ -1,0 +1,117 @@
+From b0c7199e455cfa6d32551add110850cfd9d5bd06 Mon Sep 17 00:00:00 2001
+From: Adhemerval Zanella <adhemerval.zanella@linaro.org>
+Date: Fri, 29 Jan 2021 10:30:19 -0300
+Subject: [PATCH 13/14] elf: Fix tests that rely on ld.so.cache for
+ cross-compiling
+
+For configurations with cross-compiling equal to 'maybe' or 'no',
+ldconfig will not run and thus the ld.so.cache will not be created
+on the container testroot.pristine.
+
+This lead to failures on both tst-glibc-hwcaps-prepend-cache and
+tst-ldconfig-ld_so_conf-update on environments where the same
+compiler can be used to build different ABIs (powerpc and x86 for
+instance).
+
+This patch addas a new test-container hook, ldconfig.run, that
+triggers a ldconfig execution prior the test execution.
+
+Checked on x86_64-linux-gnu and i686-linux-gnu.
+
+(cherry-picked from commit a50a080f6b0f958eb30d7520212f25f946ed7f8f)
+---
+ .../ldconfig.run                              |  0
+ .../ldconfig.run                              |  0
+ support/test-container.c                      | 26 +++++++++++++++++++
+ 3 files changed, 26 insertions(+)
+ create mode 100644 elf/tst-glibc-hwcaps-prepend-cache.root/ldconfig.run
+ create mode 100644 elf/tst-ldconfig-ld_so_conf-update.root/ldconfig.run
+
+diff --git a/elf/tst-glibc-hwcaps-prepend-cache.root/ldconfig.run b/elf/tst-glibc-hwcaps-prepend-cache.root/ldconfig.run
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/elf/tst-ldconfig-ld_so_conf-update.root/ldconfig.run b/elf/tst-ldconfig-ld_so_conf-update.root/ldconfig.run
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/support/test-container.c b/support/test-container.c
+index 4c58254558..a34fb2542c 100644
+--- a/support/test-container.c
++++ b/support/test-container.c
+@@ -45,6 +45,7 @@
+ 
+ #include <support/support.h>
+ #include <support/xunistd.h>
++#include <support/capture_subprocess.h>
+ #include "check.h"
+ #include "test-driver.h"
+ 
+@@ -79,6 +80,7 @@ int verbose = 0;
+    * copy support files and test binary
+    * chroot/unshare
+    * set up any mounts (like /proc)
++   * run ldconfig
+ 
+    Magic files:
+ 
+@@ -107,6 +109,9 @@ int verbose = 0;
+    * mytest.root/postclean.req causes fresh rsync (with delete) after
+      test if present
+ 
++   * mytest.root/ldconfig.run causes ldconfig to be issued prior
++     test execution (to setup the initial ld.so.cache).
++
+    Note that $srcdir/foo/mytest.script may be used instead of a
+    $srcdir/foo/mytest.root/mytest.script in the sysroot template, if
+    there is no other reason for a sysroot.
+@@ -660,6 +665,16 @@ check_for_unshare_hints (void)
+     }
+ }
+ 
++static void
++run_ldconfig (void *x __attribute__((unused)))
++{
++  char *prog = xasprintf ("%s/ldconfig", support_install_rootsbindir);
++  char *args[] = { prog, NULL };
++
++  execv (args[0], args);
++  FAIL_EXIT1 ("execv: %m");
++}
++
+ int
+ main (int argc, char **argv)
+ {
+@@ -675,6 +690,7 @@ main (int argc, char **argv)
+   char *command_basename;
+   char *so_base;
+   int do_postclean = 0;
++  bool do_ldconfig = false;
+ 
+   int pipes[2];
+   char pid_buf[20];
+@@ -799,6 +815,9 @@ main (int argc, char **argv)
+   if (file_exists (concat (command_root, "/postclean.req", NULL)))
+     do_postclean = 1;
+ 
++  if (file_exists (concat (command_root, "/ldconfig.run", NULL)))
++    do_ldconfig = true;
++
+   rsync (pristine_root_path, new_root_path,
+ 	 file_exists (concat (command_root, "/preclean.req", NULL)));
+ 
+@@ -1042,6 +1061,13 @@ main (int argc, char **argv)
+   /* The rest is the child process, which is now PID 1 and "in" the
+      new root.  */
+ 
++  if (do_ldconfig)
++    {
++      struct support_capture_subprocess result =
++        support_capture_subprocess (run_ldconfig, NULL);
++      support_capture_subprocess_check (&result, "execv", 0, sc_allow_none);
++    }
++
+   /* Get our "outside" pid from our parent.  We use this to help with
+      debugging from outside the container.  */
+   read (pipes[0], &child, sizeof(child));
+-- 
+2.34.1
+

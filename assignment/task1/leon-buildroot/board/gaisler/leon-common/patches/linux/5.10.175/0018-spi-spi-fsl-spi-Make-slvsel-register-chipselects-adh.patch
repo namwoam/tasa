@@ -1,0 +1,34 @@
+From 09d229f9175b4b204aad3abda807034a87ff1e59 Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Wed, 23 Jun 2021 11:56:56 +0200
+Subject: [PATCH 18/32] spi: spi-fsl-spi: Make slvsel register chipselects
+ adhere to SPI_CS_HIGH again
+
+In the progress of letting gpiolib hande GPIO chipselects, this support
+was lost.
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ drivers/spi/spi-fsl-spi.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
+index bdf94cc7be1a..8e78a5cdbb8d 100644
+--- a/drivers/spi/spi-fsl-spi.c
++++ b/drivers/spi/spi-fsl-spi.c
+@@ -560,8 +560,11 @@ static void fsl_spi_grlib_cs_control(struct spi_device *spi, bool on)
+ 	if (spi->cs_gpiod) {
+ 		gpiod_set_value(spi->cs_gpiod, on);
+ 	} else if (cs < mpc8xxx_spi->native_chipselects) {
++		bool ahigh = spi->mode & SPI_CS_HIGH;
++		bool setbit = on ? ahigh : !ahigh;
++
+ 		slvsel = mpc8xxx_spi_read_reg(&reg_base->slvsel);
+-		slvsel = on ? (slvsel | (1 << cs)) : (slvsel & ~(1 << cs));
++		slvsel = setbit ? (slvsel | (1 << cs)) : (slvsel & ~(1 << cs));
+ 		mpc8xxx_spi_write_reg(&reg_base->slvsel, slvsel);
+ 	}
+ }
+-- 
+2.34.1
+

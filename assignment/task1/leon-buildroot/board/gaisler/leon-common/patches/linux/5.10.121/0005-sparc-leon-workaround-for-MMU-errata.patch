@@ -1,0 +1,65 @@
+From 80e791a11cd5de91e95d295b6118bf09213e6d51 Mon Sep 17 00:00:00 2001
+From: Daniel Hellstrom <daniel@gaisler.com>
+Date: Wed, 18 Feb 2015 11:49:02 +0100
+Subject: [PATCH 05/28] sparc,leon: workaround for MMU errata
+
+In some cases the FSR/FAR MMU registers are not updated according
+to the MMU data fault trap that occurs. This fix makes an extra
+check to determine if a data fault trap could have been caused by
+a instruction fault.
+
+This is typically triggered when the branch prediction unit is
+enabled and it predicts to jump to a page marked invalid.
+
+Signed-off-by: Daniel Hellstrom <daniel@gaisler.com>
+---
+ arch/sparc/kernel/entry.S | 11 +++++++++++
+ arch/sparc/mm/leon_mm.c   |  2 ++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/arch/sparc/kernel/entry.S b/arch/sparc/kernel/entry.S
+index d176493ea0b5..eaefd7b4961e 100644
+--- a/arch/sparc/kernel/entry.S
++++ b/arch/sparc/kernel/entry.S
+@@ -786,7 +786,18 @@ SUN_PI_(lda	[%l4] ASI_M_MMUREGS, %l5)	! read sfsr last
+ 	and	%l7, 0x80, %o2		! arg3 = writep from AT
+ 	bne	1f
+ 	 mov	%l1, %o3		! arg4 = faulting TEXT address (PC)
++
++#if CONFIG_SPARC_LEON
++	/* LEON errata where FSR must be read to determine text/data trap */
++	and	%l7, 0xc0, %o4
++	cmp	%o4, 0x40
++	bne	1f
++	 andn	%l7, 0xfff, %o3		! arg4 = faulting DATA address
++	mov	1, %o1			! Force text fault even if got DFAULT
++					! arg4 = Leave o3 to be DATA address
++#else
+ 	andn	%l7, 0xfff, %o3		! arg4 = faulting DATA address
++#endif
+ 1:
+ 	wr	%l0, PSR_ET, %psr
+ 	WRITE_PAUSE
+diff --git a/arch/sparc/mm/leon_mm.c b/arch/sparc/mm/leon_mm.c
+index ec61ff1f96b7..1bb2266d0b80 100644
+--- a/arch/sparc/mm/leon_mm.c
++++ b/arch/sparc/mm/leon_mm.c
+@@ -15,6 +15,7 @@
+ #include <asm/asi.h>
+ #include <asm/leon.h>
+ #include <asm/tlbflush.h>
++#include <asm/pgtsrmmu.h>
+ 
+ #include "mm_32.h"
+ 
+@@ -269,6 +270,7 @@ int __init leon_flush_needed(void)
+ 
+ void leon_switch_mm(void)
+ {
++	srmmu_get_fstatus(); /* errata, must clear FSR.OW to trust next fault */
+ 	flush_tlb_mm((void *)0);
+ 	if (leon_flush_during_switch)
+ 		leon_flush_cache_all();
+-- 
+2.17.1
+

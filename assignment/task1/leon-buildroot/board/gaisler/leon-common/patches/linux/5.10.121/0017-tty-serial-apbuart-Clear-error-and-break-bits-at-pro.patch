@@ -1,0 +1,30 @@
+From 39306de35dab07d598259432f1163c9ef1a9184f Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Tue, 22 Jun 2021 18:25:12 +0200
+Subject: [PATCH 17/28] tty/serial/apbuart: Clear error and break bits at probe
+ time
+
+Otherwise old bits laying around can trigger things like an old break
+bit triggering sysrq at first intput even though the break condition was
+ancient.
+---
+ drivers/tty/serial/apbuart.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/tty/serial/apbuart.c b/drivers/tty/serial/apbuart.c
+index a22c48e5d217..385d58c2cf04 100644
+--- a/drivers/tty/serial/apbuart.c
++++ b/drivers/tty/serial/apbuart.c
+@@ -564,6 +564,9 @@ static int apbuart_probe(struct platform_device *op)
+ 
+ 	apbuart_flush_fifo((struct uart_port *) port);
+ 
++	/* Clear any errors or breaks */
++	UART_PUT_STATUS(port, 0);
++
+ 	printk(KERN_INFO "grlib-apbuart at 0x%llx, irq %d\n",
+ 	       (unsigned long long) port->mapbase, port->irq);
+ 	return 0;
+-- 
+2.17.1
+

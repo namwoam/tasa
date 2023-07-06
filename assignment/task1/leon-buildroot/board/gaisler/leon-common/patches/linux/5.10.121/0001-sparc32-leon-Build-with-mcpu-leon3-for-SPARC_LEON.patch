@@ -1,0 +1,43 @@
+From 0b307e173c8b462759574ddb68ec83146dcac87c Mon Sep 17 00:00:00 2001
+From: Andreas Larsson <andreas@gaisler.com>
+Date: Thu, 22 Sep 2016 14:02:45 +0200
+Subject: [PATCH 01/28] sparc32,leon: Build with -mcpu=leon3 for SPARC_LEON
+
+Apart from using LEON3 instruction timing it allows for usage of the
+CASA instruction.
+
+Signed-off-by: Andreas Larsson <andreas@gaisler.com>
+---
+ arch/sparc/Makefile | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
+index 4a0919581697..65cd5c7dc160 100644
+--- a/arch/sparc/Makefile
++++ b/arch/sparc/Makefile
+@@ -25,14 +25,20 @@ KBUILD_LDFLAGS := -m elf32_sparc
+ export BITS    := 32
+ UTS_MACHINE    := sparc
+ 
++ifeq ($(CONFIG_SPARC_LEON),y)
++SPARC_MCPU=leon3
++else
++SPARC_MCPU=v8
++endif
++
+ # We are adding -Wa,-Av8 to KBUILD_CFLAGS to deal with a specs bug in some
+ # versions of gcc.  Some gcc versions won't pass -Av8 to binutils when you
+ # give -mcpu=v8.  This silently worked with older bintutils versions but
+ # does not any more.
+-KBUILD_CFLAGS  += -m32 -mcpu=v8 -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7
++KBUILD_CFLAGS  += -m32 -mcpu=$(SPARC_MCPU) -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7
+ KBUILD_CFLAGS  += -Wa,-Av8
+ 
+-KBUILD_AFLAGS  += -m32 -Wa,-Av8
++KBUILD_AFLAGS  += -m32 -mcpu=$(SPARC_MCPU) -Wa,-Av8
+ 
+ else
+ #####
+-- 
+2.17.1
+

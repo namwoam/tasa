@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 16. Coding style</title><link rel="stylesheet" type="text/css" href="docbook-xsl.css" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="home" href="index.html" title="The Buildroot user manual" /><link rel="up" href="pt03.html" title="Part III. Developer guide" /><link rel="prev" href="ch15.html" title="Chapter 15. How Buildroot works" /><link rel="next" href="ch17.html" title="Chapter 17. Adding support for a particular board" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch15.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch17.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="_coding_style"></a>Chapter 16. Coding style</h2></div></div></div><p>Overall, these coding style rules are here to help you to add new files in
+Buildroot or refactor existing ones.</p><p>If you slightly modify some existing file, the important thing is
+to keep the consistency of the whole file, so you can:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+either follow the potentially deprecated coding style used in this
+file,
+</li><li class="listitem">
+or entirely rework it in order to make it comply with these rules.
+</li></ul></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="writing-rules-config-in"></a>16.1. <code class="literal">Config.in</code> file</h2></div></div></div><p><code class="literal">Config.in</code> files contain entries for almost anything configurable in
+Buildroot.</p><p>An entry has the following pattern:</p><pre class="screen">config BR2_PACKAGE_LIBFOO
+        bool "libfoo"
+        depends on BR2_PACKAGE_LIBBAZ
+        select BR2_PACKAGE_LIBBAR
+        help
+          This is a comment that explains what libfoo is. The help text
+          should be wrapped.
+
+          http://foosoftware.org/libfoo/</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The <code class="literal">bool</code>, <code class="literal">depends on</code>, <code class="literal">select</code> and <code class="literal">help</code> lines are indented
+  with one tab.
+</li><li class="listitem">
+The help text itself should be indented with one tab and two
+  spaces.
+</li><li class="listitem">
+The help text should be wrapped to fit 72 columns, where tab counts
+  for 8, so 62 characters in the text itself.
+</li></ul></div><p>The <code class="literal">Config.in</code> files are the input for the configuration tool
+used in Buildroot, which is the regular <span class="emphasis"><em>Kconfig</em></span>. For further
+details about the <span class="emphasis"><em>Kconfig</em></span> language, refer to
+<a class="ulink" href="http://kernel.org/doc/Documentation/kbuild/kconfig-language.txt" target="_top">http://kernel.org/doc/Documentation/kbuild/kconfig-language.txt</a>.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="writing-rules-mk"></a>16.2. The <code class="literal">.mk</code> file</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Header: The file starts with a header. It contains the module name,
+preferably in lowercase, enclosed between separators made of 80 hashes. A
+blank line is mandatory after the header:
+</p><pre class="screen">################################################################################
+#
+# libfoo
+#
+################################################################################</pre></li><li class="listitem"><p class="simpara">
+Assignment: use <code class="literal">=</code> preceded and followed by one space:
+</p><pre class="screen">LIBFOO_VERSION = 1.0
+LIBFOO_CONF_OPTS += --without-python-support</pre><p class="simpara">Do not align the <code class="literal">=</code> signs.</p></li><li class="listitem"><p class="simpara">
+Indentation: use tab only:
+</p><pre class="screen">define LIBFOO_REMOVE_DOC
+        $(RM) -fr $(TARGET_DIR)/usr/share/libfoo/doc \
+                $(TARGET_DIR)/usr/share/man/man3/libfoo*
+endef</pre><p class="simpara">Note that commands inside a <code class="literal">define</code> block should always start with a tab,
+so <span class="emphasis"><em>make</em></span> recognizes them as commands.</p></li><li class="listitem"><p class="simpara">
+Optional dependency:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p class="simpara">
+Prefer multi-line syntax.
+</p><p class="simpara">YES:</p><pre class="screen">ifeq ($(BR2_PACKAGE_PYTHON3),y)
+LIBFOO_CONF_OPTS += --with-python-support
+LIBFOO_DEPENDENCIES += python3
+else
+LIBFOO_CONF_OPTS += --without-python-support
+endif</pre><p class="simpara">NO:</p><pre class="screen">LIBFOO_CONF_OPTS += --with$(if $(BR2_PACKAGE_PYTHON3),,out)-python-support
+LIBFOO_DEPENDENCIES += $(if $(BR2_PACKAGE_PYTHON3),python3,)</pre></li><li class="listitem">
+Keep configure options and dependencies close together.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Optional hooks: keep hook definition and assignment together in one
+  if block.
+</p><p class="simpara">YES:</p><pre class="screen">ifneq ($(BR2_LIBFOO_INSTALL_DATA),y)
+define LIBFOO_REMOVE_DATA
+        $(RM) -fr $(TARGET_DIR)/usr/share/libfoo/data
+endef
+LIBFOO_POST_INSTALL_TARGET_HOOKS += LIBFOO_REMOVE_DATA
+endif</pre><p class="simpara">NO:</p><pre class="screen">define LIBFOO_REMOVE_DATA
+        $(RM) -fr $(TARGET_DIR)/usr/share/libfoo/data
+endef
+
+ifneq ($(BR2_LIBFOO_INSTALL_DATA),y)
+LIBFOO_POST_INSTALL_TARGET_HOOKS += LIBFOO_REMOVE_DATA
+endif</pre></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="writing-genimage-cfg"></a>16.3. The <code class="literal">genimage.cfg</code> file</h2></div></div></div><p><code class="literal">genimage.cfg</code> files contain the output image layout that genimage utility
+uses to create final .img file.</p><p>An example follows:</p><pre class="screen">image efi-part.vfat {
+        vfat {
+                file EFI {
+                        image = "efi-part/EFI"
+                }
+
+                file Image {
+                        image = "Image"
+                }
+        }
+
+        size = 32M
+}
+
+image sdimage.img {
+        hdimage {
+        }
+
+        partition u-boot {
+                image = "efi-part.vfat"
+                offset = 8K
+        }
+
+        partition root {
+                image = "rootfs.ext2"
+                size = 512M
+        }
+}</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Every <code class="literal">section</code>(i.e. hdimage, vfat etc.), <code class="literal">partition</code> must be indented
+  with one tab.
+</li><li class="listitem">
+Every <code class="literal">file</code> or other <code class="literal">subnode</code> must be indented with two tabs.
+</li><li class="listitem">
+Every node(<code class="literal">section</code>, <code class="literal">partition</code>, <code class="literal">file</code>, <code class="literal">subnode</code>) must have an open
+  curly bracket on the same line of the node’s name, while the closing one
+  must be on a newline and after it a newline must be added except for the
+  last one node. Same goes for its option, for example option <code class="literal">size</code> <code class="literal">=</code>.
+</li><li class="listitem">
+Every <code class="literal">option</code>(i.e. <code class="literal">image</code>, <code class="literal">offset</code>, <code class="literal">size</code>) must have the <code class="literal">=</code>
+  assignment one space from it and one space from the value specified.
+</li><li class="listitem">
+Filename must at least begin with genimage prefix and have the .cfg
+  extension to be easy to recognize.
+</li><li class="listitem">
+Allowed notations for <code class="literal">offset</code> and <code class="literal">size</code> options are: <code class="literal">G</code>, <code class="literal">M</code>, <code class="literal">K</code>
+  (not <code class="literal">k</code>).  If it’s not possible to express a precise byte count
+  with notations above then use hexadecimal <code class="literal">0x</code> prefix or, as last
+  chance, the byte count.  In comments instead use <code class="literal">GB</code>, <code class="literal">MB</code>, <code class="literal">KB</code>
+  (not <code class="literal">kb</code>) in place of <code class="literal">G</code>, <code class="literal">M</code>, <code class="literal">K</code>.
+</li></ul></div><p>The <code class="literal">genimage.cfg</code> files are the input for the genimage tool used in
+Buildroot to generate the final image file(i.e. sdcard.img). For further
+details about the <span class="emphasis"><em>genimage</em></span> language, refer to
+<a class="ulink" href="https://github.com/pengutronix/genimage/blob/master/README.rst" target="_top">https://github.com/pengutronix/genimage/blob/master/README.rst</a>.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_the_documentation"></a>16.4. The documentation</h2></div></div></div><p>The documentation uses the
+<a class="ulink" href="https://asciidoc-py.github.io/" target="_top">asciidoc</a> format.</p><p>For further details about the asciidoc syntax, refer to
+<a class="ulink" href="https://asciidoc-py.github.io/userguide.html" target="_top">https://asciidoc-py.github.io/userguide.html</a>.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_support_scripts"></a>16.5. Support scripts</h2></div></div></div><p>Some scripts in the <code class="literal">support/</code> and <code class="literal">utils/</code> directories are written in
+Python and should follow the
+<a class="ulink" href="https://www.python.org/dev/peps/pep-0008/" target="_top">PEP8 Style Guide for Python Code</a>.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt03.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch17.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
