@@ -1,0 +1,345 @@
+
+---------------- 2.0.7 -----------------------------------------
+
+2006-01-03:	Added support for scratch pad RAM in TSIM-LEON3
+
+2006-01-02:	Added option to save log to file (-logfile)
+
+2006-12-28:	Added support for /dev/ptmx psuedo-terminals
+
+2006-12-22:	Added SDRAM emulation to LEON2/3 simulators
+
+2006-12-22:	Added support for FPU exceptions on x86_64 hosts
+
+2006-12-10:	Added MMU emulation to LEON2/3 versions
+
+2006-10-16:	Improve start-up time for floating licenses
+
+2006-10-15:	Seach for debug symbols in all elf sections
+
+---------------- 2.0.6 -----------------------------------------
+
+2006-10-09:	LEON2/3 ICC interlock modelling did not work
+		correctly with 64-bit time.
+
+2006-10-09:	Improved accuracy of leon2/3 timers
+
+2006-10-09:	Added -at697e switch to emulate AT697E configuration
+
+2006-10-07:	leon3 cache config register had wrong organization
+
+---------------- 2.0.5 -----------------------------------------
+
+2006-08-13:	Improved timing modelling of ICC interlock (LEON)
+
+2006-07-05:	Byte-write to PROM on ERC32 failed on little endian hosts
+
+2006-07-01:	LEON2/3 cache freeze operation did not work correctly
+
+2006-05-11:	Improve start-up time of HASP-HL keys
+
+2006-04-30:	Modify gdb interface to work with gdb Insight debugger
+
+2006-04-25:	Restore state did not clear memory
+
+---------------- 2.0.4 -----------------------------------------
+
+2006-02-11:	HASP-HL node-locked key could fail to check-out
+		license on certain platforms
+
+2006-01-18:	Interrupts could be lost after save/restore operation
+
+2006-01-04:	%psr.cwp was not correctly set by 'reg psr' command
+
+--------------- 2.0.3 -----------------------------------------
+
+2005-11-09:	ERC32 EDAC test mode could cause breakpoints to be lost
+
+2005-11-09:	elf relocation did not work with overlays
+
+2005-11-09:	-c option could crash simulator
+
+2005-11-07:	LEON3 -nwin option could fail on certain code
+
+2005-11-03:	HASP HL net license could be lost on exit
+
+---------------- 2.0.2 -----------------------------------------
+
+2005-10-23:	LEON2/3 UART transmitter did not work unless the receiver
+		also was enabled
+
+2005-10-20:	Hardcode %psr.ef to 0 when -nfp is used
+
+2005-10-10:	Wrong display of Leon3 cache config registers
+
+---------------- 2.0.1 -----------------------------------------
+
+2005-08-19:	Added EDAC support in TSIM/ERC32
+
+2005-07-19:	history crashed leon2/leon3 backend
+
+2005-06-02:	isets/dsets fields were swapped in cache control register
+
+---------------- 2.0.0 -----------------------------------------
+
+2005-05-25:	The coverage command was not fully parsed
+
+2005-05-11:	MEC timer control register returned wrong data on read
+
+2005-05-11:	Don't generate MEC parity error when UART debug bits
+		are written in timer control register (TSC695E)
+
+2005-04-27:	coverage could cause seg-fault if prom was disabled
+
+2005-03-31:	added single vector trapping for leon3
+
+2005-03-21:	watchpoint hit prints write address and data
+
+2005-03-20:	watchpoint was not always taken
+
+2005-03-20:	added leon3 port
+
+2004-12-06:     least significant bits were not masked when accessing
+                leon2 peripherals.
+
+2004-10-18:     disassembly of pseudo-instruction tst showed wrong 
+		register (always 'tst %g0')
+
+2004-10-11:	simif.sys_reset did not work during power-down
+
+2004-09-27:     wrong reserved bits in Test Control Register 
+                causing erroneous MEC register parity error(ERC32)
+
+2004-09-27:     'cov save' printed wrong address to file
+
+2004-08-19:	add tsim_ext_ins() callback for custom instructions
+
+2004-07-07:	init stack and registers when start PC not 0
+
+2004-06-24:	I/O direction reg not printed by 'leon' cmd (LEON)
+
+2004-06-22:	mem command did not display UART scaler register (LEON)
+
+2004-06-19:	tsim_get_regs() did not return CPSR (LEON)
+
+2004-06-08:	io_write failed at address 0x20000000 (LEON)
+
+2004-06-03:	added tsim_lastbp() to return watch/break address
+
+2004-05-27:	add code coverage for leon
+
+2004-04-14:	remove some ctype dependencies
+
+---------------- 1.3.0 -----------------------------------------
+
+2004-03-05:	srecord files with non-capital letters would not load 
+
+2004-02-28:	add code coverage support 
+
+2004-02-06:	could not set %r1 - %r9 through gdb interface
+
+2004-01-13:	add multi-processor synchronisation ('mp' command)
+
+2003-12-28:	allow -rom 0 option to emulate prom in I/O module
+
+2003-12-19:	bit 16 in memory config reg. was not writable (ERC32)
+
+---------------- 1.2.7 -----------------------------------------
+
+2003-11-30:	Increased event queue to 2048 events
+
+2003-11-27:	Improved accuracy of floating-point queue handling
+		and FPU IEEE exception generation
+
+2003-11-26:	FPU data dependecy failed for rare case (ERC32)
+
+
+---------------- 1.2.6 -----------------------------------------
+
+2003-11-14:	tsim_gdb() failed in TSIM/LIB if -port -1 was not used
+
+2003-10-29:	ioif.dma_read() and ioif.dma_write() accesses memory
+		on 64-bit basis (LEON)
+
+
+---------------- 1.2.5 -----------------------------------------
+
+2003-09-23:	Access to I/O area without I/O module did not always trap
+
+2003-09-22:	Work-around for gcc-2.9.x/glibc-3.2.x inconsistencies
+
+2003-09-10:	ELF sections outside program segments were not loaded
+
+2003-09-09:	'perf' command displays AHB bus utilisation (LEON)
+
+
+---------------- 1.2.4 ------------------------------------------
+
+2003-08-28:	Loading of elf files now supports relocation.
+
+
+---------------- 1.2.3 ------------------------------------------
+
+2003-08-27:	Always use paddr elf header as load address
+
+2003-08-08:	Added support for multiple HASP4 keys
+
+---------------- 1.2.2 ------------------------------------------
+
+2003-07-18:	Printing backtrace gdb through 'mon bt' crashed tsim
+
+2003-07-08:	Emulate ERC32 GPT/RTC reload register more accurate
+
+2003-07-01:	Soft breakpoints inserted by gdb would sometimes
+		not be flushed from cache (LEON)
+
+2003-06-29:	Ctrl-D would not exit simulator
+
+---------------- 1.2.1 ------------------------------------------
+
+2003-06-19:	Evaluation version of tsim-leon could freeze if
+		UART B was started before baud-rate was programmed.
+
+2003-06-16:	A user-defined FPU (fp.so) could sometimes fail to
+		execute instruction in fp-branch delay slot (LEON)
+
+2003-06-11:	Symbolic support for profiling, backtrace and breakpoints
+
+2003-06-11:	Non-intrusive profiling support
+
+2003-06-11:	Backtrace function
+
+---------------- 1.2 ------------------------------------------
+
+2003-06-10:	LDFSR failed when LEON fpu module (fp.so) was used
+
+2003-06-10:	ERC32 RTC could run too fast on certain occations
+
+2003-05-23:	HASP4 floating license support
+
+2003-05-23:	Removed use of SIGIO
+
+2003-05-13:	SDIVCC/UDIVCC instruction not emulated (LEON)
+
+2003-05-11:	dma_read/dma_write only wrote one word (LEON)
+
+2003-04-17:	Added 'flush' command (tsim-leon)
+
+2003-04-10:	Added AHB loadable module option
+
+2003-04-10:	Added -notimers to tsim-leon to switch off timers
+
+2003-04-07:	Some uart events were inserted even if -nouart was set
+
+2003-04-01:	Srecord files could not be loaded in upper
+		16 bytes of emulated memory
+
+2003-03-20:	Data watchpoint function added
+
+2003-03-15:	Wrong values in ERC32 sysfault register on
+		instruction access trap (tt = 0x01)
+
+2003-03-06:	Added stack/reg-windows alias detection to stop gdb
+		from occasionally overwriting the stack
+
+2003-03-05:	Correction of LEON FPU interface bug
+
+2003-02-20:	Need to save and restore context files in
+		binary mode in windows TSIM DLL.
+
+2003-02-19:	ERC32 uart control register read was not passed
+		to I/O module when -nouart was given.
+
+2003-02-19:	ERC32 I/O module can generated mec interrupt 4, 5 and 7
+		when -nouart is given (UART interrupts) by calling
+		ioif.set_irq() with interrupt 6, 7 and 9
+
+---------------- 1.1.6 -----------------------------------
+
+2003-01-22:	privileged_instruction trap has higher priority than
+		illegal_instruction in sparc V8 (TSIM/LEON)
+
+2003-01-22:	the I/O module could not be accessed by tsim_read()
+		and tsim_write() callbacks or gdb (TSIM/ERC32)
+
+2003-01-22:	propagate access to all unimplemented leon registers
+		to I/O module (TSIM/LEON)
+
+2003-01-20:	LDSHA did not sign extend result
+
+2003-01-20:	TADDccTV/TSUBccTV should not update result register
+                when trap is generated
+
+2003-01-20:	%psr.ps was always set to 1 on trap
+
+2003-01-20:	%tbr was not updated when error mode was entered
+
+2003-01-20:	removed memory leak in tsim_cmd()
+
+2003-01-16:	tsim_read() callback returned ERC32/MEC registers
+		with wrong endian on intel hosts.
+
+2003-01-16:	ERC32/MEC registers had wrong endianess when
+		accessed by gdb on solaris hosts
+
+2003-01-07:	Max cache size increased from 16 to 64 kbyte
+		(TSIM/LEON)
+
+---------------- 1.1.5 -----------------------------------
+
+2002-12-19:	gdb reakpoints were not removed in 1-set caches
+
+2002-12-19:	bit[28] misssing in MCFG1 (leon)
+
+2002-12-10:	CPOP1/2 instructions were not propagated to cp.so
+
+2002-12-09:	tsim_init() now returns 0 on failure
+
+2002-12-04:	Prom write enable in MCFG1 used wrong bit (LEON)
+
+---------------- 1.1.4 -----------------------------------
+
+2002-11-21:	Start-up options can now be read from file
+
+2002-11-21:	Added support for multi-set caches (leon2-1.0.8)
+
+2002-10-28:	ERC32 error manager did not generate reset properly
+
+2002-10-15:	Branch and call address wrong in disassembly
+
+2002-10-08:	Preserve power-down state during save/restore
+
+---------------- 1.1.3 -----------------------------------
+
+2002-09-16:	Improved ERC32 timer handling
+
+2002-09-02:	IFLUSH instruction should cause trap on TSC695e
+
+2002-08-28:	Improved modelling of power-down mode
+
+2002-08-21:	Added missing FSTOI disassembly instruction
+
+---------------- 1.1.2 -----------------------------------
+2002-08-11:	Added tsim_trap() callback
+
+2002-08-09:	Allow sub-word read from ERC32 MEC registers.
+
+2002-07-20:	Avoid false breakpoint when tracing over ta 1
+
+2002-07-19:	Added tsim_stop_event() callback
+
+2002-06-25:	Improved timing accuracy of pipeline effects and waitstates
+
+2002-04-30:	fixed endian problem on tsim_read/tsim_write
+
+2002-04-26:	Add IWEN bit to system config register (tsc695e only)
+
+2002-04-14:	fixed tsim_gdb interface for tsim/lib
+
+2002-03-26:	adjust SDIV overflow condition (LEON only)
+
+2002-03-08:	some write accesses to I/O module had size equal to 4
+		rather than 2.
+
+2002-03-08:	unimplmented access vectored to I/O module for address
+		range 0x80000100 - 0xa0000000 (leon)

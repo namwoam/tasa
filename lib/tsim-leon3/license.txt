@@ -1,0 +1,136 @@
+TSIM SPARC simulator
+Copyright (C) 2001 Gaisler Research
+All Rights Reserved
+
+*** TSIM STANDARD LICENSE ***
+
+This license applies to the personal, standard, and professional
+version of TSIM. If you have an evaluation version of TSIM, see 
+the section below titled TSIM Evaluation License.
+
+TSIM LICENSE
+Gaisler Research
+
+You should carefully read the following terms and conditions
+before using this software.  Unless you have a different license
+agreement signed GAISLER RESEARCH your use, distribution, or 
+installation of this copy of TSIM indicates your acceptance 
+of this License.
+
+If you do not agree to any of the terms of this License, then do
+not install, distribute or use this copy of TSIM.
+
+This copy of TSIM may either be used by a single person who
+uses the software personally on one or more computers, or
+installed on a single workstation used nonsimultaneously by
+multiple people, but not both.  This is not a concurrent use
+license.
+
+You may access this copy through a network, provided that you
+have obtained an individual TSIM license for each workstation
+that will access TSIM through the network.  For instance, if 8
+different workstations will access TSIM on the network, each
+workstation must have its own TSIM license, regardless of
+whether they use TSIM at different times or concurrently.
+
+THIS SOFTWARE, AND ALL ACCOMPANYING FILES, DATA AND MATERIALS,
+ARE DISTRIBUTED "AS IS" AND WITH NO WARRANTIES OF ANY KIND,
+WHETHER EXPRESS OR IMPLIED. Good data processing procedure dictates
+that any program be thoroughly tested with non-critical data
+before relying on it. The user must assume the entire risk of
+using the program.  THIS DISCLAIMER OF WARRANTY CONSTITUTES AN
+ESSENTIAL PART OF THE AGREEMENT.
+
+ANY LIABILITY OF GAISLER RESEARCH WILL BE LIMITED EXCLUSIVELY TO 
+REFUND OF PURCHASE PRICE.
+
+IN ADDITION, IN NO EVENT DOES GAISLER RESEARCH AUTHORIZE YOU TO
+USE TSIM IN APPLICATIONS OR SYSTEMS WHERE TSIM'S FAILURE TO PERFORM
+CAN REASONABLY BE EXPECTED TO RESULT IN A SIGNIFICANT PHYSICAL
+INJURY, OR IN LOSS OF LIFE.  ANY SUCH USE BY YOU IS ENTIRELY AT
+YOUR OWN RISK, AND YOU AGREE TO HOLD GAISLER RESEARCH HARMLESS FROM 
+ANY CLAIMS OR LOSSES RELATING TO SUCH UNAUTHORIZED USE.
+
+This Agreement is the complete statement of the Agreement between
+the parties on the subject matter, and merges and supersedes all
+other or prior understandings, purchase orders, agreements and
+arrangements.
+
+All rights of any kind in TSIM which are not expressly granted
+in this License are entirely and exclusively reserved to and by
+GAISLER RESEARCH. You may not rent, lease, modify, translate, 
+reverse engineer, decompile, disassemble or create derivative 
+works based on TSIM. You may not make access to TSIM available 
+to others in connection with a service bureau, application service
+provider, or similar business, or use TSIM in a business to
+provide SPARC simulation services to others.  There are no third 
+party beneficiaries of any promises, obligations or representations 
+made by GAISLER RESEARCH herein.
+
+*** TSIM EVALUATION LICENSE ***
+
+This license applies to the evaluation version of TSIM.  If you
+do not have an evaluation version of TSIM, see the section
+above titled TSIM Standard License.
+
+TSIM LICENSE
+EVALUATION VERSION
+GAISLER RESEARCH
+
+By using, copying, transmitting, distributing or installing
+TSIM, you agree to all of the terms of this License.  If you do
+not agree to any of the terms of this License, then do not use,
+copy, transmit, distribute, or install TSIM.
+
+This is not free software.  Subject to the terms below, you are
+hereby licensed by GAISLER RESEARCH to use this
+software for evaluation purposes without charge for a period of
+21 days. After the 21 day evaluation period, only personal and
+strictly non-commercial use is permitted. For all other use, a
+TSIM license must be purchased from GAISLER RESEARCH. See the GAISLER 
+RESEARCH web site at www.gaisler.com for information about ordering 
+and license types.
+
+Unlicensed commercial use of TSIM after the 21-day evaluation 
+period is in violation of Swedish and international copyright laws.
+
+YOU ARE SPECIFICALLY PROHIBITED FROM CHARGING, OR REQUESTING
+DONATIONS, FOR ANY COPIES, HOWEVER MADE, AND FROM DISTRIBUTING
+COPIES WITH OTHER PRODUCTS OF ANY KIND, COMMERCIAL OR OTHERWISE, 
+WITHOUT PRIOR WRITTEN PERMISSION FROM GAISLER RESEARCH.
+
+THIS SOFTWARE, AND ALL ACCOMPANYING FILES, DATA AND MATERIALS,
+ARE DISTRIBUTED "AS IS" AND WITH NO WARRANTIES OF ANY KIND,
+WHETHER EXPRESS OR IMPLIED. Good data processing procedure dictates
+that any program be thoroughly tested with non-critical data
+before relying on it. The user must assume the entire risk of
+using the program.  THIS DISCLAIMER OF WARRANTY CONSTITUTES AN
+ESSENTIAL PART OF THE AGREEMENT.  
+
+ANY LIABILITY OF GAISLER RESEARCH WILL BE LIMITED EXCLUSIVELY TO 
+REFUND OF PURCHASE PRICE.
+
+IN ADDITION, IN NO EVENT DOES GAISLER RESEARCH AUTHORIZE YOU TO
+USE TSIM IN APPLICATIONS OR SYSTEMS WHERE TSIM'S FAILURE TO PERFORM
+CAN REASONABLY BE EXPECTED TO RESULT IN A SIGNIFICANT PHYSICAL
+INJURY, OR IN LOSS OF LIFE.  ANY SUCH USE BY YOU IS ENTIRELY AT
+YOUR OWN RISK, AND YOU AGREE TO HOLD GAISLER RESEARCH HARMLESS FROM 
+ANY CLAIMS OR LOSSES RELATING TO SUCH UNAUTHORIZED USE.
+
+This Agreement is the complete statement of the Agreement between
+the parties on the subject matter, and merges and supersedes all
+other or prior understandings, purchase orders, agreements and
+arrangements.
+
+All rights of any kind in TSIM which are not expressly granted
+in this License are entirely and exclusively reserved to and by
+GAISLER RESEARCH. You may not rent, lease, modify, translate, 
+reverse engineer, decompile, disassemble or create derivative 
+works based on TSIM. You may not make access to TSIM available 
+to others in connection with a service bureau, application service
+provider, or similar business, or use TSIM in a business to
+provide SPARC simulation services to others.  There are no third 
+party beneficiaries of any promises, obligations or representations 
+made by GAISLER RESEARCH herein.
+
+###
