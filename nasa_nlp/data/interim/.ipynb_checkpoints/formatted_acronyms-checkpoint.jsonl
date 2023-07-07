@@ -1,0 +1,226 @@
+{"["acronym",""]":"NASA","["definition",""]":"","["corpus_positions",""]":[0,3,7,11,18,20,21,22,23,29,30,31,32,33,35,36,37,41,43,63,65,67,68,73,74,76,77,78,81,82,92,95,96],"["freq",""]":33,"["ac_freq",""]":35}
+{"["acronym",""]":"NASA","["definition",""]":"National Aeronautics and Space Administration","["corpus_positions",""]":[17,19],"["freq",""]":2,"["ac_freq",""]":35}
+{"["acronym",""]":"SCaN","["definition",""]":"","["corpus_positions",""]":[17,20,21],"["freq",""]":3,"["ac_freq",""]":5}
+{"["acronym",""]":"SCaN","["definition",""]":"Space Communication and Navigation","["corpus_positions",""]":[19,23],"["freq",""]":2,"["ac_freq",""]":5}
+{"["acronym",""]":"2D","["definition",""]":"","["corpus_positions",""]":[2,71,82],"["freq",""]":3,"["ac_freq",""]":3}
+{"["acronym",""]":"AIAA","["definition",""]":"","["corpus_positions",""]":[4,7,77],"["freq",""]":3,"["ac_freq",""]":3}
+{"["acronym",""]":"AVT-191","["definition",""]":"","["corpus_positions",""]":[67,85,88],"["freq",""]":3,"["ac_freq",""]":3}
+{"["acronym",""]":"CFD","["definition",""]":"","["corpus_positions",""]":[4,7,95],"["freq",""]":3,"["ac_freq",""]":3}
+{"["acronym",""]":"FUN3D","["definition",""]":"","["corpus_positions",""]":[64,70,87],"["freq",""]":3,"["ac_freq",""]":3}
+{"["acronym",""]":"ISS","["definition",""]":"International Space Station","["corpus_positions",""]":[16,23,29],"["freq",""]":3,"["ac_freq",""]":3}
+{"["acronym",""]":"MODIS","["definition",""]":"","["corpus_positions",""]":[40,43,44],"["freq",""]":3,"["ac_freq",""]":3}
+{"["acronym",""]":"NATO","["definition",""]":"","["corpus_positions",""]":[67,85,88],"["freq",""]":3,"["ac_freq",""]":3}
+{"["acronym",""]":"CCSDS","["definition",""]":"","["corpus_positions",""]":[17,20],"["freq",""]":2,"["ac_freq",""]":3}
+{"["acronym",""]":"CCSDS","["definition",""]":"Consultative Committee for Space Data Systems","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":3}
+{"["acronym",""]":"CGI","["definition",""]":"","["corpus_positions",""]":[83,84],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"CRM","["definition",""]":"Common Research Model","["corpus_positions",""]":[74,92],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"FGS","["definition",""]":"","["corpus_positions",""]":[83,84],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"GEOS","["definition",""]":"","["corpus_positions",""]":[38,43],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"GNC","["definition",""]":"","["corpus_positions",""]":[83,84],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"GRC","["definition",""]":"Glenn Research Center","["corpus_positions",""]":[23,29],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"HL","["definition",""]":"","["corpus_positions",""]":[74,92],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"PV","["definition",""]":"","["corpus_positions",""]":[29,77],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"RT","["definition",""]":"","["corpus_positions",""]":[77,97],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"SDRs","["definition",""]":"","["corpus_positions",""]":[20,23],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"US","["definition",""]":"","["corpus_positions",""]":[3,38],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"WFI","["definition",""]":"","["corpus_positions",""]":[83,84],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"WFIRST","["definition",""]":"Wide-Field Infrared Survey Telescope","["corpus_positions",""]":[83,84],"["freq",""]":2,"["ac_freq",""]":2}
+{"["acronym",""]":"HERMeS","["definition",""]":"","["corpus_positions",""]":[36],"["freq",""]":1,"["ac_freq",""]":2}
+{"["acronym",""]":"HERMeS","["definition",""]":"Hall Effect Rocket with Magnetic Shielding","["corpus_positions",""]":[33],"["freq",""]":1,"["ac_freq",""]":2}
+{"["acronym",""]":"SHM","["definition",""]":"","["corpus_positions",""]":[1],"["freq",""]":1,"["ac_freq",""]":2}
+{"["acronym",""]":"SHM","["definition",""]":"Structural Health Management","["corpus_positions",""]":[94],"["freq",""]":1,"["ac_freq",""]":2}
+{"["acronym",""]":"1-N","["definition",""]":"","["corpus_positions",""]":[30],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"1-U","["definition",""]":"","["corpus_positions",""]":[30],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"3-DOF","["definition",""]":"","["corpus_positions",""]":[73],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"3D","["definition",""]":"","["corpus_positions",""]":[75],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"3D\/3C","["definition",""]":"","["corpus_positions",""]":[82],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"3F+1","["definition",""]":"","["corpus_positions",""]":[6],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"4J","["definition",""]":"","["corpus_positions",""]":[29],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ABAQUS","["definition",""]":"","["corpus_positions",""]":[65],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ACM","["definition",""]":"","["corpus_positions",""]":[17],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AES","["definition",""]":"Advanced Exploration Systems","["corpus_positions",""]":[15],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AF","["definition",""]":"","["corpus_positions",""]":[30],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AFC","["definition",""]":"","["corpus_positions",""]":[92],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AFRC","["definition",""]":"Armstrong Flight Research Center","["corpus_positions",""]":[37],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AHPLS","["definition",""]":"","["corpus_positions",""]":[79],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AJAX","["definition",""]":"","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AM0","["definition",""]":"","["corpus_positions",""]":[29],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AMPS","["definition",""]":"AES) Modular Power System","["corpus_positions",""]":[15],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ANSYS","["definition",""]":"","["corpus_positions",""]":[24],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AOD","["definition",""]":"","["corpus_positions",""]":[43],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"APIs","["definition",""]":"","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"APSK","["definition",""]":"","["corpus_positions",""]":[19],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ARMD","["definition",""]":"Aeronautics Research Mission Directorate","["corpus_positions",""]":[3],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ARS","["definition",""]":"","["corpus_positions",""]":[10],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ASA","["definition",""]":"","["corpus_positions",""]":[79],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ASCAT","["definition",""]":"","["corpus_positions",""]":[12],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ASRP","["definition",""]":"Advanced Space Radio Platform","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ASTM","["definition",""]":"","["corpus_positions",""]":[27],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AUSM","["definition",""]":"","["corpus_positions",""]":[25],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"AUSM+-up","["definition",""]":"","["corpus_positions",""]":[25],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"BHT-200-I","["definition",""]":"","["corpus_positions",""]":[32],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"BHT-600-I","["definition",""]":"","["corpus_positions",""]":[32],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"BaO","["definition",""]":"","["corpus_positions",""]":[36],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CA","["definition",""]":"","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CA+C3A","["definition",""]":"","["corpus_positions",""]":[50],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CAEP\/6","["definition",""]":"","["corpus_positions",""]":[35],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CASNET","["definition",""]":"","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CCDs","["definition",""]":"","["corpus_positions",""]":[13],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CDL","["definition",""]":"Cropland Data Layer","["corpus_positions",""]":[40],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CGA","["definition",""]":"","["corpus_positions",""]":[53],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CIMEL","["definition",""]":"","["corpus_positions",""]":[98],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CO2","["definition",""]":"","["corpus_positions",""]":[11],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"COPV","["definition",""]":"composite overwrap pressure vessels","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CRU","["definition",""]":"","["corpus_positions",""]":[44],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"CT","["definition",""]":"","["corpus_positions",""]":[7],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"D8","["definition",""]":"","["corpus_positions",""]":[63],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DBD","["definition",""]":"Dielectric Barrier Discharge","["corpus_positions",""]":[28],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DFMA","["definition",""]":"Design for Manufacturing and","["corpus_positions",""]":[30],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DIAL","["definition",""]":"","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DLC","["definition",""]":"","["corpus_positions",""]":[62],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DNS","["definition",""]":"","["corpus_positions",""]":[91],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DOE","["definition",""]":"design of experiments","["corpus_positions",""]":[0],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DTN","["definition",""]":"Delay-Tolerant Networking","["corpus_positions",""]":[20],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DVB","["definition",""]":"Digital Video Broadcasting","["corpus_positions",""]":[17],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DYMORE","["definition",""]":"","["corpus_positions",""]":[70],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"DYNA","["definition",""]":"","["corpus_positions",""]":[31],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"E3","["definition",""]":"","["corpus_positions",""]":[25],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"EDS","["definition",""]":"","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"EIMP","["definition",""]":"Enhanced Injection and Mixing Project","["corpus_positions",""]":[78],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ELT","["definition",""]":"","["corpus_positions",""]":[65],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"EM","["definition",""]":"","["corpus_positions",""]":[52],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"EMD","["definition",""]":"Empirical Mode Decomposition","["corpus_positions",""]":[42],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"EMEs","["definition",""]":"","["corpus_positions",""]":[52],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ENSO","["definition",""]":"El Nino Southern Oscillation","["corpus_positions",""]":[42],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"EPA","["definition",""]":"","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ET","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FAA","["definition",""]":"","["corpus_positions",""]":[31],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FE","["definition",""]":"","["corpus_positions",""]":[89],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FEM","["definition",""]":"","["corpus_positions",""]":[13],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FEM)-based","["definition",""]":"","["corpus_positions",""]":[0],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FFM","["definition",""]":"","["corpus_positions",""]":[22],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FFMs","["definition",""]":"","["corpus_positions",""]":[22],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FLEET","["definition",""]":"Femtosecond laser electronic excitation tagging","["corpus_positions",""]":[76],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FLUXNET","["definition",""]":"","["corpus_positions",""]":[12],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FSOL","["definition",""]":"","["corpus_positions",""]":[16],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"FUN3D.","["definition",""]":"","["corpus_positions",""]":[5],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GA","["definition",""]":"","["corpus_positions",""]":[94],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GEO","["definition",""]":"","["corpus_positions",""]":[21],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GLEAM","["definition",""]":"Global Land Evaporation Amsterdam Model","["corpus_positions",""]":[12],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GM","["definition",""]":"","["corpus_positions",""]":[10],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GMAO","["definition",""]":"Global Modeling and Assimilation Office","["corpus_positions",""]":[43],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GMSK","["definition",""]":"Gaussian Minimum Shift Keying","["corpus_positions",""]":[19],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GPIM","["definition",""]":"Green Propulsion Infusion Mission","["corpus_positions",""]":[30],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GR-1","["definition",""]":"","["corpus_positions",""]":[30],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GR-22","["definition",""]":"","["corpus_positions",""]":[30],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"GSFC","["definition",""]":"Goddard Space Flight Center","["corpus_positions",""]":[29],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"HDPE","["definition",""]":"","["corpus_positions",""]":[28],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"HIL","["definition",""]":"","["corpus_positions",""]":[37],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"HPC","["definition",""]":"","["corpus_positions",""]":[1],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"HSDO","["definition",""]":"","["corpus_positions",""]":[97],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"HWB","["definition",""]":"","["corpus_positions",""]":[63],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"IDEO","["definition",""]":"","["corpus_positions",""]":[3],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"II","["definition",""]":"","["corpus_positions",""]":[89],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"III","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"IMF","["definition",""]":"","["corpus_positions",""]":[42],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"IMFs","["definition",""]":"","["corpus_positions",""]":[42],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"IMM","["definition",""]":"Inverted Metamorphic Multi","["corpus_positions",""]":[29],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"IP","["definition",""]":"","["corpus_positions",""]":[20],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ISMN","["definition",""]":"International Soil Moisture Network","["corpus_positions",""]":[12],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"IVB","["definition",""]":"","["corpus_positions",""]":[33],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"JPL","["definition",""]":"","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"JST","["definition",""]":"Jameson- Schmidt-Turkel","["corpus_positions",""]":[25],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"KTH","["definition",""]":"","["corpus_positions",""]":[95],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"LDI","["definition",""]":"","["corpus_positions",""]":[35],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"LDPC","["definition",""]":"","["corpus_positions",""]":[19],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"LEFM","["definition",""]":"","["corpus_positions",""]":[89],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"LEO","["definition",""]":"","["corpus_positions",""]":[21],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"LS","["definition",""]":"","["corpus_positions",""]":[31],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"LaRC","["definition",""]":"","["corpus_positions",""]":[63],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MAIAC","["definition",""]":"","["corpus_positions",""]":[44],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MEA","["definition",""]":"","["corpus_positions",""]":[60],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MEB","["definition",""]":"","["corpus_positions",""]":[12],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MEO","["definition",""]":"","["corpus_positions",""]":[21],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MERRA-2","["definition",""]":"","["corpus_positions",""]":[43],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MIT","["definition",""]":"Massachusetts Institute of Technology","["corpus_positions",""]":[13],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MNPC","["definition",""]":"Metallized nanotube polymer composites","["corpus_positions",""]":[52],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MODTRAN5","["definition",""]":"","["corpus_positions",""]":[97],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MSC","["definition",""]":"","["corpus_positions",""]":[87],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"MUTT","["definition",""]":"-Utility Technology Testbed (","["corpus_positions",""]":[72],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"N2O","["definition",""]":"","["corpus_positions",""]":[11],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NAAMES","["definition",""]":"North Atlantic Aerosols and Marine Ecosystems Study","["corpus_positions",""]":[43],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NAAQS","["definition",""]":"National Ambient Air Quality Standard","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NASAs","["definition",""]":"","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NASGRO","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NC3","["definition",""]":"","["corpus_positions",""]":[34],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NCCC","["definition",""]":"Nautilus Centripetal Capillary Condenser","["corpus_positions",""]":[34],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ND8","["definition",""]":"","["corpus_positions",""]":[63],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NDE","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NEX","["definition",""]":"","["corpus_positions",""]":[41],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NO(sub","["definition",""]":"","["corpus_positions",""]":[35],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NO(x","["definition",""]":"","["corpus_positions",""]":[35],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NPGD","["definition",""]":"","["corpus_positions",""]":[54],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"NT","["definition",""]":"","["corpus_positions",""]":[52],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"O3","["definition",""]":"","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"OE","["definition",""]":"Operating Environment","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"OMI","["definition",""]":"Ozone Monitoring Instrument","["corpus_positions",""]":[39],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PCB","["definition",""]":"","["corpus_positions",""]":[53],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PCRTM","["definition",""]":"","["corpus_positions",""]":[97],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PDA","["definition",""]":"","["corpus_positions",""]":[89],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PDMS","["definition",""]":"","["corpus_positions",""]":[54],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PDO","["definition",""]":"Pacific Decadal Oscillation","["corpus_positions",""]":[42],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PIV","["definition",""]":"","["corpus_positions",""]":[82],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"POD","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PSK","["definition",""]":"","["corpus_positions",""]":[19],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PT","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"PVs","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"QCR","["definition",""]":"Quadratic Constitutive Relation","["corpus_positions",""]":[5],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"RAQMS","["definition",""]":"Realtime Air Quality Modeling System","["corpus_positions",""]":[38],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"RMS","["definition",""]":"","["corpus_positions",""]":[33],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"ROMs","["definition",""]":"","["corpus_positions",""]":[95],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"RRM","["definition",""]":"Robotic Refueling Mission","["corpus_positions",""]":[29],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"RS","["definition",""]":"","["corpus_positions",""]":[97],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"S2","["definition",""]":"","["corpus_positions",""]":[17],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SAR","["definition",""]":"Survivability and Reliability","["corpus_positions",""]":[65],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SCEPTOR","["definition",""]":"Scalable Convergent Electric Propulsion Technology and Operations Research","["corpus_positions",""]":[0],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SCF","["definition",""]":"","["corpus_positions",""]":[71],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SCG","["definition",""]":"","["corpus_positions",""]":[27],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SDR","["definition",""]":"","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SE","["definition",""]":"Safety Enhancement","["corpus_positions",""]":[79],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SERS","["definition",""]":"surface enhanced Raman scattering","["corpus_positions",""]":[54],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SFP","["definition",""]":"","["corpus_positions",""]":[16],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SGF","["definition",""]":"","["corpus_positions",""]":[71],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SIMS","["definition",""]":"Satellite Irrigation Management Support","["corpus_positions",""]":[40],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SMOS","["definition",""]":"Soil Moisture Ocean Salinity","["corpus_positions",""]":[12],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SOIS","["definition",""]":"Spacecraft Onboard Interface Services","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SOLAR","["definition",""]":"","["corpus_positions",""]":[97],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SSA","["definition",""]":"","["corpus_positions",""]":[98],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SSI","["definition",""]":"Solar System Internet","["corpus_positions",""]":[20],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"STD-5009","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"STO","["definition",""]":"","["corpus_positions",""]":[85],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"STRS","["definition",""]":"Space Telecommunications Radio System","["corpus_positions",""]":[23],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SUGAR","["definition",""]":"","["corpus_positions",""]":[96],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SUPG","["definition",""]":"Streamlined Upwind Petrov-Galerkin","["corpus_positions",""]":[64],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SV","["definition",""]":"","["corpus_positions",""]":[35],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"SWaP","["definition",""]":"size, weight, and power","["corpus_positions",""]":[16],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"T-2","["definition",""]":"","["corpus_positions",""]":[68],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TB","["definition",""]":"","["corpus_positions",""]":[12],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TB4","["definition",""]":"Task Board 4","["corpus_positions",""]":[29],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TCT","["definition",""]":"","["corpus_positions",""]":[76],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TDRS","["definition",""]":"Tracking and Data Relay Satellites","["corpus_positions",""]":[19],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TDRSS","["definition",""]":"","["corpus_positions",""]":[19],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TDT","["definition",""]":"Transonic Dynamics Tunnel","["corpus_positions",""]":[95],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TDU-1","["definition",""]":"Technology Demonstration Unit-1 (","["corpus_positions",""]":[33],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TEMPO","["definition",""]":"","["corpus_positions",""]":[39],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TESS","["definition",""]":"Transiting Exoplanet Survey Satellite","["corpus_positions",""]":[13],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TPS","["definition",""]":"","["corpus_positions",""]":[75],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TRMM","["definition",""]":"","["corpus_positions",""]":[44],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TROPOMI","["definition",""]":"","["corpus_positions",""]":[39],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TW","["definition",""]":"","["corpus_positions",""]":[63],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"TeDP","["definition",""]":"turbo-electric distributed propulsion","["corpus_positions",""]":[37],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"UQ","["definition",""]":"","["corpus_positions",""]":[1],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"USDA","["definition",""]":"","["corpus_positions",""]":[10],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"UT","["definition",""]":"","["corpus_positions",""]":[77],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"UV","["definition",""]":"","["corpus_positions",""]":[98],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"UVMFR","["definition",""]":"","["corpus_positions",""]":[98],"["freq",""]":1,"["ac_freq",""]":1}
+{"["acronym",""]":"VCCT","["definition",""]":"","["corpus_positions",""]":[90],"["freq",""]":1,"["ac_freq",""]":1}
