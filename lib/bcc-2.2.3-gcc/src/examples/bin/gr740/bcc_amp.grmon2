@@ -1,0 +1,9 @@
+# GRMON 2.0 script: Load and run BCC AMP example
+# Start this script with:
+# grmon2> batch bcc_amp.grmon2
+bp del
+load bcc_amp0.elf cpu0
+stack 0x000fff00 cpu0
+load bcc_amp1.elf cpu1
+stack 0x001fff00 cpu1
+run

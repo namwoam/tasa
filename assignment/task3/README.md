@@ -18,3 +18,13 @@ todo:
 
 1. Finish the main program `./fib_benchmark.cpp`.
 2. Work around `bcc-2.2.3-gcc` library, examples at `bcc-2.2.3-gcc/src/examples`
+
+### 2023-07-07
+
+1. Add bcc to `$PATH` by editing `.bashrc`, append the line:
+```
+export PATH=$PATH:/home/fsw/rep/tasa/lib/bcc-2.2.3-gcc/bin
+```
+
+2. Build bcc examples for ut699
+3. Install tsim2
