@@ -70,3 +70,4 @@ This dataset could be used for various purposes including lists of acronyms, lis
 #### 2023-07-07
 
 1. Download dataset
+2. Read docs and navigate around project
