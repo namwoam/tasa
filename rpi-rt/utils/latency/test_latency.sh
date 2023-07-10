@@ -1,0 +1,1 @@
+sudo cyclictest -H -h --histogram=US  -l40000 -v > latency_record.txt
