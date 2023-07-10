@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import re
 import matplotlib.pyplot as plt
-import platform
+import subprocess
 
 record = []
 
@@ -17,6 +17,6 @@ with open(os.path.join(os.path.dirname(__file__), "latency_record.txt")) as read
             pass
 s = pd.Series(record)
 df = pd.DataFrame({"latency": s})
-df["latency"].plot(kind="hist",bins = 120, logy=True , xlabel="latency (us)" , title=f"{platform.platform()}").get_figure().savefig(
+df["latency"].plot(kind="hist",bins = 120, logy=True , xlabel="latency (us)" , title=f"{subprocess.getoutput('uname -a')[:60]}").get_figure().savefig(
     os.path.join(os.path.dirname(__file__), "hist.png")
 )
