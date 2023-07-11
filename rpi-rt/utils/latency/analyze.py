@@ -6,7 +6,9 @@ import subprocess
 
 record = []
 
-with open(os.path.join(os.path.dirname(__file__), "latency_record.txt")) as reader:
+target = "latency_record"
+
+with open(os.path.join(os.path.dirname(__file__), f"{target}.txt")) as reader:
     lines = reader.readlines()
     for line in lines:
         formatted_line = re.sub("[^a-zA-Z0-9:]+", "", line)
@@ -17,6 +19,6 @@ with open(os.path.join(os.path.dirname(__file__), "latency_record.txt")) as read
             pass
 s = pd.Series(record)
 df = pd.DataFrame({"latency": s})
-df["latency"].plot(kind="hist",bins = 120, logy=True , xlabel="latency (us)" , title=f"{subprocess.getoutput('uname -a')[:60]}").get_figure().savefig(
-    os.path.join(os.path.dirname(__file__), "hist.png")
+df["latency"].plot(kind="hist",bins = 120, logy=True , xlabel="latency (us)" , title=f"hist-{target}").get_figure().savefig(
+    os.path.join(os.path.dirname(__file__), f"hist-{target}.png")
 )

@@ -11,3 +11,11 @@ Reference: https://github.com/remusmp/rpi-rt-kernel, https://www.yoctoproject.or
 3. Build 27 tasks , priority ranges from 1 to 25. Idle->100, Reserved->255. Note: every tasks are single threaded.
 4. Check uart functionality.
 5. Lower latency.
+
+## Worklog
+
+### 2023-07-10
+
+1. Build rpi-rt-kernel and install it onto the raspberry pi sbc.
+2. Tested the latency, the worst-case latency is roughly 2500us (2.5ms), which is significantly better than non-rt kernel (worst case 12000us), full report is at `/rpi-rt/utils/latency`.
+3. Install and build the Yocto project.
