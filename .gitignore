@@ -1,3 +1,4 @@
 # Too large (>100mb), source: https://www.gaisler.com/index.php/downloads/linux?task=view&id=160, file location: from_mentor/GRMON_LINUX/sparc-gaisler-linux5.10-1.4.tar.xz
 sparc-gaisler-linux5.10-1.4.tar.xz
 results_merged.jsonl
+.vscode
