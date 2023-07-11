@@ -19,3 +19,9 @@ Reference: https://github.com/remusmp/rpi-rt-kernel, https://www.yoctoproject.or
 1. Build rpi-rt-kernel and install it onto the raspberry pi sbc.
 2. Tested the latency, the worst-case latency is roughly 2500us (2.5ms), which is significantly better than non-rt kernel (worst case 12000us), full report is at `/rpi-rt/utils/latency`.
 3. Install and build the Yocto project.
+
+### 2023-07-11
+
+1. Setup ssh development environmnent for rpi.
+2. Test gpio capability with python and c (`gpiod` library).
+3. Write program to test real-time latency (not tested yet).

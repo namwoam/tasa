@@ -4,6 +4,11 @@
     },
     "python.formatting.provider": "none",
     "files.associations": {
-        "gpiod.h": "c"
+        "gpiod.h": "c",
+        "pthread.h": "c",
+        "mman.h": "c",
+        "limits.h": "c",
+        "sched.h": "c",
+        "stdlib.h": "c"
     }
 }
