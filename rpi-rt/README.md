@@ -26,3 +26,8 @@ Reference: https://github.com/remusmp/rpi-rt-kernel, https://www.yoctoproject.or
 2. Test gpio capability with python and c (`gpiod` library).
 3. Write program to test real-time latency (not tested yet).\
 4. Yecto doesn't support preempt-rt natively.
+
+### 2023-07-12
+
+1. Try the os scheduler with real-time features, check `./utils/scheduling`.
+2. Read fsw code.
