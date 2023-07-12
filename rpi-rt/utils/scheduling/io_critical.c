@@ -5,6 +5,8 @@
  * using a single pthread as RT thread
  */
 
+#define _GNU_SOURCE
+
 #include <limits.h>
 #include <pthread.h>
 #include <sched.h>
@@ -15,6 +17,8 @@
 #include <unistd.h>
 
 #define FIB_LENGTH 30
+#define SCHEDULE_POLICY SCHED_FIFO
+#define COMPUTE_THREAD_COUNT 10
 
 int fib(int n)
 {
@@ -31,15 +35,15 @@ int fib(int n)
 void *io_thread_func(void *data)
 {
     struct timespec req, rem;
-    req.tv_nsec = 0; // 2000ms
-    req.tv_sec = 2;
+    req.tv_nsec = 500000000; // 0.5sec
+    req.tv_sec = 0;
     while (1)
     {
         time_t rawtime;
         struct tm *timeinfo;
         time(&rawtime);
         timeinfo = localtime(&rawtime);
-        printf("Hello at %s\n", asctime(timeinfo));
+        printf("Hello at %s, on thread:%d\n", asctime(timeinfo), sched_getcpu());
         int t = rand() % 10;
         if (nanosleep(&req, &rem) == -1)
         {
@@ -58,21 +62,19 @@ void *compute_thread_func(void *data)
         for (int i = 0; i < 20; i++)
         {
             result = fib(i);
-            printf("fib(%d)=%d\n", i, result);
         }
     }
     return NULL;
 }
 
-
-    int
-    main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     // initialize random number generator
     srand(time(NULL));
     struct sched_param critical_param, param;
     pthread_attr_t compute_attr, io_attr;
-    pthread_t compute_thread, io_thread;
+    pthread_t compute_threads[COMPUTE_THREAD_COUNT];
+    pthread_t io_thread;
     int ret;
 
     /* Lock memory */
@@ -109,27 +111,30 @@ void *compute_thread_func(void *data)
         goto out;
     }
     /* Set scheduler policy and priority of pthread */
-    ret = pthread_attr_setschedpolicy(&compute_attr, SCHED_FIFO);
+    ret = pthread_attr_setschedpolicy(&compute_attr, SCHEDULE_POLICY);
     if (ret)
     {
         printf("pthread setschedpolicy failed\n");
         goto out;
     }
-    ret = pthread_attr_setschedpolicy(&io_attr, SCHED_FIFO);
+    ret = pthread_attr_setschedpolicy(&io_attr, SCHEDULE_POLICY);
     if (ret)
     {
         printf("pthread setschedpolicy failed\n");
         goto out;
     }
-    critical_param.sched_priority = sched_get_priority_max(SCHED_FIFO);
-    param.sched_priority = sched_get_priority_min(SCHED_FIFO);
-    ret = pthread_attr_setschedparam(&compute_attr, &critical_param);
+    printf("max priproity:%d\n", sched_get_priority_max(SCHEDULE_POLICY));
+    printf("min priproity:%d\n", sched_get_priority_min(SCHEDULE_POLICY));
+    // ref:https://man7.org/linux/man-pages/man7/sched.7.html
+    critical_param.sched_priority = sched_get_priority_max(SCHEDULE_POLICY);
+    param.sched_priority = sched_get_priority_min(SCHEDULE_POLICY);
+    ret = pthread_attr_setschedparam(&compute_attr, &param);
     if (ret)
     {
         printf("pthread setschedparam failed\n");
         goto out;
     }
-    ret = pthread_attr_setschedparam(&io_attr, &param);
+    ret = pthread_attr_setschedparam(&io_attr, &critical_param);
     if (ret)
     {
         printf("pthread setschedparam failed\n");
@@ -149,13 +154,18 @@ void *compute_thread_func(void *data)
         goto out;
     }
     /* Create a pthread with specified attributes */
-    ret = pthread_create(&compute_thread, &compute_attr, compute_thread_func, NULL);
-    if (ret)
+    printf("Start execution:\n");
+    for (int i = 0; i < COMPUTE_THREAD_COUNT; i++)
     {
-        printf("error code:%d\n", ret);
-        printf("create compute pthread failed\n");
-        goto out;
+        ret = pthread_create(&compute_threads[i], &compute_attr, compute_thread_func, NULL);
+        if (ret)
+        {
+            printf("error code:%d\n", ret);
+            printf("create compute pthread failed\n");
+            goto out;
+        }
     }
+
     ret = pthread_create(&io_thread, &io_attr, io_thread_func, NULL);
     if (ret)
     {
@@ -164,9 +174,12 @@ void *compute_thread_func(void *data)
         goto out;
     }
     /* Join the thread and wait until it is done */
-    ret = pthread_join(compute_thread, NULL);
-    if (ret)
-        printf("join pthread failed: %m\n");
+    for (int i = 0; i < COMPUTE_THREAD_COUNT; i++)
+    {
+        ret = pthread_join(compute_threads[i], NULL);
+        if (ret)
+            printf("join pthread failed: %m\n");
+    }
     ret = pthread_join(io_thread, NULL);
     if (ret)
         printf("join pthread failed: %m\n");
